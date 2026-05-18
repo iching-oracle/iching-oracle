@@ -3,19 +3,34 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { loginSchema } from "@/lib/validations/auth";
 
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
+  const configError = searchParams.get("error") === "Configuration";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    configError
+      ? "Google sign-in is not configured on the server. Use email/password, or ask the admin to set AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET."
+      : null,
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [googleEnabled, setGoogleEnabled] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/auth/providers")
+      .then((res) => res.json())
+      .then((providers: Record<string, unknown>) => {
+        setGoogleEnabled(Boolean(providers.google));
+      })
+      .catch(() => setGoogleEnabled(false));
+  }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -50,9 +65,16 @@ export function LoginForm() {
   }
 
   async function handleGoogleSignIn() {
+    if (!googleEnabled) {
+      setError(
+        "Google sign-in is not available. Add AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET to your environment.",
+      );
+      return;
+    }
+
     setIsGoogleLoading(true);
     setError(null);
-    await signIn("google", { callbackUrl });
+    await signIn("google", { redirectTo: callbackUrl });
   }
 
   return (
@@ -103,23 +125,27 @@ export function LoginForm() {
         </button>
       </form>
 
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center" aria-hidden>
-          <div className="w-full border-t border-white/10" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase tracking-widest">
-          <span className="bg-zen-surface/70 px-3 text-zen-muted">or</span>
-        </div>
-      </div>
+      {googleEnabled ? (
+        <>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center" aria-hidden>
+              <div className="w-full border-t border-white/10" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase tracking-widest">
+              <span className="bg-zen-surface/70 px-3 text-zen-muted">or</span>
+            </div>
+          </div>
 
-      <button
-        type="button"
-        onClick={handleGoogleSignIn}
-        disabled={isGoogleLoading}
-        className="auth-btn-secondary w-full"
-      >
-        {isGoogleLoading ? "Redirecting…" : "Continue with Google"}
-      </button>
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={isGoogleLoading}
+            className="auth-btn-secondary w-full"
+          >
+            {isGoogleLoading ? "Redirecting…" : "Continue with Google"}
+          </button>
+        </>
+      ) : null}
 
       <p className="text-center text-sm text-zen-muted">
         No account?{" "}

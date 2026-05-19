@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { HexagramDisplay } from "@/components/readings/hexagram-display";
+import { HexagramDisplay } from "@/components/HexagramDisplay";
+import { HexagramDisplay as HexagramTitleCard } from "@/components/readings/hexagram-display";
 import { getReadingForUser } from "@/lib/data/get-reading-for-user";
 import { formatHexagramInline, getHexagram } from "@/lib/hexagrams";
 import { isLegacyPlaceholderInterpretation } from "@/lib/openai";
@@ -77,8 +78,17 @@ export default async function ReadingPage({ params }: PageProps) {
           <h2 className="text-xs font-medium uppercase tracking-widest text-amber-gold">
             Hexagram
           </h2>
-          <div className="mt-6">
-            <HexagramDisplay hexagram={hexagramInfo} variant="detail" />
+          <div className="mt-6 grid items-center gap-8 md:grid-cols-2 md:gap-10">
+            <HexagramTitleCard hexagram={hexagramInfo} variant="detail" />
+            <div className="flex justify-center md:justify-end">
+              <div className="rounded-2xl border border-amber-gold/15 bg-zen-bg/40 p-6 shadow-[0_0_48px_-12px_rgba(251,191,36,0.2)]">
+                <HexagramDisplay
+                  hexagramNumber={reading.hexagram}
+                  size="lg"
+                  animated
+                />
+              </div>
+            </div>
           </div>
         </section>
 

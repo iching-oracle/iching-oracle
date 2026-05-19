@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { HexagramDisplay } from "@/components/readings/hexagram-display";
+import { HexagramDisplay } from "@/components/HexagramDisplay";
 import { getHexagram } from "@/lib/hexagrams";
 import type { ReadingListItem } from "@/types/reading";
 
@@ -52,11 +52,15 @@ function ReadingListItemCard({ reading }: { reading: ReadingListItem }) {
           </p>
           <p className="mt-2 text-xs text-zen-muted">{date}</p>
         </div>
-        <HexagramDisplay
-          hexagram={hexagramInfo}
-          variant="compact"
-          showInline={false}
-        />
+        <div className="flex shrink-0 flex-col items-center gap-1.5">
+          <HexagramDisplay hexagramNumber={reading.hexagram} size="sm" />
+          <p className="font-serif text-base text-amber-gold">
+            {hexagramInfo.chineseName}
+          </p>
+          <p className="text-[10px] uppercase tracking-widest text-zen-muted">
+            #{reading.hexagram}
+          </p>
+        </div>
       </div>
     </Link>
   );

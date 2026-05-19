@@ -66,6 +66,22 @@ body {
   }
 }
 
+@keyframes hexagram-line-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hexagram-line-animate {
+  opacity: 0;
+  animation: hexagram-line-rise 0.55s ease-out forwards;
+}
+
 .animate-shimmer {
   background-size: 200% auto;
   animation: shimmer 4s linear infinite;

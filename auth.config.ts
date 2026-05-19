@@ -19,9 +19,12 @@ export const authConfig = {
       const isLoggedIn = !!auth?.user;
       const isAuthRoute =
         nextUrl.pathname === "/login" || nextUrl.pathname === "/register";
-      const isDashboard = nextUrl.pathname.startsWith("/dashboard");
+      const isProtected =
+        nextUrl.pathname.startsWith("/dashboard") ||
+        nextUrl.pathname.startsWith("/reading") ||
+        nextUrl.pathname.startsWith("/readings");
 
-      if (isDashboard && !isLoggedIn) {
+      if (isProtected && !isLoggedIn) {
         return false;
       }
 

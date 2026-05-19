@@ -2,69 +2,68 @@ import "server-only";
 
 import OpenAI from "openai";
 
-const MODEL = "gpt-4.1-mini";
-
-const SYSTEM_PROMPT = `Act as a wise I Ching master.
-Explain the meaning of the hexagram in relation to the user's question.
-Use warm, insightful Traditional Chinese (繁體中文).
-Provide practical guidance and spiritual reflection.
-Limit to 3–5 paragraphs.`;
-
-export type InterpretationHexagram = {
+type Hexagram = {
   number: number;
   title: string;
-  chineseName: string;
   judgment: string;
 };
 
-function buildFallbackInterpretation(
-  question: string,
-  hexagram: InterpretationHexagram,
-): string {
-  return `關於您的問題：「${question}」
+/** Legacy placeholder text from early readings — not generated anymore. */
+export function isLegacyPlaceholderInterpretation(text: string): boolean {
+  return /^This is a temporary interpretation for hexagram \d+\./i.test(
+    text.trim(),
+  );
+}
 
-卦象為第 ${hexagram.number} 卦 · ${hexagram.chineseName} · ${hexagram.title}。
-
-傳統卦辭：「${hexagram.judgment}」
-
-請靜心體會此卦之象，以誠心照見當下之路。心誠則靈，願您在天地之道中找到安身立命的方向。`;
+function getClient(): OpenAI {
+  const apiKey = process.env.OPENAI_API_KEY?.trim();
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is not configured.");
+  }
+  return new OpenAI({ apiKey });
 }
 
 export async function generateInterpretation(
   question: string,
-  hexagram: InterpretationHexagram,
+  hexagram: Hexagram,
 ): Promise<string> {
-  const apiKey = process.env.OPENAI_API_KEY?.trim();
-  if (!apiKey) {
-    return buildFallbackInterpretation(question, hexagram);
+  if (!process.env.OPENAI_API_KEY?.trim()) {
+    throw new Error("OPENAI_API_KEY is not configured.");
   }
 
-  const client = new OpenAI({ apiKey });
+  const openai = getClient();
 
-  const userPrompt = `問題：${question}
+  const prompt = `
+你是一位深諳《易經》的智慧占卜師。
 
-卦象：第 ${hexagram.number} 卦 · ${hexagram.chineseName} · ${hexagram.title}
-傳統卦辭：「${hexagram.judgment}」
+使用者問題：
+${question}
 
-請為問卜者提供完整的個人化解讀（繁體中文）。`;
+卦象：
+第 ${hexagram.number} 卦 ${hexagram.title}
 
-  try {
-    const response = await client.chat.completions.create({
-      model: MODEL,
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: userPrompt },
-      ],
-      temperature: 0.75,
-      max_tokens: 900,
-    });
+卦辭：
+${hexagram.judgment}
 
-    const content = response.choices[0]?.message?.content?.trim();
-    if (content) return content;
+請以繁體中文撰寫 3 至 5 段深入解讀，內容應包括：
+1. 此卦的核心意義
+2. 與使用者問題的關聯
+3. 實際可採取的建議
+4. 心靈層面的啟發
 
-    return buildFallbackInterpretation(question, hexagram);
-  } catch (error) {
-    console.error("[openai] generateInterpretation failed", error);
-    return buildFallbackInterpretation(question, hexagram);
+語氣要溫暖、睿智、具有洞察力。
+不要使用英文。
+`;
+
+  const response = await openai.responses.create({
+    model: "gpt-4.1-mini",
+    input: prompt,
+  });
+
+  const text = response.output_text?.trim();
+  if (!text) {
+    throw new Error("OpenAI returned an empty interpretation.");
   }
+
+  return text;
 }

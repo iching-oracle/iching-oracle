@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { HexagramDisplay } from "@/components/readings/hexagram-display";
 import { getReadingForUser } from "@/lib/data/get-reading-for-user";
 import { formatHexagramInline, getHexagram } from "@/lib/hexagrams";
+import { isLegacyPlaceholderInterpretation } from "@/lib/openai";
 
 type PageProps = { params: Promise<{ id: string }> };
 
@@ -30,6 +31,9 @@ export default async function ReadingPage({ params }: PageProps) {
   }
 
   const hexagramInfo = getHexagram(reading.hexagram);
+  const isLegacyReading = isLegacyPlaceholderInterpretation(
+    reading.interpretation,
+  );
 
   const createdAt = new Intl.DateTimeFormat("zh-Hant", {
     dateStyle: "long",
@@ -91,6 +95,12 @@ export default async function ReadingPage({ params }: PageProps) {
           <h2 className="text-xs font-medium uppercase tracking-widest text-zen-muted">
             Interpretation
           </h2>
+          {isLegacyReading ? (
+            <p className="mt-3 rounded-lg border border-amber-gold/30 bg-amber-gold/10 px-3 py-2 text-sm text-amber-glow">
+              This reading was saved before AI interpretation was enabled. Consult
+              the oracle again for a new reading in Traditional Chinese.
+            </p>
+          ) : null}
           <div className="mt-3 whitespace-pre-wrap text-base leading-relaxed text-foreground/90">
             {reading.interpretation}
           </div>

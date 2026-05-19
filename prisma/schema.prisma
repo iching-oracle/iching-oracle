@@ -28,13 +28,15 @@ model User {
 }
 
 model Reading {
-  id             String   @id @default(cuid())
-  userId         String
-  question       String
-  hexagram       Int
-  changing       String?
-  interpretation String   @db.Text
-  createdAt      DateTime @default(now())
+  id                  String   @id @default(cuid())
+  userId              String
+  question            String
+  hexagram            Int
+  lineValues          String
+  changingLines       String?
+  transformedHexagram Int?
+  interpretation      String   @db.Text
+  createdAt           DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

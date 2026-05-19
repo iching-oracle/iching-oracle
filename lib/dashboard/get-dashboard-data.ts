@@ -30,7 +30,8 @@ export async function getDashboardData(
       id: true,
       question: true,
       hexagram: true,
-      changing: true,
+      changingLines: true,
+      transformedHexagram: true,
       createdAt: true,
     },
   });

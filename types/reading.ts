@@ -2,7 +2,8 @@ export type ReadingListItem = {
   id: string;
   question: string;
   hexagram: number;
-  changing: string | null;
+  changingLines: string | null;
+  transformedHexagram: number | null;
   createdAt: Date;
 };
 

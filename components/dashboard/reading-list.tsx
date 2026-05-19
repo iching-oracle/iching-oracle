@@ -1,5 +1,9 @@
 import Link from "next/link";
 import { HexagramDisplay } from "@/components/HexagramDisplay";
+import {
+  formatChangingLinesBadge,
+  parseChangingLines,
+} from "@/lib/iching";
 import { getHexagram } from "@/lib/hexagrams";
 import type { ReadingListItem } from "@/types/reading";
 
@@ -35,6 +39,8 @@ export function ReadingList({ readings }: ReadingListProps) {
 
 function ReadingListItemCard({ reading }: { reading: ReadingListItem }) {
   const hexagramInfo = getHexagram(reading.hexagram);
+  const changingPositions = parseChangingLines(reading.changingLines);
+  const changingBadge = formatChangingLinesBadge(changingPositions);
   const date = new Intl.DateTimeFormat("zh-Hant", {
     dateStyle: "medium",
     timeStyle: "short",
@@ -50,7 +56,17 @@ function ReadingListItemCard({ reading }: { reading: ReadingListItem }) {
           <p className="line-clamp-2 font-medium text-foreground group-hover:text-amber-glow">
             {reading.question}
           </p>
-          <p className="mt-2 text-xs text-zen-muted">{date}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <p className="text-xs text-zen-muted">{date}</p>
+            {changingBadge ? (
+              <span className="rounded-full border border-cosmic-violet/40 bg-cosmic-purple/20 px-2 py-0.5 text-[10px] font-medium tracking-wide text-cosmic-violet">
+                動 {changingBadge}
+                {reading.transformedHexagram
+                  ? ` → ${reading.transformedHexagram}`
+                  : null}
+              </span>
+            ) : null}
+          </div>
         </div>
         <div className="flex shrink-0 flex-col items-center gap-1.5">
           <HexagramDisplay hexagramNumber={reading.hexagram} size="sm" />

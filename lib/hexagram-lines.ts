@@ -99,3 +99,36 @@ export function getHexagramLines(hexagramNumber: number): boolean[] {
   }
   return fallbackLines(((hexagramNumber - 1) % 64) + 1);
 }
+
+/** Primary hexagram booleans from cast values (7,9 = yang; 6,8 = yin). */
+export function lineValuesToBooleans(lineValues: number[]): boolean[] {
+  return lineValues.map((value) => value === 7 || value === 9);
+}
+
+function linesEqual(a: boolean[], b: boolean[]): boolean {
+  if (a.length !== b.length) return false;
+  return a.every((value, index) => value === b[index]);
+}
+
+/** Find King Wen hexagram number matching six lines (bottom index 0). */
+export function findHexagramNumber(lines: boolean[]): number {
+  for (let number = 1; number <= 64; number++) {
+    const candidate = HEXAGRAM_LINES[number];
+    if (candidate && linesEqual(candidate, lines)) {
+      return number;
+    }
+  }
+
+  const key = lines.map((yang) => (yang ? "1" : "0")).join("");
+  for (let number = 1; number <= 64; number++) {
+    const candidate = HEXAGRAM_LINES[number];
+    if (
+      candidate &&
+      candidate.map((yang) => (yang ? "1" : "0")).join("") === key
+    ) {
+      return number;
+    }
+  }
+
+  return 1;
+}

@@ -1,7 +1,11 @@
 import { PrismaClient } from "@prisma/client";
 
+/** Bump when the Prisma schema changes to refresh the dev singleton. */
+const PRISMA_SCHEMA_VERSION = "20260520120000_casting_engine";
+
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
+  prismaSchemaVersion: string | undefined;
 };
 
 function getDatabaseUrl(): string {
@@ -19,14 +23,32 @@ function getDatabaseUrl(): string {
   return url;
 }
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
+function createPrismaClient(): PrismaClient {
+  return new PrismaClient({
     datasources: {
       db: { url: getDatabaseUrl() },
     },
   });
-
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
 }
+
+function getPrismaClient(): PrismaClient {
+  const staleDevClient =
+    process.env.NODE_ENV !== "production" &&
+    globalForPrisma.prismaSchemaVersion !== PRISMA_SCHEMA_VERSION;
+
+  if (staleDevClient && globalForPrisma.prisma) {
+    void globalForPrisma.prisma.$disconnect();
+    globalForPrisma.prisma = undefined;
+  }
+
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = createPrismaClient();
+    if (process.env.NODE_ENV !== "production") {
+      globalForPrisma.prismaSchemaVersion = PRISMA_SCHEMA_VERSION;
+    }
+  }
+
+  return globalForPrisma.prisma;
+}
+
+export const prisma = getPrismaClient();

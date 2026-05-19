@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { HexagramDisplay } from "@/components/HexagramDisplay";
-import { HexagramDisplay as HexagramTitleCard } from "@/components/readings/hexagram-display";
+import { CastingSummary } from "@/components/readings/casting-summary";
 import { getReadingForUser } from "@/lib/data/get-reading-for-user";
+import { parseChangingLines } from "@/lib/iching";
 import { formatHexagramInline, getHexagram } from "@/lib/hexagrams";
 import { isLegacyPlaceholderInterpretation } from "@/lib/openai";
 
@@ -31,7 +31,11 @@ export default async function ReadingPage({ params }: PageProps) {
     notFound();
   }
 
-  const hexagramInfo = getHexagram(reading.hexagram);
+  const primaryHexagram = getHexagram(reading.hexagram);
+  const transformedHexagram = reading.transformedHexagram
+    ? getHexagram(reading.transformedHexagram)
+    : null;
+  const changingLinePositions = parseChangingLines(reading.changingLines);
   const isLegacyReading = isLegacyPlaceholderInterpretation(
     reading.interpretation,
   );
@@ -42,7 +46,7 @@ export default async function ReadingPage({ params }: PageProps) {
   }).format(reading.createdAt);
 
   return (
-    <div className="relative mx-auto w-full max-w-3xl px-6 py-12 sm:px-10 sm:py-16">
+    <div className="relative mx-auto w-full max-w-4xl px-6 py-12 sm:px-10 sm:py-16">
       <div
         className="pointer-events-none absolute -left-16 top-0 h-64 w-64 rounded-full bg-cosmic-purple/15 blur-[100px]"
         aria-hidden
@@ -61,7 +65,10 @@ export default async function ReadingPage({ params }: PageProps) {
             Your Reading
           </p>
           <p className="mt-2 text-sm text-zen-muted">
-            {formatHexagramInline(hexagramInfo)}
+            本卦：{formatHexagramInline(primaryHexagram)}
+            {transformedHexagram
+              ? ` · 變卦：${formatHexagramInline(transformedHexagram)}`
+              : null}
           </p>
         </header>
 
@@ -76,29 +83,16 @@ export default async function ReadingPage({ params }: PageProps) {
 
         <section className="rounded-2xl border border-amber-gold/20 bg-zen-surface/70 p-8 backdrop-blur-xl">
           <h2 className="text-xs font-medium uppercase tracking-widest text-amber-gold">
-            Hexagram
+            Hexagrams
           </h2>
-          <div className="mt-6 grid items-center gap-8 md:grid-cols-2 md:gap-10">
-            <HexagramTitleCard hexagram={hexagramInfo} variant="detail" />
-            <div className="flex justify-center md:justify-end">
-              <div className="rounded-2xl border border-amber-gold/15 bg-zen-bg/40 p-6 shadow-[0_0_48px_-12px_rgba(251,191,36,0.2)]">
-                <HexagramDisplay
-                  hexagramNumber={reading.hexagram}
-                  size="lg"
-                  animated
-                />
-              </div>
-            </div>
+          <div className="mt-6">
+            <CastingSummary
+              primaryNumber={reading.hexagram}
+              transformedNumber={reading.transformedHexagram}
+              changingLinePositions={changingLinePositions}
+              animated
+            />
           </div>
-        </section>
-
-        <section className="rounded-2xl border border-white/10 bg-zen-surface/70 p-6 backdrop-blur-xl">
-          <h2 className="text-xs font-medium uppercase tracking-widest text-zen-muted">
-            Judgment
-          </h2>
-          <p className="mt-3 font-serif text-lg leading-relaxed text-foreground/95 italic">
-            {hexagramInfo.judgment}
-          </p>
         </section>
 
         <section className="rounded-2xl border border-white/10 bg-zen-surface/70 p-6 backdrop-blur-xl">

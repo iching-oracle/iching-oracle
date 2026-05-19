@@ -1,49 +1,57 @@
 import {
-  getHexagram,
-  getRandomHexagramNumber,
-} from "@/lib/hexagrams";
+  castLines,
+  getChangingLines,
+  getPrimaryHexagram,
+  getTransformedHexagram,
+  serializeChangingLines,
+  serializeLineValues,
+} from "@/lib/iching";
+import { getHexagram } from "@/lib/hexagrams";
 import { generateInterpretation } from "@/lib/openai";
 import { prisma } from "@/lib/prisma";
 
-function buildFallbackInterpretation(
-  hexagram: ReturnType<typeof getHexagram>,
-): string {
-  return `
-第 ${hexagram.number} 卦 ${hexagram.chineseName} · ${hexagram.title}
-
-${hexagram.judgment}
-
-此卦提示你目前正處於重要的轉折點。請保持耐心，順應時機，並相信事情將朝著對你有利的方向發展。
-`.trim();
+function toHexagramTitle(hexagram: ReturnType<typeof getHexagram>): string {
+  return `${hexagram.chineseName} · ${hexagram.title}`;
 }
 
-/** Persist a new reading: random hexagram, AI interpretation, then return record. */
+/** Cast coins, interpret, and persist a new reading. */
 export async function saveReadingForUser(userId: string, question: string) {
   const trimmed = question.trim();
-  const hexagramNumber = getRandomHexagramNumber();
-  const hexagram = getHexagram(hexagramNumber);
+  const lineValues = castLines();
+  const hexagramNumber = getPrimaryHexagram(lineValues);
+  const changingLinePositions = getChangingLines(lineValues);
+  const transformedHexagramNumber = getTransformedHexagram(lineValues);
 
-  const hexagramTitle = `${hexagram.chineseName} · ${hexagram.title}`;
+  const primary = getHexagram(hexagramNumber);
+  const transformed = transformedHexagramNumber
+    ? getHexagram(transformedHexagramNumber)
+    : null;
 
-  let interpretation: string;
-
-  try {
-    interpretation = await generateInterpretation(trimmed, {
-      number: hexagram.number,
-      title: hexagramTitle,
-      judgment: hexagram.judgment,
-    });
-  } catch (error) {
-    console.error("OpenAI generation failed:", error);
-    interpretation = buildFallbackInterpretation(hexagram);
-  }
+  const interpretation = await generateInterpretation({
+    question: trimmed,
+    primaryHexagram: {
+      number: primary.number,
+      title: toHexagramTitle(primary),
+      judgment: primary.judgment,
+    },
+    transformedHexagram: transformed
+      ? {
+          number: transformed.number,
+          title: toHexagramTitle(transformed),
+          judgment: transformed.judgment,
+        }
+      : null,
+    changingLines: changingLinePositions,
+  });
 
   return prisma.reading.create({
     data: {
       userId,
       question: trimmed,
       hexagram: hexagramNumber,
-      changing: null,
+      lineValues: serializeLineValues(lineValues),
+      changingLines: serializeChangingLines(changingLinePositions),
+      transformedHexagram: transformedHexagramNumber,
       interpretation,
     },
   });

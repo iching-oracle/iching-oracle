@@ -44,6 +44,24 @@ export async function Navbar() {
               >
                 Dashboard
               </Link>
+              <Link
+                href="/history"
+                className="hidden items-center gap-1.5 text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-amber-gold sm:inline-flex"
+              >
+                <svg
+                  className="h-3.5 w-3.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  aria-hidden
+                >
+                  <path d="M12 7v14" />
+                  <path d="M5.5 4.5A2.5 2.5 0 0 0 3 7v13h9" />
+                  <path d="M18.5 4.5A2.5 2.5 0 0 1 21 7v13h-9" />
+                </svg>
+                History
+              </Link>
               <div className="flex items-center gap-2 sm:gap-3">
                 {user.image ? (
                   <Image

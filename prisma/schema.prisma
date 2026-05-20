@@ -17,7 +17,7 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  // Reserved for future Stripe subscriptions
+  premiumUntil         DateTime?
   stripeCustomerId     String? @unique
   stripeSubscriptionId String?
   subscriptionStatus   String? @default("free")
@@ -32,15 +32,17 @@ model Reading {
   userId              String
   question            String
   hexagram            Int
+  primaryHexagramName String?
   lineValues          String
   changingLines       String?
   transformedHexagram Int?
+  finalHexagramName   String?
   interpretation      String   @db.Text
   createdAt           DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId, createdAt])
+  @@index([userId, createdAt(sort: Desc)])
 }
 
 model Account {

@@ -22,7 +22,9 @@ export const authConfig = {
       const isProtected =
         nextUrl.pathname.startsWith("/dashboard") ||
         nextUrl.pathname.startsWith("/reading") ||
-        nextUrl.pathname.startsWith("/readings");
+        nextUrl.pathname.startsWith("/readings") ||
+        nextUrl.pathname.startsWith("/history") ||
+        nextUrl.pathname.startsWith("/payment");
 
       if (isProtected && !isLoggedIn) {
         return false;

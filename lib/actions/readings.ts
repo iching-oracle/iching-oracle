@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { auth } from "@/auth";
+import { deleteReadingForUser } from "@/lib/readings/history";
 import { saveReadingForUser } from "@/lib/readings/save-reading";
 import { createReadingSchema } from "@/lib/validations/reading";
 import { prisma } from "@/lib/prisma";
@@ -49,6 +50,7 @@ export async function createReading(
     const reading = await saveReadingForUser(userId, parsed.data.question);
 
     revalidatePath("/dashboard");
+    revalidatePath("/history");
     redirect(`/reading/${reading.id}`);
   } catch (error) {
     if (isRedirectError(error)) {
@@ -57,5 +59,35 @@ export async function createReading(
 
     console.error("[createReading]", error);
     return { error: "Failed to create reading. Please try again." };
+  }
+}
+
+export type DeleteReadingResult = {
+  error?: string;
+  success?: boolean;
+};
+
+export async function deleteReading(
+  readingId: string,
+): Promise<DeleteReadingResult> {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return { error: "You must be signed in to delete a reading." };
+  }
+
+  try {
+    const deleted = await deleteReadingForUser(session.user.id, readingId);
+
+    if (!deleted) {
+      return { error: "Reading not found." };
+    }
+
+    revalidatePath("/history");
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (error) {
+    console.error("[deleteReading]", error);
+    return { error: "Failed to delete reading. Please try again." };
   }
 }

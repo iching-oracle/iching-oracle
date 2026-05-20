@@ -15,6 +15,7 @@ export async function getDashboardData(
       id: true,
       name: true,
       email: true,
+      premiumUntil: true,
     },
   });
 

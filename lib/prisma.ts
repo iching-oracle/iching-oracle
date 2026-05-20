@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 
 /** Bump when the Prisma schema changes to refresh the dev singleton. */
-const PRISMA_SCHEMA_VERSION = "20260520120000_casting_engine";
+const PRISMA_SCHEMA_VERSION = "20260520160000_reading_history";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;

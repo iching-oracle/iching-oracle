@@ -11,6 +11,7 @@ export type DashboardUser = {
   id: string;
   name: string | null;
   email: string;
+  premiumUntil: Date | null;
 };
 
 export type DashboardData = {

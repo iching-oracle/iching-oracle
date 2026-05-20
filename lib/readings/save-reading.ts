@@ -49,9 +49,11 @@ export async function saveReadingForUser(userId: string, question: string) {
       userId,
       question: trimmed,
       hexagram: hexagramNumber,
+      primaryHexagramName: primary.title,
       lineValues: serializeLineValues(lineValues),
       changingLines: serializeChangingLines(changingLinePositions),
       transformedHexagram: transformedHexagramNumber,
+      finalHexagramName: transformed?.title ?? null,
       interpretation,
     },
   });

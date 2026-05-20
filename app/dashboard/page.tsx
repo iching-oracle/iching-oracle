@@ -1,9 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { ReadingList } from "@/components/dashboard/reading-list";
+import { ReadingCard } from "@/components/ReadingCard";
+import { HistoryEmptyState } from "@/components/HistoryEmptyState";
 import { handleSignOut } from "@/lib/actions/auth";
+import { PricingCard } from "@/components/PricingCard";
 import { getDashboardData } from "@/lib/dashboard/get-dashboard-data";
+import { getRecentReadingHistory } from "@/lib/readings/history";
+import { formatPremiumExpiry, hasPremiumAccess } from "@/lib/premium";
 
 export const metadata = {
   title: "Dashboard | ICHING-ORACLE",
@@ -23,8 +27,12 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const { user, readings } = data;
+  const recentHistory = await getRecentReadingHistory(session.user.id, 3);
+
+  const { user } = data;
   const displayName = user.name?.trim() || "Seeker";
+  const isPremium = hasPremiumAccess(user);
+  const premiumExpiry = formatPremiumExpiry(user.premiumUntil);
 
   return (
     <div className="relative mx-auto w-full max-w-4xl px-6 py-12 sm:px-10 sm:py-16">
@@ -47,9 +55,14 @@ export default async function DashboardPage() {
               Welcome, {displayName}
             </h1>
           </div>
-          <Link href="/reading/new" className="auth-btn-primary shrink-0 text-center">
-            New Reading
-          </Link>
+          <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+            <Link href="/history" className="auth-btn-secondary text-center">
+              History
+            </Link>
+            <Link href="/reading/new" className="auth-btn-primary text-center">
+              New Reading
+            </Link>
+          </div>
         </div>
 
         <section className="rounded-2xl border border-white/10 bg-zen-surface/70 p-6 backdrop-blur-xl sm:p-8">
@@ -68,6 +81,12 @@ export default async function DashboardPage() {
               <dd className="mt-1 text-lg text-foreground">{user.email}</dd>
             </div>
           </dl>
+          {isPremium ? (
+            <p className="mt-4 rounded-lg border border-cosmic-violet/30 bg-cosmic-purple/15 px-3 py-2 text-sm text-cosmic-violet">
+              Premium active
+              {premiumExpiry ? ` until ${premiumExpiry}` : ""}
+            </p>
+          ) : null}
           <form action={handleSignOut} className="mt-6 border-t border-white/10 pt-6">
             <button
               type="submit"
@@ -78,14 +97,41 @@ export default async function DashboardPage() {
           </form>
         </section>
 
+        {!isPremium ? (
+          <section>
+            <PricingCard />
+          </section>
+        ) : null}
+
         <section>
-          <h2 className="mb-4 font-serif text-xl font-semibold text-foreground">
-            Recent readings
-          </h2>
-          <p className="mb-4 text-sm text-zen-muted">
-            Your 10 most recent consultations.
-          </p>
-          <ReadingList readings={readings} />
+          <div className="mb-4 flex items-end justify-between gap-4">
+            <div>
+              <h2 className="font-serif text-xl font-semibold text-foreground">
+                Recent readings
+              </h2>
+              <p className="mt-1 text-sm text-zen-muted">
+                Your latest consultations — saved automatically.
+              </p>
+            </div>
+            <Link
+              href="/history"
+              className="shrink-0 text-sm font-medium text-amber-gold transition-colors hover:text-amber-glow"
+            >
+              View all history →
+            </Link>
+          </div>
+
+          {recentHistory.length === 0 ? (
+            <HistoryEmptyState />
+          ) : (
+            <ul className="space-y-3">
+              {recentHistory.map((reading) => (
+                <li key={reading.id}>
+                  <ReadingCard reading={reading} />
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
 
         <Link

@@ -7,11 +7,13 @@ import { deleteReading } from "@/lib/actions/readings";
 type DeleteReadingDialogProps = {
   readingId: string;
   questionPreview: string;
+  redirectTo?: string;
 };
 
 export function DeleteReadingDialog({
   readingId,
   questionPreview,
+  redirectTo = "/history",
 }: DeleteReadingDialogProps) {
   const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -36,7 +38,7 @@ export function DeleteReadingDialog({
         return;
       }
       dialogRef.current?.close();
-      router.push("/readings");
+      router.push(redirectTo);
       router.refresh();
     });
   }

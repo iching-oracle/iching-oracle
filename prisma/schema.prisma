@@ -50,6 +50,7 @@ model Reading {
   summary                String?  @db.Text
   category               String   @default("general")
   isFavorite             Boolean  @default(false)
+  notes                  String?  @db.Text
   language               String   @default("de")
   createdAt              DateTime @default(now())
 

@@ -63,8 +63,8 @@ export default async function DashboardPage() {
             </h1>
           </div>
           <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
-            <Link href="/readings" className="auth-btn-secondary text-center">
-              Journal
+            <Link href="/history" className="auth-btn-secondary text-center">
+              History
             </Link>
             <Link href="/reading/new" className="auth-btn-primary text-center">
               New Reading
@@ -121,10 +121,10 @@ export default async function DashboardPage() {
               </p>
             </div>
             <Link
-              href="/readings"
+              href="/history"
               className="shrink-0 text-sm font-medium text-amber-gold transition-colors hover:text-amber-glow"
             >
-              View full journal →
+              View full history →
             </Link>
           </div>
 

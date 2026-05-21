@@ -53,7 +53,7 @@ export async function createReading(
     revalidatePath("/dashboard");
     revalidatePath("/readings");
     revalidatePath("/history");
-    redirect(`/readings/${reading.id}`);
+    redirect(`/history/${reading.id}`);
   } catch (error) {
     if (isRedirectError(error)) {
       throw error;

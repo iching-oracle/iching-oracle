@@ -11,11 +11,13 @@ import type {
   ReadingViewMode,
 } from "@/types/reading-journal";
 
+import type { ReadingHistoryPeriod } from "@/types/reading-journal";
+
 export type FilterState = {
   q: string;
   category: ReadingCategory | "all";
   mode: InterpretationMode | "all";
-  favorite: boolean;
+  period: ReadingHistoryPeriod;
   sort: ReadingSortOrder;
   view: ReadingViewMode;
 };
@@ -34,21 +36,6 @@ export function ReadingFilters({
   return (
     <div className="space-y-4 rounded-2xl border border-white/10 bg-zen-surface/60 p-4 backdrop-blur-xl sm:p-5">
       <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={() => {
-            onChange({ ...filters, favorite: !filters.favorite });
-            onApply();
-          }}
-          className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
-            filters.favorite
-              ? "border-amber-gold/50 bg-amber-gold/15 text-amber-glow"
-              : "border-white/10 text-zen-muted hover:border-amber-gold/30"
-          }`}
-        >
-          Favorites only
-        </button>
-
         <div className="flex rounded-full border border-white/10 p-0.5">
           {(["grid", "timeline"] as const).map((view) => (
             <button

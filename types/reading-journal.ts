@@ -13,6 +13,8 @@ export type ReadingSortOrder = "desc" | "asc";
 
 export type ReadingViewMode = "grid" | "timeline";
 
+export type ReadingHistoryPeriod = "all" | "favorites" | "week" | "month";
+
 export type JournalReadingItem = {
   id: string;
   question: string;
@@ -26,6 +28,7 @@ export type JournalReadingItem = {
   category: ReadingCategory;
   interpretationMode: InterpretationMode;
   isFavorite: boolean;
+  notes: string | null;
   createdAt: Date;
 };
 
@@ -35,6 +38,7 @@ export type ReadingJournalQuery = {
   mode?: InterpretationMode | "all";
   view?: ReadingViewMode;
   favorite?: boolean;
+  period?: ReadingHistoryPeriod;
   sort?: ReadingSortOrder;
   page?: number;
   pageSize?: number;

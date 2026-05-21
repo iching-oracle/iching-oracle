@@ -6,11 +6,13 @@ import { regenerateReadingInterpretation } from "@/lib/actions/readings";
 type ReadingDetailActionsProps = {
   readingId: string;
   interpretation: string;
+  sharePath?: string;
 };
 
 export function ReadingDetailActions({
   readingId,
   interpretation,
+  sharePath,
 }: ReadingDetailActionsProps) {
   const [copied, setCopied] = useState(false);
   const [regenError, setRegenError] = useState<string | null>(null);
@@ -27,7 +29,7 @@ export function ReadingDetailActions({
   }, [interpretation]);
 
   const handleShare = useCallback(async () => {
-    const url = `${window.location.origin}/readings/${readingId}`;
+    const url = `${window.location.origin}${sharePath ?? `/history/${readingId}`}`;
     if (navigator.share) {
       try {
         await navigator.share({
@@ -40,7 +42,7 @@ export function ReadingDetailActions({
       }
     }
     await handleCopy();
-  }, [readingId, handleCopy]);
+  }, [readingId, sharePath, handleCopy]);
 
   function handleRegenerate() {
     startTransition(async () => {

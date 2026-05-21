@@ -12,9 +12,16 @@ type ReadingCardProps = {
   reading: JournalReadingItem;
   locale?: string;
   index?: number;
+  detailBase?: string;
 };
 
-export function ReadingCard({ reading, locale, index = 0 }: ReadingCardProps) {
+export function ReadingCard({
+  reading,
+  locale,
+  index = 0,
+  detailBase = "/history",
+}: ReadingCardProps) {
+  const detailHref = `${detailBase}/${reading.id}`;
   const changingLabel = formatChangingLinesList(reading.changingLines);
 
   return (
@@ -23,14 +30,20 @@ export function ReadingCard({ reading, locale, index = 0 }: ReadingCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.05 }}
     >
-      <article className="group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-br from-zen-elevated/70 via-zen-surface/50 to-cosmic-deep/20 p-5 backdrop-blur-xl transition-all duration-300 hover:border-amber-gold/35 hover:shadow-[0_0_40px_-12px_rgba(197,160,89,0.35)]">
+      <article className="group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-br from-zen-elevated/70 via-zen-surface/50 to-cosmic-deep/20 p-5 pr-12 backdrop-blur-xl transition-all duration-300 hover:border-amber-gold/35 hover:shadow-[0_0_40px_-12px_rgba(197,160,89,0.35)]">
         <div
           className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-amber-gold/10 blur-2xl transition-opacity group-hover:opacity-100 opacity-0"
           aria-hidden
         />
 
-        <div className="relative flex gap-3">
-          <div className="min-w-0 flex-1">
+        <FavoriteButton
+          readingId={reading.id}
+          initialFavorite={reading.isFavorite}
+          variant="corner"
+          className="absolute right-4 top-4 z-10"
+        />
+
+        <div className="relative min-w-0">
             <div className="mb-2 flex flex-wrap items-center gap-2">
               <span className="rounded-full border border-cosmic-violet/30 bg-cosmic-purple/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-cosmic-violet">
                 {getCategoryLabel(reading.category)}
@@ -40,7 +53,7 @@ export function ReadingCard({ reading, locale, index = 0 }: ReadingCardProps) {
               </span>
             </div>
 
-            <Link href={`/readings/${reading.id}`} className="block">
+            <Link href={detailHref} className="block">
               <h3 className="line-clamp-2 font-medium leading-snug text-foreground transition-colors group-hover:text-amber-glow">
                 {reading.question}
               </h3>
@@ -78,12 +91,13 @@ export function ReadingCard({ reading, locale, index = 0 }: ReadingCardProps) {
             >
               {formatDate(reading.createdAt, locale)}
             </time>
-          </div>
 
-          <FavoriteButton
-            readingId={reading.id}
-            initialFavorite={reading.isFavorite}
-          />
+            <Link
+              href={detailHref}
+              className="auth-btn-secondary mt-4 inline-flex text-xs"
+            >
+              Open reading
+            </Link>
         </div>
       </article>
     </motion.li>

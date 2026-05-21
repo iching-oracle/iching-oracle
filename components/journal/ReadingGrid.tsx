@@ -4,9 +4,14 @@ import type { JournalReadingItem } from "@/types/reading-journal";
 type ReadingGridProps = {
   readings: JournalReadingItem[];
   locale?: string;
+  detailBase?: string;
 };
 
-export function ReadingGrid({ readings, locale }: ReadingGridProps) {
+export function ReadingGrid({
+  readings,
+  locale,
+  detailBase = "/history",
+}: ReadingGridProps) {
   return (
     <ul className="grid gap-4 sm:grid-cols-2">
       {readings.map((reading, index) => (
@@ -15,6 +20,7 @@ export function ReadingGrid({ readings, locale }: ReadingGridProps) {
           reading={reading}
           locale={locale}
           index={index}
+          detailBase={detailBase}
         />
       ))}
     </ul>

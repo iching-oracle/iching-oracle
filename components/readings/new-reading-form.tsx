@@ -32,7 +32,7 @@ export function NewReadingForm() {
       }
 
       if (data.reading?.id) {
-        router.push(`/readings/${data.reading.id}`);
+        router.push(`/history/${data.reading.id}`);
         router.refresh();
       }
     } catch {

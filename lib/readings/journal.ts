@@ -9,9 +9,11 @@ import { prisma } from "@/lib/prisma";
 import type {
   JournalReadingItem,
   ReadingCategory,
+  ReadingHistoryPeriod,
   ReadingJournalQuery,
   ReadingJournalResult,
 } from "@/types/reading-journal";
+import { sanitizeReadingNotes } from "@/lib/validations/reading-notes";
 import type { Prisma, Reading } from "@prisma/client";
 
 export const JOURNAL_PAGE_SIZE = 12;
@@ -51,8 +53,54 @@ export function toJournalReadingItem(reading: Reading): JournalReadingItem {
     category,
     interpretationMode: mode,
     isFavorite: reading.isFavorite,
+    notes: reading.notes,
     createdAt: reading.createdAt,
   };
+}
+
+function startOfPeriod(period: "week" | "month"): Date {
+  const now = new Date();
+  if (period === "week") {
+    const start = new Date(now);
+    start.setDate(start.getDate() - 7);
+    start.setHours(0, 0, 0, 0);
+    return start;
+  }
+  const start = new Date(now);
+  start.setMonth(start.getMonth() - 1);
+  start.setHours(0, 0, 0, 0);
+  return start;
+}
+
+function buildSearchOr(queryText: string): Prisma.ReadingWhereInput[] {
+  const q = queryText.trim();
+  const conditions: Prisma.ReadingWhereInput[] = [
+    { question: { contains: q, mode: "insensitive" } },
+    { interpretation: { contains: q, mode: "insensitive" } },
+    { summary: { contains: q, mode: "insensitive" } },
+    { primaryHexagramName: { contains: q, mode: "insensitive" } },
+    { finalHexagramName: { contains: q, mode: "insensitive" } },
+  ];
+
+  const numMatch = q.replace(/^#/, "").match(/^\d{1,2}$/);
+  if (numMatch) {
+    const num = parseInt(numMatch[0], 10);
+    if (num >= 1 && num <= 64) {
+      conditions.push({ hexagram: num });
+      conditions.push({ transformedHexagram: num });
+    }
+  }
+
+  return conditions;
+}
+
+function isHistoryPeriod(value: string): value is ReadingHistoryPeriod {
+  return (
+    value === "all" ||
+    value === "favorites" ||
+    value === "week" ||
+    value === "month"
+  );
 }
 
 function buildWhere(
@@ -62,7 +110,18 @@ function buildWhere(
   const where: Prisma.ReadingWhereInput = { userId };
 
   if (query.q?.trim()) {
-    where.question = { contains: query.q.trim(), mode: "insensitive" };
+    where.OR = buildSearchOr(query.q);
+  }
+
+  const period =
+    query.period && isHistoryPeriod(query.period) ? query.period : "all";
+
+  if (period === "favorites") {
+    where.isFavorite = true;
+  } else if (period === "week") {
+    where.createdAt = { gte: startOfPeriod("week") };
+  } else if (period === "month") {
+    where.createdAt = { gte: startOfPeriod("month") };
   }
 
   if (query.category && query.category !== "all" && isReadingCategory(query.category)) {
@@ -142,6 +201,30 @@ export async function toggleReadingFavorite(
   });
 
   return { isFavorite: updated.isFavorite };
+}
+
+export async function updateReadingNotes(
+  userId: string,
+  readingId: string,
+  notes: string,
+): Promise<{ notes: string | null } | null> {
+  const reading = await prisma.reading.findFirst({
+    where: { id: readingId, userId },
+    select: { id: true },
+  });
+
+  if (!reading) return null;
+
+  const sanitized = sanitizeReadingNotes(notes);
+  const value = sanitized.length > 0 ? sanitized : null;
+
+  const updated = await prisma.reading.update({
+    where: { id: readingId },
+    data: { notes: value },
+    select: { notes: true },
+  });
+
+  return { notes: updated.notes };
 }
 
 export { detectReadingCategory };

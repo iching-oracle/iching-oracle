@@ -41,9 +41,14 @@ function groupByMonth(readings: JournalReadingItem[]): TimelineGroup[] {
 type ReadingTimelineProps = {
   readings: JournalReadingItem[];
   locale?: string;
+  detailBase?: string;
 };
 
-export function ReadingTimeline({ readings, locale }: ReadingTimelineProps) {
+export function ReadingTimeline({
+  readings,
+  locale,
+  detailBase = "/history",
+}: ReadingTimelineProps) {
   const groups = groupByMonth(readings);
 
   return (
@@ -88,7 +93,7 @@ export function ReadingTimeline({ readings, locale }: ReadingTimelineProps) {
                       </time>
                     </div>
                     <Link
-                      href={`/readings/${reading.id}`}
+                      href={`${detailBase}/${reading.id}`}
                       className="font-medium text-foreground hover:text-amber-glow"
                     >
                       {reading.question}
@@ -106,6 +111,7 @@ export function ReadingTimeline({ readings, locale }: ReadingTimelineProps) {
                   <FavoriteButton
                     readingId={reading.id}
                     initialFavorite={reading.isFavorite}
+                    variant="corner"
                   />
                 </div>
               </motion.li>

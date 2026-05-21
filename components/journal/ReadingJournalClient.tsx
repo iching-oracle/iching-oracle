@@ -3,18 +3,39 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { JournalEmptyState } from "@/components/journal/JournalEmptyState";
+import { HistoryPeriodTabs } from "@/components/journal/HistoryPeriodTabs";
 import { ReadingFilters, type FilterState } from "@/components/journal/ReadingFilters";
 import { ReadingGrid } from "@/components/journal/ReadingGrid";
 import { ReadingSearchBar } from "@/components/journal/ReadingSearchBar";
 import { ReadingTimeline } from "@/components/journal/ReadingTimeline";
 import { isInterpretationMode } from "@/lib/interpretation/modes";
 import { isReadingCategory } from "@/lib/readings/category";
-import type { ReadingJournalResult } from "@/types/reading-journal";
+import type {
+  ReadingHistoryPeriod,
+  ReadingJournalResult,
+} from "@/types/reading-journal";
 
 type ReadingJournalClientProps = {
   initialData: ReadingJournalResult;
   locale?: string;
+  basePath?: string;
 };
+
+function parsePeriod(
+  params: URLSearchParams,
+): ReadingHistoryPeriod {
+  const period = params.get("period");
+  if (
+    period === "favorites" ||
+    period === "week" ||
+    period === "month" ||
+    period === "all"
+  ) {
+    return period;
+  }
+  if (params.get("favorite") === "true") return "favorites";
+  return "all";
+}
 
 function parseFiltersFromParams(params: URLSearchParams): FilterState {
   const categoryParam = params.get("category") ?? "all";
@@ -24,7 +45,7 @@ function parseFiltersFromParams(params: URLSearchParams): FilterState {
     q: params.get("q") ?? "",
     category: isReadingCategory(categoryParam) ? categoryParam : "all",
     mode: isInterpretationMode(modeParam) ? modeParam : "all",
-    favorite: params.get("favorite") === "true",
+    period: parsePeriod(params),
     sort: params.get("sort") === "asc" ? "asc" : "desc",
     view: params.get("view") === "timeline" ? "timeline" : "grid",
   };
@@ -35,7 +56,7 @@ function buildSearchParams(filters: FilterState, page: number): string {
   if (filters.q.trim()) params.set("q", filters.q.trim());
   if (filters.category !== "all") params.set("category", filters.category);
   if (filters.mode !== "all") params.set("mode", filters.mode);
-  if (filters.favorite) params.set("favorite", "true");
+  if (filters.period !== "all") params.set("period", filters.period);
   if (filters.sort === "asc") params.set("sort", "asc");
   if (filters.view === "timeline") params.set("view", "timeline");
   if (page > 1) params.set("page", String(page));
@@ -45,6 +66,7 @@ function buildSearchParams(filters: FilterState, page: number): string {
 export function ReadingJournalClient({
   initialData,
   locale,
+  basePath = "/history",
 }: ReadingJournalClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -55,7 +77,7 @@ export function ReadingJournalClient({
   const applyFilters = useCallback(
     (next: FilterState, page = 1) => {
       const qs = buildSearchParams(next, page);
-      router.push(qs ? `/readings?${qs}` : "/readings");
+      router.push(qs ? `${basePath}?${qs}` : basePath);
     },
     [router],
   );
@@ -64,7 +86,7 @@ export function ReadingJournalClient({
     filters.q.trim() ||
     filters.category !== "all" ||
     filters.mode !== "all" ||
-    filters.favorite;
+    filters.period !== "all";
 
   return (
     <div className="space-y-6">
@@ -72,6 +94,12 @@ export function ReadingJournalClient({
         value={filters.q}
         onChange={(q) => setFilters((f) => ({ ...f, q }))}
         onSubmit={() => applyFilters(filters, 1)}
+      />
+
+      <HistoryPeriodTabs
+        period={filters.period}
+        onChange={(period) => setFilters((f) => ({ ...f, period }))}
+        onApply={(period) => applyFilters({ ...filters, period }, 1)}
       />
 
       <ReadingFilters
@@ -83,9 +111,17 @@ export function ReadingJournalClient({
       {initialData.items.length === 0 ? (
         <JournalEmptyState filtered={Boolean(hasActiveFilters)} />
       ) : filters.view === "timeline" ? (
-        <ReadingTimeline readings={initialData.items} locale={locale} />
+        <ReadingTimeline
+          readings={initialData.items}
+          locale={locale}
+          detailBase={basePath}
+        />
       ) : (
-        <ReadingGrid readings={initialData.items} locale={locale} />
+        <ReadingGrid
+          readings={initialData.items}
+          locale={locale}
+          detailBase={basePath}
+        />
       )}
 
       {initialData.totalPages > 1 ? (

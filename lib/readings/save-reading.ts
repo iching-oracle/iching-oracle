@@ -7,21 +7,19 @@ import {
   serializeLineValues,
 } from "@/lib/iching";
 import { getHexagram } from "@/lib/hexagrams";
+import { INTERPRETATION_UNAVAILABLE_MESSAGE } from "@/lib/openai";
+import { buildOracleContextFromCast } from "@/lib/interpretation/context";
+import { generateAdvancedInterpretation } from "@/lib/interpretation/generate";
 import {
-  generateInterpretation,
-  INTERPRETATION_UNAVAILABLE_MESSAGE,
-  type InterpretationInput,
-} from "@/lib/openai";
+  parseInterpretationSections,
+  serializeInterpretation,
+} from "@/lib/interpretation/parse";
 import {
   getFreeInterpretationPlaceholder,
   hasPremiumAccess,
 } from "@/lib/premium";
 import { normalizeLanguageCode } from "@/lib/i18n/languages";
 import { prisma } from "@/lib/prisma";
-
-function toHexagramTitle(hexagram: ReturnType<typeof getHexagram>): string {
-  return `${hexagram.chineseName} · ${hexagram.title}`;
-}
 
 /** Cast coins, interpret, and persist a new reading (always saves, even if AI fails). */
 export async function saveReadingForUser(userId: string, question: string) {
@@ -56,34 +54,31 @@ export async function saveReadingForUser(userId: string, question: string) {
   let isPremiumReading = false;
 
   if (isPremium) {
-    const interpretationInput: InterpretationInput = {
-      question: trimmed,
-      language,
-      primaryHexagram: {
-        number: primary.number,
-        title: toHexagramTitle(primary),
-        judgment: primary.judgment,
-      },
-      transformedHexagram: transformed
-        ? {
-            number: transformed.number,
-            title: toHexagramTitle(transformed),
-            judgment: transformed.judgment,
-          }
-        : null,
-      changingLines: changingLinePositions,
-    };
-
-    try {
-      const result = await generateInterpretation(interpretationInput);
-      interpretation = result.text;
-      interpretationPending = result.pending;
-      isPremiumReading = !result.pending;
-    } catch (error) {
-      console.error("[readings] AI interpretation failed", error);
+    if (!process.env.DEEPSEEK_API_KEY?.trim()) {
       interpretation = INTERPRETATION_UNAVAILABLE_MESSAGE;
       interpretationPending = true;
-      isPremiumReading = false;
+    } else {
+      try {
+        const context = buildOracleContextFromCast({
+          question: trimmed,
+          language,
+          mode: "traditional",
+          hexagramNumber,
+          transformedHexagramNumber,
+          lineValues,
+          changingPositions: changingLinePositions,
+        });
+        const { raw } = await generateAdvancedInterpretation(context);
+        const parsed = parseInterpretationSections(raw, context.mode);
+        interpretation = serializeInterpretation(parsed);
+        interpretationPending = false;
+        isPremiumReading = true;
+        console.log("[readings] Advanced AI interpretation generated.");
+      } catch (error) {
+        console.error("[readings] Advanced AI interpretation failed", error);
+        interpretation = INTERPRETATION_UNAVAILABLE_MESSAGE;
+        interpretationPending = true;
+      }
     }
   } else {
     console.log("[readings] Skipping AI generation for non-premium user.");

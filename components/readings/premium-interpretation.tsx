@@ -1,4 +1,5 @@
 import { InterpretationPendingNotice } from "@/components/readings/interpretation-pending-notice";
+import { AIInsightPanel } from "@/components/interpretation/AIInsightPanel";
 import { PricingCard } from "@/components/PricingCard";
 import {
   getInterpretationPreview,
@@ -6,7 +7,7 @@ import {
   isPremiumInterpretationPreview,
   type PremiumUserFields,
 } from "@/lib/premium";
-
+import { isAdvancedInterpretation } from "@/lib/interpretation/parse";
 type PremiumInterpretationProps = {
   user: PremiumUserFields;
   interpretation: string;
@@ -29,6 +30,33 @@ export function PremiumInterpretation({
     isPremiumInterpretationPreview(interpretation) || !isPremiumReading;
 
   if (isPremium) {
+    const useAdvancedPanel =
+      isPremiumReading ||
+      interpretationPending ||
+      isAdvancedInterpretation(interpretation);
+
+    if (useAdvancedPanel) {
+      return (
+        <div className="mt-3">
+          {interpretationPending && !isAdvancedInterpretation(interpretation) ? (
+            <div className="mb-4">
+              <InterpretationPendingNotice />
+            </div>
+          ) : null}
+          <AIInsightPanel
+            readingId={readingId}
+            savedInterpretation={interpretation}
+            interpretationPending={interpretationPending}
+            isPremiumReading={isPremiumReading}
+            autoStream={
+              interpretationPending &&
+              !isAdvancedInterpretation(interpretation)
+            }
+          />
+        </div>
+      );
+    }
+
     return (
       <div className="mt-3 space-y-3">
         {interpretationPending ? <InterpretationPendingNotice /> : null}

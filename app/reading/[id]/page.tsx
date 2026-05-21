@@ -103,7 +103,7 @@ export default async function ReadingPage({ params }: PageProps) {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-white/10 bg-zen-surface/70 p-6 backdrop-blur-xl">
+        <section className="rounded-2xl border border-white/10 bg-zen-surface/70 p-6 backdrop-blur-xl sm:p-8">
           <h2 className="text-xs font-medium uppercase tracking-widest text-zen-muted">
             Interpretation
           </h2>

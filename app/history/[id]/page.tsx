@@ -12,6 +12,8 @@ import { ReadingNotes } from "@/components/journal/ReadingNotes";
 import { parseChangingLines } from "@/lib/iching";
 import { isInterpretationMode } from "@/lib/interpretation/modes";
 import { isAdvancedInterpretation } from "@/lib/interpretation/parse";
+import { FollowUpChat } from "@/components/chat/FollowUpChat";
+import { getFollowUpChatState } from "@/lib/chat/conversation";
 import { getJournalReadingById } from "@/lib/readings/journal";
 import { isLegacyPlaceholderInterpretation } from "@/lib/openai";
 import { prisma } from "@/lib/prisma";
@@ -40,10 +42,13 @@ export default async function HistoryReadingDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const dbUser = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { premiumUntil: true },
-  });
+  const [dbUser, chatState] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { premiumUntil: true },
+    }),
+    getFollowUpChatState(session.user.id, id),
+  ]);
 
   const { journal } = record;
   const changingLinePositions = parseChangingLines(record.changingLines);
@@ -123,6 +128,14 @@ export default async function HistoryReadingDetailPage({ params }: PageProps) {
         </section>
 
         <ReadingNotes readingId={id} initialNotes={record.notes} />
+
+        <FollowUpChat
+          readingId={id}
+          initialMessages={chatState?.messages ?? []}
+          initialCanSend={chatState?.canSend ?? true}
+          initialMessageLimit={chatState?.messageLimit ?? 3}
+          initialUserMessageCount={chatState?.userMessageCount ?? 0}
+        />
 
         <div className="flex flex-col gap-4 border-t border-white/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
           <Link href="/reading/new" className="auth-btn-primary inline-flex text-center">

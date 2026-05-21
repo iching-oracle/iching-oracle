@@ -50,6 +50,7 @@ export type ReadingJournalResult = {
   page: number;
   pageSize: number;
   totalPages: number;
+  historyLimited?: boolean;
 };
 
 export const READING_CATEGORIES: Array<{

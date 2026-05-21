@@ -7,11 +7,13 @@ import { auth } from "@/auth";
 import { deleteReadingForUser } from "@/lib/readings/history";
 import { regenerateInterpretationForReading } from "@/lib/readings/regenerate-interpretation";
 import { saveReadingForUser } from "@/lib/readings/save-reading";
+import { SUBSCRIPTION_ERROR_CODES } from "@/types/subscription";
 import { createReadingSchema } from "@/lib/validations/reading";
 import { prisma } from "@/lib/prisma";
 
 export type CreateReadingState = {
   error?: string;
+  code?: string;
 };
 
 export async function createReading(
@@ -60,7 +62,16 @@ export async function createReading(
     }
 
     console.error("[createReading]", error);
-    return { error: "Failed to create reading. Please try again." };
+    const message =
+      error instanceof Error ? error.message : "Failed to create reading.";
+    const isLimit =
+      message.includes("readings per day") ||
+      message.includes("Upgrade to Premium");
+
+    return {
+      error: message,
+      code: isLimit ? SUBSCRIPTION_ERROR_CODES.DAILY_LIMIT : undefined,
+    };
   }
 }
 

@@ -6,6 +6,10 @@ import { isInterpretationMode } from "@/lib/interpretation/modes";
 import { detectReadingCategory, isReadingCategory } from "@/lib/readings/category";
 import { extractReadingSummary } from "@/lib/readings/summary";
 import { prisma } from "@/lib/prisma";
+import {
+  FREE_HISTORY_MAX_ITEMS,
+  isPremiumUser,
+} from "@/lib/subscription";
 import type {
   JournalReadingItem,
   ReadingCategory,
@@ -144,9 +148,26 @@ export async function queryReadingsForUser(
   query: ReadingJournalQuery = {},
 ): Promise<ReadingJournalResult> {
   const pageSize = query.pageSize ?? JOURNAL_PAGE_SIZE;
-  const page = Math.max(1, query.page ?? 1);
+  let page = Math.max(1, query.page ?? 1);
   const sort = query.sort === "asc" ? "asc" : "desc";
   const where = buildWhere(userId, query);
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      premiumUntil: true,
+      subscriptionStatus: true,
+      subscriptionCurrentPeriodEnd: true,
+    },
+  });
+
+  const premium = user ? isPremiumUser(user) : false;
+  const historyLimited = !premium;
+
+  if (historyLimited) {
+    const maxPage = Math.max(1, Math.ceil(FREE_HISTORY_MAX_ITEMS / pageSize));
+    page = Math.min(page, maxPage);
+  }
 
   const [total, readings] = await Promise.all([
     prisma.reading.count({ where }),
@@ -154,16 +175,23 @@ export async function queryReadingsForUser(
       where,
       orderBy: { createdAt: sort },
       skip: (page - 1) * pageSize,
-      take: pageSize,
+      take: historyLimited
+        ? Math.min(pageSize, FREE_HISTORY_MAX_ITEMS)
+        : pageSize,
     }),
   ]);
 
+  const cappedTotal = historyLimited
+    ? Math.min(total, FREE_HISTORY_MAX_ITEMS)
+    : total;
+
   return {
     items: readings.map(toJournalReadingItem),
-    total,
+    total: cappedTotal,
     page,
     pageSize,
-    totalPages: Math.max(1, Math.ceil(total / pageSize)),
+    totalPages: Math.max(1, Math.ceil(cappedTotal / pageSize)),
+    historyLimited,
   };
 }
 

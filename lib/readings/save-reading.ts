@@ -18,6 +18,7 @@ import {
   getFreeInterpretationPlaceholder,
   hasPremiumAccess,
 } from "@/lib/premium";
+import { assertCanCreateReading } from "@/lib/subscription";
 import { normalizeLanguageCode } from "@/lib/i18n/languages";
 import { detectReadingCategory } from "@/lib/readings/category";
 import { extractReadingSummary } from "@/lib/readings/summary";
@@ -29,15 +30,25 @@ export async function saveReadingForUser(userId: string, question: string) {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { premiumUntil: true, preferredLanguage: true },
+    select: {
+      premiumUntil: true,
+      preferredLanguage: true,
+      subscriptionStatus: true,
+      subscriptionCurrentPeriodEnd: true,
+    },
   });
 
   if (!user) {
     throw new Error("User not found.");
   }
 
+  const canCreate = await assertCanCreateReading(userId);
+  if (!canCreate.ok) {
+    throw new Error(canCreate.message);
+  }
+
   const language = normalizeLanguageCode(user.preferredLanguage);
-  const isPremium = hasPremiumAccess(user.premiumUntil);
+  const isPremium = hasPremiumAccess(user);
 
   console.log("[readings] Premium user:", isPremium);
 

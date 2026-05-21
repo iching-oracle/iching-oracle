@@ -44,7 +44,11 @@ export async function POST(request: Request) {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { premiumUntil: true },
+    select: {
+      premiumUntil: true,
+      subscriptionStatus: true,
+      subscriptionCurrentPeriodEnd: true,
+    },
   });
 
   if (!hasPremiumAccess(user)) {

@@ -3,6 +3,10 @@ import {
   normalizeLanguageCode,
   type SupportedLanguageCode,
 } from "@/lib/i18n/languages";
+import {
+  isPremiumUser,
+  type SubscriptionUserRecord,
+} from "@/lib/subscription";
 
 export type PremiumUserFields = {
   premiumUntil: Date | null;
@@ -54,8 +58,26 @@ export const PREMIUM_INTERPRETATION_PREVIEW =
   FREE_INTERPRETATION_PLACEHOLDERS.en;
 
 export function hasPremiumAccess(
-  userOrPremiumUntil: PremiumUserFields | Date | null | undefined,
+  userOrPremiumUntil:
+    | PremiumUserFields
+    | (PremiumUserFields & {
+        subscriptionStatus?: string | null;
+        subscriptionCurrentPeriodEnd?: Date | null;
+      })
+    | Date
+    | null
+    | undefined,
 ): boolean {
+  if (
+    userOrPremiumUntil &&
+    typeof userOrPremiumUntil === "object" &&
+    !(userOrPremiumUntil instanceof Date) &&
+    ("subscriptionStatus" in userOrPremiumUntil ||
+      "subscriptionCurrentPeriodEnd" in userOrPremiumUntil)
+  ) {
+    return isPremiumUser(userOrPremiumUntil as SubscriptionUserRecord);
+  }
+
   const premiumUntil = resolvePremiumUntil(userOrPremiumUntil);
   if (!premiumUntil) return false;
   return premiumUntil > new Date();

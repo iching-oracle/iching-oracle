@@ -19,10 +19,8 @@ export function StripeCheckoutButton({
     setError(null);
 
     try {
-      const response = await fetch("/api/stripe/checkout", {
+      const response = await fetch("/api/stripe/create-checkout", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(hexagramId ? { hexagramId } : {}),
       });
 
       const data = (await response.json()) as { url?: string; error?: string };
@@ -58,7 +56,7 @@ export function StripeCheckoutButton({
               Redirecting to Stripe…
             </>
           ) : (
-            "Unlock Premium Reading – €9.99"
+            "Upgrade to Premium"
           )}
         </span>
         <span

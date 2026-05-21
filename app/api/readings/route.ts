@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { queryReadingsForUser } from "@/lib/readings/journal";
 import { saveReadingForUser } from "@/lib/readings/save-reading";
+import { SUBSCRIPTION_ERROR_CODES } from "@/types/subscription";
 import { isInterpretationMode } from "@/lib/interpretation/modes";
 import { isReadingCategory } from "@/lib/readings/category";
 import { createReadingSchema } from "@/lib/validations/reading";
@@ -80,9 +81,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ reading }, { status: 201 });
   } catch (error) {
     console.error("[readings POST]", error);
+    const message =
+      error instanceof Error ? error.message : "Failed to create reading";
+    const isLimit = message.includes("readings per day");
     return NextResponse.json(
-      { error: "Failed to create reading" },
-      { status: 500 },
+      {
+        error: message,
+        code: isLimit ? SUBSCRIPTION_ERROR_CODES.DAILY_LIMIT : undefined,
+      },
+      { status: isLimit ? 403 : 500 },
     );
   }
 }

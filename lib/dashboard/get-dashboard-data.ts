@@ -16,6 +16,9 @@ export async function getDashboardData(
       name: true,
       email: true,
       premiumUntil: true,
+      subscriptionStatus: true,
+      subscriptionCurrentPeriodEnd: true,
+      stripeCustomerId: true,
     },
   });
 

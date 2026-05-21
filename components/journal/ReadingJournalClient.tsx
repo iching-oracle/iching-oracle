@@ -108,6 +108,16 @@ export function ReadingJournalClient({
         onApply={() => applyFilters(filters, 1)}
       />
 
+      {initialData.historyLimited ? (
+        <p className="rounded-xl border border-amber-gold/25 bg-amber-gold/10 px-4 py-3 text-sm text-amber-glow">
+          Free plan shows your 30 most recent readings.{" "}
+          <a href="/pricing" className="font-medium underline underline-offset-2">
+            Upgrade to Premium
+          </a>{" "}
+          for full history.
+        </p>
+      ) : null}
+
       {initialData.items.length === 0 ? (
         <JournalEmptyState filtered={Boolean(hasActiveFilters)} />
       ) : filters.view === "timeline" ? (

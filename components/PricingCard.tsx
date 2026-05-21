@@ -26,9 +26,9 @@ export function PricingCard({ hexagramId, compact = false }: PricingCardProps) {
           Premium Reading
         </p>
         <p className="mt-2 font-serif text-4xl font-light text-amber-gold">
-          €9.99
+          Premium
         </p>
-        <p className="mt-1 text-sm text-zen-muted">One-time · 1 year access</p>
+        <p className="mt-1 text-sm text-zen-muted">Monthly subscription · cancel anytime</p>
 
         <ul className={`mt-6 space-y-2.5 text-sm text-foreground/90 ${compact ? "text-xs" : ""}`}>
           <li className="flex items-start gap-2">
@@ -49,7 +49,7 @@ export function PricingCard({ hexagramId, compact = false }: PricingCardProps) {
           </li>
           <li className="flex items-start gap-2">
             <span className="text-amber-gold">✦</span>
-            Unlimited premium access for 1 year
+            Unlimited readings & full journal
           </li>
         </ul>
 

@@ -23,7 +23,11 @@ export async function regenerateInterpretationForReading(
     }),
     prisma.user.findUnique({
       where: { id: userId },
-      select: { premiumUntil: true },
+      select: {
+        premiumUntil: true,
+        subscriptionStatus: true,
+        subscriptionCurrentPeriodEnd: true,
+      },
     }),
   ]);
 

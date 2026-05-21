@@ -19,10 +19,11 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  premiumUntil         DateTime?
-  stripeCustomerId     String? @unique
-  stripeSubscriptionId String?
-  subscriptionStatus   String? @default("free")
+  premiumUntil                  DateTime?
+  stripeCustomerId              String?   @unique
+  stripeSubscriptionId          String?
+  subscriptionStatus            String    @default("free")
+  subscriptionCurrentPeriodEnd  DateTime?
   preferredLanguage    String  @default("de")
 
   accounts Account[]
@@ -113,6 +114,11 @@ model DailyOracle {
   @@unique([visitorKey, date])
   @@index([userId, date(sort: Desc)])
   @@index([visitorKey, date(sort: Desc)])
+}
+
+model ProcessedStripeEvent {
+  id        String   @id
+  createdAt DateTime @default(now())
 }
 
 model VerificationToken {

@@ -10,7 +10,13 @@ import { getDashboardData } from "@/lib/dashboard/get-dashboard-data";
 import { localeForLanguage } from "@/lib/i18n/languages";
 import { getRecentReadingHistory } from "@/lib/readings/history";
 import { getPreferredLanguageForUser } from "@/lib/user/preferred-language";
+import { PremiumBadge } from "@/components/subscription/PremiumBadge";
+import { ManageSubscriptionButton } from "@/components/subscription/ManageSubscriptionButton";
 import { formatPremiumExpiry, hasPremiumAccess } from "@/lib/premium";
+import {
+  FREE_DAILY_READING_LIMIT,
+  getUsageLimitsForUser,
+} from "@/lib/subscription";
 
 export const metadata = {
   title: "Dashboard | ICHING-ORACLE",
@@ -30,9 +36,10 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const [recentHistory, preferredLanguage] = await Promise.all([
+  const [recentHistory, preferredLanguage, usage] = await Promise.all([
     getRecentReadingHistory(session.user.id, 3),
     getPreferredLanguageForUser(session.user.id),
+    getUsageLimitsForUser(session.user.id),
   ]);
   const dateLocale = localeForLanguage(preferredLanguage);
 
@@ -58,9 +65,12 @@ export default async function DashboardPage() {
             <p className="text-xs font-medium uppercase tracking-[0.3em] text-cosmic-violet">
               Dashboard
             </p>
-            <h1 className="mt-2 font-serif text-3xl font-semibold text-foreground sm:text-4xl">
-              Welcome, {displayName}
-            </h1>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="font-serif text-3xl font-semibold text-foreground sm:text-4xl">
+                Welcome, {displayName}
+              </h1>
+              {isPremium ? <PremiumBadge /> : null}
+            </div>
           </div>
           <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
             <Link href="/history" className="auth-btn-secondary text-center">
@@ -89,11 +99,21 @@ export default async function DashboardPage() {
             </div>
           </dl>
           {isPremium ? (
-            <p className="mt-4 rounded-lg border border-cosmic-violet/30 bg-cosmic-purple/15 px-3 py-2 text-sm text-cosmic-violet">
-              Premium active
-              {premiumExpiry ? ` until ${premiumExpiry}` : ""}
+            <div className="mt-4 space-y-3">
+              <p className="rounded-lg border border-cosmic-violet/30 bg-cosmic-purple/15 px-3 py-2 text-sm text-cosmic-violet">
+                Premium active
+                {premiumExpiry ? ` until ${premiumExpiry}` : ""}
+              </p>
+              {user.stripeCustomerId ? (
+                <ManageSubscriptionButton />
+              ) : null}
+            </div>
+          ) : (
+            <p className="mt-4 rounded-lg border border-white/10 bg-zen-elevated/40 px-3 py-2 text-sm text-zen-muted">
+              Free plan · {usage.dailyReadingsUsed}/{FREE_DAILY_READING_LIMIT}{" "}
+              readings used today
             </p>
-          ) : null}
+          )}
           <form action={handleSignOut} className="mt-6 border-t border-white/10 pt-6">
             <button
               type="submit"

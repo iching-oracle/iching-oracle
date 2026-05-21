@@ -1,26 +1,36 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
+import { trackSubscriptionEvent } from "@/lib/analytics/subscription-events";
 import { prisma } from "@/lib/prisma";
+import {
+  markPastDue,
+  revokePremiumForUser,
+  syncFromCheckoutSession,
+  syncUserFromStripeSubscription,
+} from "@/lib/subscription/stripe-sync";
 import { getStripe } from "@/lib/stripe";
 
 export const runtime = "nodejs";
 
-const PREMIUM_DURATION_MS = 365 * 24 * 60 * 60 * 1000;
-
-async function grantPremiumAccess(
-  userId: string,
-  stripeCustomerId: string | null,
-) {
-  const premiumUntil = new Date(Date.now() + PREMIUM_DURATION_MS);
-
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      premiumUntil,
-      ...(stripeCustomerId ? { stripeCustomerId } : {}),
-      subscriptionStatus: "premium",
-    },
+async function isEventProcessed(eventId: string): Promise<boolean> {
+  const existing = await prisma.processedStripeEvent.findUnique({
+    where: { id: eventId },
   });
+  return Boolean(existing);
+}
+
+async function markEventProcessed(eventId: string): Promise<void> {
+  await prisma.processedStripeEvent.create({ data: { id: eventId } });
+}
+
+async function resolveUserIdFromCustomer(
+  customerId: string,
+): Promise<string | null> {
+  const user = await prisma.user.findFirst({
+    where: { stripeCustomerId: customerId },
+    select: { id: true },
+  });
+  return user?.id ?? null;
 }
 
 export async function POST(request: Request) {
@@ -48,27 +58,71 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  try {
-    if (event.type === "checkout.session.completed") {
-      const checkoutSession = event.data.object as Stripe.Checkout.Session;
-      const userId = checkoutSession.metadata?.userId;
+  if (await isEventProcessed(event.id)) {
+    return NextResponse.json({ received: true, duplicate: true });
+  }
 
-      if (!userId) {
-        console.error("[stripe/webhook] Missing userId in session metadata");
-        return NextResponse.json({ received: true });
+  try {
+    switch (event.type) {
+      case "checkout.session.completed": {
+        const checkoutSession = event.data.object as Stripe.Checkout.Session;
+        await syncFromCheckoutSession(checkoutSession);
+        if (checkoutSession.metadata?.userId) {
+          trackSubscriptionEvent("subscription_started", {
+            userId: checkoutSession.metadata.userId,
+          });
+        }
+        break;
       }
 
-      const stripeCustomerId =
-        typeof checkoutSession.customer === "string"
-          ? checkoutSession.customer
-          : null;
+      case "customer.subscription.updated": {
+        const subscription = event.data.object as Stripe.Subscription;
+        await syncUserFromStripeSubscription(subscription);
+        break;
+      }
 
-      await grantPremiumAccess(userId, stripeCustomerId);
+      case "customer.subscription.deleted": {
+        const subscription = event.data.object as Stripe.Subscription;
+        const userId =
+          subscription.metadata?.userId?.trim() ??
+          (await resolveUserIdFromCustomer(
+            typeof subscription.customer === "string"
+              ? subscription.customer
+              : subscription.customer.id,
+          ));
+
+        if (userId) {
+          await revokePremiumForUser(userId);
+          trackSubscriptionEvent("subscription_canceled", { userId });
+        }
+        break;
+      }
+
+      case "invoice.payment_failed": {
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId =
+          typeof invoice.customer === "string"
+            ? invoice.customer
+            : invoice.customer?.id;
+
+        if (customerId) {
+          const userId = await resolveUserIdFromCustomer(customerId);
+          if (userId) {
+            await markPastDue(userId);
+            trackSubscriptionEvent("payment_failed", { userId });
+          }
+        }
+        break;
+      }
+
+      default:
+        break;
     }
 
+    await markEventProcessed(event.id);
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error("[stripe/webhook] Handler error", error);
+    console.error("[stripe/webhook] Handler error", event.type, error);
     return NextResponse.json(
       { error: "Webhook handler failed" },
       { status: 500 },

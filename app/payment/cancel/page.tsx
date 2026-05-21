@@ -15,8 +15,11 @@ export default function PaymentCancelPage() {
           No worries, you can try again anytime.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <Link href="/dashboard" className="auth-btn-primary text-center">
-            Back to dashboard
+          <Link href="/pricing" className="auth-btn-primary text-center">
+            View Premium plans
+          </Link>
+          <Link href="/dashboard" className="auth-btn-secondary text-center">
+            Dashboard
           </Link>
           <Link href="/" className="auth-btn-secondary text-center">
             Home

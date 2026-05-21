@@ -12,6 +12,9 @@ export type DashboardUser = {
   name: string | null;
   email: string;
   premiumUntil: Date | null;
+  subscriptionStatus: string;
+  subscriptionCurrentPeriodEnd: Date | null;
+  stripeCustomerId: string | null;
 };
 
 export type DashboardData = {

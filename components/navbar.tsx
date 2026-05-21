@@ -40,6 +40,12 @@ export async function Navbar() {
             Daily
           </Link>
           <Link
+            href="/pricing"
+            className="hidden text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-amber-gold sm:inline"
+          >
+            Premium
+          </Link>
+          <Link
             href="/#methods"
             className="hidden text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-amber-gold sm:inline"
           >

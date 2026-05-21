@@ -19,6 +19,8 @@ import {
   hasPremiumAccess,
 } from "@/lib/premium";
 import { normalizeLanguageCode } from "@/lib/i18n/languages";
+import { detectReadingCategory } from "@/lib/readings/category";
+import { extractReadingSummary } from "@/lib/readings/summary";
 import { prisma } from "@/lib/prisma";
 
 /** Cast coins, interpret, and persist a new reading (always saves, even if AI fails). */
@@ -87,6 +89,9 @@ export async function saveReadingForUser(userId: string, question: string) {
     isPremiumReading = false;
   }
 
+  const category = detectReadingCategory(trimmed);
+  const summary = extractReadingSummary(interpretation);
+
   return prisma.reading.create({
     data: {
       userId,
@@ -100,6 +105,9 @@ export async function saveReadingForUser(userId: string, question: string) {
       interpretation,
       interpretationPending,
       isPremiumReading,
+      interpretationMode: "traditional",
+      summary,
+      category,
       language,
     },
   });

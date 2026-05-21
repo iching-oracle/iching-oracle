@@ -51,8 +51,9 @@ export async function createReading(
     const reading = await saveReadingForUser(userId, parsed.data.question);
 
     revalidatePath("/dashboard");
+    revalidatePath("/readings");
     revalidatePath("/history");
-    redirect(`/reading/${reading.id}`);
+    redirect(`/readings/${reading.id}`);
   } catch (error) {
     if (isRedirectError(error)) {
       throw error;
@@ -93,7 +94,8 @@ export async function regenerateReadingInterpretation(
     }
 
     revalidatePath(`/reading/${readingId}`);
-    revalidatePath(`/history/${readingId}`);
+    revalidatePath(`/readings/${readingId}`);
+    revalidatePath("/readings");
     revalidatePath("/history");
     return { success: true };
   } catch (error) {
@@ -118,6 +120,7 @@ export async function deleteReading(
       return { error: "Reading not found." };
     }
 
+    revalidatePath("/readings");
     revalidatePath("/history");
     revalidatePath("/dashboard");
     return { success: true };

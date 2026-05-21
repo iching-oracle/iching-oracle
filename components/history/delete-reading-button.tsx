@@ -30,7 +30,7 @@ export function DeleteReadingButton({ readingId }: DeleteReadingButtonProps) {
       return;
     }
 
-    router.push("/history");
+    router.push("/readings");
     router.refresh();
   }
 

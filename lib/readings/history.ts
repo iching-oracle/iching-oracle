@@ -1,57 +1,36 @@
 import "server-only";
 
-import { parseChangingLines } from "@/lib/iching";
-import { getHexagram } from "@/lib/hexagrams";
-import { truncate } from "@/lib/truncate";
-import type { ReadingHistoryItem } from "@/types/reading-history";
+import {
+  JOURNAL_PAGE_SIZE,
+  queryReadingsForUser,
+  toJournalReadingItem,
+  getJournalReadingById,
+} from "@/lib/readings/journal";
+import { formatChangingLinesList } from "@/lib/readings/format";
 import { prisma } from "@/lib/prisma";
-import type { Reading } from "@prisma/client";
+import type { JournalReadingItem } from "@/types/reading-journal";
 
-export const HISTORY_PAGE_SIZE = 50;
+export type { JournalReadingItem as ReadingHistoryItem };
+export { toJournalReadingItem, formatChangingLinesList };
+
+export const HISTORY_PAGE_SIZE = JOURNAL_PAGE_SIZE;
 export const DASHBOARD_RECENT_LIMIT = 3;
-
-function resolvePrimaryName(reading: Reading): string {
-  if (reading.primaryHexagramName) return reading.primaryHexagramName;
-  return getHexagram(reading.hexagram).title;
-}
-
-function resolveFinalName(reading: Reading): string | null {
-  if (!reading.transformedHexagram) return null;
-  if (reading.finalHexagramName) return reading.finalHexagramName;
-  return getHexagram(reading.transformedHexagram).title;
-}
-
-export function toReadingHistoryItem(reading: Reading): ReadingHistoryItem {
-  return {
-    id: reading.id,
-    question: reading.question,
-    primaryHexagramNumber: reading.hexagram,
-    primaryHexagramName: resolvePrimaryName(reading),
-    changingLines: parseChangingLines(reading.changingLines),
-    finalHexagramNumber: reading.transformedHexagram,
-    finalHexagramName: resolveFinalName(reading),
-    interpretationSummary: truncate(reading.interpretation, 160),
-    createdAt: reading.createdAt,
-  };
-}
 
 export async function getReadingHistoryForUser(
   userId: string,
   limit = HISTORY_PAGE_SIZE,
-): Promise<ReadingHistoryItem[]> {
-  const readings = await prisma.reading.findMany({
-    where: { userId },
-    orderBy: { createdAt: "desc" },
-    take: limit,
+): Promise<JournalReadingItem[]> {
+  const result = await queryReadingsForUser(userId, {
+    page: 1,
+    pageSize: limit,
   });
-
-  return readings.map(toReadingHistoryItem);
+  return result.items;
 }
 
 export async function getRecentReadingHistory(
   userId: string,
   limit = DASHBOARD_RECENT_LIMIT,
-): Promise<ReadingHistoryItem[]> {
+): Promise<JournalReadingItem[]> {
   return getReadingHistoryForUser(userId, limit);
 }
 
@@ -59,15 +38,17 @@ export async function getReadingForHistoryDetail(
   userId: string,
   readingId: string,
 ) {
-  const reading = await prisma.reading.findFirst({
-    where: { id: readingId, userId },
-  });
-
-  if (!reading) return null;
+  const record = await getJournalReadingById(userId, readingId);
+  if (!record) return null;
 
   return {
-    ...reading,
-    history: toReadingHistoryItem(reading),
+    ...record,
+    history: record.journal,
+    interpretation: record.interpretation,
+    question: record.question,
+    hexagram: record.hexagram,
+    transformedHexagram: record.transformedHexagram,
+    changingLines: record.changingLines,
   };
 }
 
@@ -79,9 +60,4 @@ export async function deleteReadingForUser(
     where: { id: readingId, userId },
   });
   return result.count > 0;
-}
-
-export function formatChangingLinesList(lines: number[]): string {
-  if (lines.length === 0) return "—";
-  return lines.join(", ");
 }

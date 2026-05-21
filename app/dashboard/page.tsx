@@ -63,8 +63,8 @@ export default async function DashboardPage() {
             </h1>
           </div>
           <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
-            <Link href="/history" className="auth-btn-secondary text-center">
-              History
+            <Link href="/readings" className="auth-btn-secondary text-center">
+              Journal
             </Link>
             <Link href="/reading/new" className="auth-btn-primary text-center">
               New Reading
@@ -121,10 +121,10 @@ export default async function DashboardPage() {
               </p>
             </div>
             <Link
-              href="/history"
+              href="/readings"
               className="shrink-0 text-sm font-medium text-amber-gold transition-colors hover:text-amber-glow"
             >
-              View all history →
+              View full journal →
             </Link>
           </div>
 
@@ -132,10 +132,13 @@ export default async function DashboardPage() {
             <HistoryEmptyState />
           ) : (
             <ul className="space-y-3">
-              {recentHistory.map((reading) => (
-                <li key={reading.id}>
-                  <ReadingCard reading={reading} locale={dateLocale} />
-                </li>
+              {recentHistory.map((reading, index) => (
+                <ReadingCard
+                  key={reading.id}
+                  reading={reading}
+                  locale={dateLocale}
+                  index={index}
+                />
               ))}
             </ul>
           )}

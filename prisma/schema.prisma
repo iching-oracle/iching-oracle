@@ -27,7 +27,10 @@ model User {
 
   accounts Account[]
   sessions Session[]
-  readings Reading[]
+  readings      Reading[]
+  dailyOracles  DailyOracle[]
+  dailyStreak   Int @default(0)
+  lastDailyVisit DateTime?
 }
 
 model Reading {
@@ -43,12 +46,18 @@ model Reading {
   interpretation         String   @db.Text
   interpretationPending  Boolean  @default(false)
   isPremiumReading       Boolean  @default(false)
+  interpretationMode     String   @default("traditional")
+  summary                String?  @db.Text
+  category               String   @default("general")
+  isFavorite             Boolean  @default(false)
   language               String   @default("de")
   createdAt              DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt(sort: Desc)])
+  @@index([userId, isFavorite])
+  @@index([userId, category])
 }
 
 model Account {
@@ -76,6 +85,33 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model DailyOracle {
+  id                String   @id @default(cuid())
+  userId            String?
+  visitorKey        String?
+  date              DateTime @db.Date
+  hexagramNumber    Int
+  lineValues        String
+  oracleMessage     String   @db.Text
+  emotionalInsight  String   @db.Text
+  recommendedAction String   @db.Text
+  caution           String   @db.Text
+  reflectionQuote   String   @db.Text
+  luckyFocus        String
+  energyLevel       Int      @default(50)
+  energyTheme       String   @default("balanced")
+  interpretation    String   @db.Text
+  isFavorite        Boolean  @default(false)
+  createdAt         DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@unique([visitorKey, date])
+  @@index([userId, date(sort: Desc)])
+  @@index([visitorKey, date(sort: Desc)])
 }
 
 model VerificationToken {

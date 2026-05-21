@@ -34,6 +34,12 @@ export async function Navbar() {
 
         <div className="flex items-center gap-3 sm:gap-5">
           <Link
+            href="/daily"
+            className="hidden text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-amber-gold sm:inline"
+          >
+            Daily
+          </Link>
+          <Link
             href="/#methods"
             className="hidden text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-amber-gold sm:inline"
           >
@@ -49,7 +55,7 @@ export async function Navbar() {
                 Dashboard
               </Link>
               <Link
-                href="/history"
+                href="/readings"
                 className="hidden items-center gap-1.5 text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-amber-gold sm:inline-flex"
               >
                 <svg
@@ -64,7 +70,7 @@ export async function Navbar() {
                   <path d="M5.5 4.5A2.5 2.5 0 0 0 3 7v13h9" />
                   <path d="M18.5 4.5A2.5 2.5 0 0 1 21 7v13h-9" />
                 </svg>
-                History
+                Journal
               </Link>
               {preferredLanguage ? (
                 <LanguageSelector currentLanguage={preferredLanguage} />

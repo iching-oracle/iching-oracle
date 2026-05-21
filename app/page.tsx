@@ -1,4 +1,5 @@
 import { AmbientBackground } from "./components/home/AmbientBackground";
+import { DailyOraclePreview } from "./components/home/DailyOraclePreview";
 import { DailyVerse } from "./components/home/DailyVerse";
 import { Hero } from "./components/home/Hero";
 import { MethodGrid } from "./components/home/MethodGrid";
@@ -11,6 +12,7 @@ export default function Home() {
       <main className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 pb-16 sm:px-10 lg:px-12">
         <Hero />
         <MethodGrid />
+        <DailyOraclePreview />
         <DailyVerse />
       </main>
     </div>

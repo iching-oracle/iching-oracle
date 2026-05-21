@@ -7,6 +7,7 @@ import {
   parseInterpretationSections,
   serializeInterpretation,
 } from "@/lib/interpretation/parse";
+import { extractReadingSummary } from "@/lib/readings/summary";
 import { hasPremiumAccess } from "@/lib/premium";
 import { prisma } from "@/lib/prisma";
 
@@ -63,6 +64,8 @@ export async function regenerateInterpretationForReading(
         interpretation,
         interpretationPending: false,
         isPremiumReading: true,
+        interpretationMode: mode,
+        summary: extractReadingSummary(interpretation),
       },
     });
 

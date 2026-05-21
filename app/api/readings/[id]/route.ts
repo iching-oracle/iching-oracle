@@ -21,7 +21,12 @@ export async function GET(_request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Reading not found" }, { status: 404 });
   }
 
-  return NextResponse.json({ reading });
+  const { toJournalReadingItem } = await import("@/lib/readings/journal");
+
+  return NextResponse.json({
+    reading,
+    journal: toJournalReadingItem(reading),
+  });
 }
 
 const patchSchema = z.object({
@@ -59,12 +64,16 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Reading not found" }, { status: 404 });
   }
 
+  const { extractReadingSummary } = await import("@/lib/readings/summary");
+
   const reading = await prisma.reading.update({
     where: { id },
     data: {
       interpretation: parsed.data.interpretation,
       interpretationPending: false,
       isPremiumReading: true,
+      interpretationMode: parsed.data.interpretationMode ?? undefined,
+      summary: extractReadingSummary(parsed.data.interpretation),
     },
   });
 

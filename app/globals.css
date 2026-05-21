@@ -95,6 +95,22 @@ body {
   animation: float 6s ease-in-out infinite;
 }
 
+@keyframes float-particle {
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translate(0, -12px);
+    opacity: 0.75;
+  }
+}
+
+.animate-float-particle {
+  animation: float-particle ease-in-out infinite;
+}
+
 @layer components {
   .auth-label {
     @apply mb-1.5 block text-xs font-medium uppercase tracking-wider text-zen-muted;

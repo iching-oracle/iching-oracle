@@ -6,13 +6,11 @@ import { regenerateReadingInterpretation } from "@/lib/actions/readings";
 type ReadingDetailActionsProps = {
   readingId: string;
   interpretation: string;
-  sharePath?: string;
 };
 
 export function ReadingDetailActions({
   readingId,
   interpretation,
-  sharePath,
 }: ReadingDetailActionsProps) {
   const [copied, setCopied] = useState(false);
   const [regenError, setRegenError] = useState<string | null>(null);
@@ -27,22 +25,6 @@ export function ReadingDetailActions({
       setCopied(false);
     }
   }, [interpretation]);
-
-  const handleShare = useCallback(async () => {
-    const url = `${window.location.origin}${sharePath ?? `/history/${readingId}`}`;
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "I Ching Oracle Reading",
-          url,
-        });
-        return;
-      } catch {
-        /* fall through */
-      }
-    }
-    await handleCopy();
-  }, [readingId, sharePath, handleCopy]);
 
   function handleRegenerate() {
     startTransition(async () => {
@@ -64,13 +46,6 @@ export function ReadingDetailActions({
         className="rounded-full border border-white/10 px-3 py-1.5 text-xs text-zen-muted hover:border-amber-gold/40 hover:text-amber-gold"
       >
         {copied ? "Copied" : "Copy"}
-      </button>
-      <button
-        type="button"
-        onClick={handleShare}
-        className="rounded-full border border-white/10 px-3 py-1.5 text-xs text-zen-muted hover:border-amber-gold/40 hover:text-amber-gold"
-      >
-        Share
       </button>
       <button
         type="button"

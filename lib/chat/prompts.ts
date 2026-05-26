@@ -9,7 +9,10 @@ SAFETY (non-negotiable):
 - Stay calm, grounded, and compassionate.
 `.trim();
 
-export function buildFollowUpSystemPrompt(context: OracleChatContext): string {
+export function buildFollowUpSystemPrompt(
+  context: OracleChatContext,
+  memoryBlock?: string,
+): string {
   const langNote =
     context.language === "de"
       ? "Respond in German."
@@ -45,6 +48,8 @@ Changing lines: ${context.changingLinesSummary}
 
 Prior interpretation (excerpt):
 ${context.interpretationExcerpt}
+
+${memoryBlock ? `\n${memoryBlock}\n` : ""}
 
 Continue the dialogue naturally. Reference the hexagram symbolism when relevant. Invite reflection rather than telling the seeker what will happen.`;
 }

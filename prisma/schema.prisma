@@ -25,11 +25,17 @@ model User {
   subscriptionStatus            String    @default("free")
   subscriptionCurrentPeriodEnd  DateTime?
   preferredLanguage    String  @default("de")
+  memoryEnabled        Boolean   @default(true)
+  memoryLastExtractedAt DateTime?
 
   accounts Account[]
+  memories Memory[]
+  memoryEvents MemoryEvent[]
   sessions Session[]
   readings              Reading[]
   readingConversations  ReadingConversation[]
+  oracleConversations   OracleConversation[]
+  patternInsightCache   PatternInsightCache?
   dailyOracles  DailyOracle[]
   dailyStreak   Int @default(0)
   lastDailyVisit DateTime?
@@ -54,10 +60,13 @@ model Reading {
   isFavorite             Boolean  @default(false)
   notes                  String?  @db.Text
   language               String   @default("de")
+  isPublic               Boolean  @default(false)
+  shareId                String?  @unique
   createdAt              DateTime @default(now())
 
-  user         User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  conversation ReadingConversation?
+  user              User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation      ReadingConversation?
+  oracleConversation OracleConversation?
 
   @@index([userId, createdAt(sort: Desc)])
   @@index([userId, isFavorite])
@@ -86,6 +95,36 @@ model ConversationMessage {
   createdAt      DateTime @default(now())
 
   conversation ReadingConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+}
+
+/// Conversational oracle sessions (pre/post reading); separate from ReadingConversation follow-up.
+model OracleConversation {
+  id        String   @id @default(cuid())
+  userId    String
+  status    String   @default("active")
+  readingId String?  @unique
+  title     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reading  Reading?        @relation(fields: [readingId], references: [id], onDelete: SetNull)
+  messages OracleMessage[]
+
+  @@index([userId, updatedAt(sort: Desc)])
+}
+
+model OracleMessage {
+  id             String   @id @default(cuid())
+  conversationId String
+  role           String
+  content        String   @db.Text
+  metadata       Json?
+  createdAt      DateTime @default(now())
+
+  conversation OracleConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@index([conversationId, createdAt])
 }
@@ -144,6 +183,15 @@ model DailyOracle {
   @@index([visitorKey, date(sort: Desc)])
 }
 
+model PatternInsightCache {
+  userId      String   @id
+  revision    String
+  payload     Json
+  generatedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 model ProcessedStripeEvent {
   id        String   @id
   createdAt DateTime @default(now())
@@ -155,4 +203,55 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+/// Compressed spiritual companion memories — themes, not raw transcripts.
+model Memory {
+  id               String    @id @default(cuid())
+  userId           String
+  type             String
+  summary          String    @db.Text
+  confidence       Float     @default(0.5)
+  tags             String[]  @default([])
+  occurrenceCount  Int       @default(1)
+  lastReferencedAt DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events     MemoryEvent[]
+  references MemoryReference[]
+
+  @@index([userId, type])
+  @@index([userId, updatedAt(sort: Desc)])
+  @@index([userId, lastReferencedAt(sort: Desc)])
+}
+
+model MemoryEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  memoryId  String?
+  source    String
+  sourceId  String?
+  note      String?  @db.Text
+  createdAt DateTime @default(now())
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  memory Memory? @relation(fields: [memoryId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+model MemoryReference {
+  id        String   @id @default(cuid())
+  userId    String
+  memoryId  String
+  context   String
+  contextId String?
+  createdAt DateTime @default(now())
+
+  memory Memory @relation(fields: [memoryId], references: [id], onDelete: Cascade)
+
+  @@index([memoryId, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
 }

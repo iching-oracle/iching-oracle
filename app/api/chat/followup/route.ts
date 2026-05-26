@@ -9,6 +9,11 @@ import {
 } from "@/lib/chat/conversation";
 import { assertCanSendFollowUp } from "@/lib/chat/limits";
 import { streamFollowUpChat, teeStreamForPersistence } from "@/lib/chat/stream";
+import {
+  formatMemoriesForPrompt,
+  retrieveRelevantMemories,
+} from "@/lib/memory/retrieve";
+import { scheduleMemoryExtraction } from "@/lib/memory/schedule";
 import { followUpMessageSchema } from "@/lib/validations/chat";
 import { FOLLOWUP_ERROR_CODES } from "@/types/chat";
 
@@ -113,10 +118,23 @@ export async function POST(request: Request) {
 
   try {
     const context = buildOracleChatContextFromReading(reading);
-    const rawStream = await streamFollowUpChat({ context, history });
+    const memories = await retrieveRelevantMemories(
+      session.user.id,
+      `${reading.question} ${message}`,
+      "reading_followup",
+      readingId,
+    );
+    const memoryBlock = formatMemoriesForPrompt(memories);
+
+    const rawStream = await streamFollowUpChat({
+      context,
+      history,
+      memoryBlock,
+    });
 
     const stream = teeStreamForPersistence(rawStream, async (fullText) => {
       await addMessage(conversation.id, "assistant", fullText);
+      scheduleMemoryExtraction(session.user.id, "reading", readingId);
     });
 
     return new Response(stream, {

@@ -27,6 +27,9 @@ export const authConfig = {
         nextUrl.pathname.startsWith("/reading") ||
         nextUrl.pathname.startsWith("/readings") ||
         nextUrl.pathname.startsWith("/history") ||
+        nextUrl.pathname.startsWith("/insights") ||
+        nextUrl.pathname.startsWith("/oracle") ||
+        nextUrl.pathname.startsWith("/settings") ||
         nextUrl.pathname.startsWith("/payment");
 
       if (isProtected && !isLoggedIn) {

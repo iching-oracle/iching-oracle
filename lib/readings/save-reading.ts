@@ -22,6 +22,8 @@ import { assertCanCreateReading } from "@/lib/subscription";
 import { normalizeLanguageCode } from "@/lib/i18n/languages";
 import { detectReadingCategory } from "@/lib/readings/category";
 import { extractReadingSummary } from "@/lib/readings/summary";
+import { invalidatePatternInsightCache } from "@/lib/insights/invalidate";
+import { scheduleMemoryExtraction } from "@/lib/memory/schedule";
 import { prisma } from "@/lib/prisma";
 
 /** Cast coins, interpret, and persist a new reading (always saves, even if AI fails). */
@@ -103,7 +105,7 @@ export async function saveReadingForUser(userId: string, question: string) {
   const category = detectReadingCategory(trimmed);
   const summary = extractReadingSummary(interpretation);
 
-  return prisma.reading.create({
+  const reading = await prisma.reading.create({
     data: {
       userId,
       question: trimmed,
@@ -122,4 +124,9 @@ export async function saveReadingForUser(userId: string, question: string) {
       language,
     },
   });
+
+  void invalidatePatternInsightCache(userId);
+  scheduleMemoryExtraction(userId, "reading", reading.id);
+
+  return reading;
 }

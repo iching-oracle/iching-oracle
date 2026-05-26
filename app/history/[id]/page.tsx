@@ -5,6 +5,7 @@ import { CastingSummary } from "@/components/readings/casting-summary";
 import { PremiumInterpretation } from "@/components/readings/premium-interpretation";
 import { DeleteReadingDialog } from "@/components/journal/DeleteReadingDialog";
 import { ReadingDetailActions } from "@/components/journal/ReadingDetailActions";
+import { ShareReadingButton } from "@/components/share/share-reading-button";
 import { ReadingDetailHero } from "@/components/journal/ReadingDetailHero";
 import { ReadingDetailSections } from "@/components/journal/ReadingDetailSections";
 import { FavoriteButton } from "@/components/journal/FavoriteButton";
@@ -17,6 +18,8 @@ import { getFollowUpChatState } from "@/lib/chat/conversation";
 import { getJournalReadingById } from "@/lib/readings/journal";
 import { isLegacyPlaceholderInterpretation } from "@/lib/openai";
 import { prisma } from "@/lib/prisma";
+import { buildShareCardData } from "@/lib/share/data";
+import { isPremiumUser } from "@/lib/subscription";
 
 type PageProps = { params: Promise<{ id: string }> };
 
@@ -45,10 +48,17 @@ export default async function HistoryReadingDetailPage({ params }: PageProps) {
   const [dbUser, chatState] = await Promise.all([
     prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { premiumUntil: true },
+      select: {
+        premiumUntil: true,
+        subscriptionStatus: true,
+        subscriptionCurrentPeriodEnd: true,
+      },
     }),
     getFollowUpChatState(session.user.id, id),
   ]);
+
+  const isPremium = dbUser ? isPremiumUser(dbUser) : false;
+  const shareCardData = buildShareCardData(record);
 
   const { journal } = record;
   const changingLinePositions = parseChangingLines(record.changingLines);
@@ -103,11 +113,19 @@ export default async function HistoryReadingDetailPage({ params }: PageProps) {
             <h2 className="text-xs font-medium uppercase tracking-widest text-zen-muted">
               Interpretation
             </h2>
-            <ReadingDetailActions
-              readingId={id}
-              interpretation={record.interpretation}
-              sharePath={`/history/${id}`}
-            />
+            <div className="flex flex-wrap items-center gap-2">
+              <ReadingDetailActions
+                readingId={id}
+                interpretation={record.interpretation}
+              />
+              <ShareReadingButton
+                readingId={id}
+                cardData={shareCardData}
+                isPremium={isPremium}
+                initialIsPublic={record.isPublic}
+                initialShareId={record.shareId}
+              />
+            </div>
           </div>
 
           {showStructuredSections ? (

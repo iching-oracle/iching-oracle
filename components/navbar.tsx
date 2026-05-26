@@ -55,10 +55,28 @@ export async function Navbar() {
           {user ? (
             <>
               <Link
+                href="/oracle/chat"
+                className="hidden text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-cosmic-violet sm:inline"
+              >
+                Oracle
+              </Link>
+              <Link
                 href="/dashboard"
                 className="hidden text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-cosmic-violet sm:inline"
               >
                 Dashboard
+              </Link>
+              <Link
+                href="/insights"
+                className="hidden text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-amber-gold sm:inline"
+              >
+                Insights
+              </Link>
+              <Link
+                href="/settings/memory"
+                className="hidden text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-amber-gold sm:inline"
+              >
+                Memory
               </Link>
               <Link
                 href="/history"

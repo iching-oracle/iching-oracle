@@ -73,6 +73,9 @@ export default async function DashboardPage() {
             </div>
           </div>
           <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+            <Link href="/insights" className="auth-btn-secondary text-center">
+              Insights
+            </Link>
             <Link href="/history" className="auth-btn-secondary text-center">
               History
             </Link>

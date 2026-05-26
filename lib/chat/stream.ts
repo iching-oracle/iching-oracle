@@ -33,6 +33,7 @@ type StreamChunk = {
 export async function streamFollowUpChat(params: {
   context: OracleChatContext;
   history: ChatTurn[];
+  memoryBlock?: string;
 }): Promise<ReadableStream<Uint8Array>> {
   const apiKey = getDeepSeekApiKey();
   const model = getDeepSeekModel();
@@ -40,7 +41,10 @@ export async function streamFollowUpChat(params: {
 
   const messages: Array<{ role: "system" | "user" | "assistant"; content: string }> =
     [
-      { role: "system", content: buildFollowUpSystemPrompt(params.context) },
+      {
+        role: "system",
+        content: buildFollowUpSystemPrompt(params.context, params.memoryBlock),
+      },
       ...history.map((m) => ({
         role: m.role as "user" | "assistant",
         content: m.content,

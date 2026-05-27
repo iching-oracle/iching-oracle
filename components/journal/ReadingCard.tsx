@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { FavoriteButton } from "@/components/journal/FavoriteButton";
 import { formatChangingLinesList } from "@/lib/readings/format";
 import { getCategoryLabel } from "@/lib/readings/category";
-import { formatDate } from "@/lib/format-date";
+import { coerceDate, formatDate } from "@/lib/format-date";
 import type { JournalReadingItem } from "@/types/reading-journal";
 
 type ReadingCardProps = {
@@ -23,6 +23,7 @@ export function ReadingCard({
 }: ReadingCardProps) {
   const detailHref = `${detailBase}/${reading.id}`;
   const changingLabel = formatChangingLinesList(reading.changingLines);
+  const createdAt = coerceDate(reading.createdAt);
 
   return (
     <motion.li
@@ -86,10 +87,11 @@ export function ReadingCard({
             </p>
 
             <time
-              dateTime={reading.createdAt.toISOString()}
+              dateTime={createdAt.toISOString()}
               className="mt-3 block text-xs text-zen-muted"
+              suppressHydrationWarning
             >
-              {formatDate(reading.createdAt, locale)}
+              {formatDate(createdAt, locale ?? "de-DE")}
             </time>
 
             <Link

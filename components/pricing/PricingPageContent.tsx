@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { UpgradeCheckoutButton } from "@/components/subscription/UpgradeCheckoutButton";
+import { TrustBadges } from "@/components/trust/trust-badges";
 
 const FREE_FEATURES = [
   "3 oracle readings per day",
@@ -153,6 +154,8 @@ export function PricingPageContent({
           ))}
         </dl>
       </section>
+
+      <TrustBadges className="mx-auto mt-12 max-w-3xl" />
     </div>
   );
 }

@@ -33,7 +33,7 @@ import {
   getFreeInterpretationPlaceholder,
   hasPremiumAccess,
 } from "@/lib/premium";
-import { assertCanCreateReading } from "@/lib/subscription";
+import { chargeCreditsForFeature } from "@/lib/credits/assert";
 import { prisma } from "@/lib/prisma";
 import { truncate } from "@/lib/truncate";
 import type { OracleReadingMessageMeta } from "@/types/oracle-chat";
@@ -63,15 +63,6 @@ export async function castOracleReadingForConversation(
     };
   }
 
-  const canCreate = await assertCanCreateReading(userId);
-  if (!canCreate.ok) {
-    return {
-      ok: false,
-      code: ORACLE_CHAT_ERROR_CODES.CAST_LIMIT,
-      message: canCreate.message,
-    };
-  }
-
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
@@ -85,6 +76,21 @@ export async function castOracleReadingForConversation(
   if (!user) {
     return { ok: false, code: "NOT_FOUND", message: "User not found." };
   }
+
+  const creditFeature = hasPremiumAccess(user)
+    ? "deep_interpretation"
+    : "basic_reading";
+  const creditCharge = await chargeCreditsForFeature(userId, creditFeature);
+  if (!creditCharge.ok) {
+    return {
+      ok: false,
+      code: creditCharge.code,
+      message: creditCharge.message,
+    };
+  }
+
+  const creditCost =
+    creditFeature === "deep_interpretation" ? 3 : 1;
 
   const language = normalizeLanguageCode(user.preferredLanguage);
   const isPremium = hasPremiumAccess(user);

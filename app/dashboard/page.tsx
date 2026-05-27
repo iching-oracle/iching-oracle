@@ -79,8 +79,11 @@ export default async function DashboardPage() {
             <Link href="/history" className="auth-btn-secondary text-center">
               History
             </Link>
-            <Link href="/reading/new" className="auth-btn-primary text-center">
-              New Reading
+            <Link href="/reading/guided" className="auth-btn-primary text-center">
+              Guided Reading
+            </Link>
+            <Link href="/reading/new" className="auth-btn-secondary text-center">
+              Quick Reading
             </Link>
           </div>
         </div>

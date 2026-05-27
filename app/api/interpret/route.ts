@@ -2,7 +2,8 @@ import { auth } from "@/auth";
 import { buildOracleContextFromReading } from "@/lib/interpretation/context";
 import { isInterpretationMode } from "@/lib/interpretation/modes";
 import { streamAdvancedInterpretation } from "@/lib/interpretation/stream";
-import { hasPremiumAccess } from "@/lib/premium";
+import { chargeCreditsForFeature } from "@/lib/credits/assert";
+import { CREDIT_ERROR_CODES } from "@/types/credits";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
@@ -42,19 +43,16 @@ export async function POST(request: Request) {
     });
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      premiumUntil: true,
-      subscriptionStatus: true,
-      subscriptionCurrentPeriodEnd: true,
-    },
-  });
-
-  if (!hasPremiumAccess(user)) {
+  const creditCharge = await chargeCreditsForFeature(
+    session.user.id,
+    "deep_interpretation",
+  );
+  if (!creditCharge.ok) {
+    const status =
+      creditCharge.code === CREDIT_ERROR_CODES.RATE_LIMIT ? 429 : 403;
     return new Response(
-      JSON.stringify({ error: "Premium subscription required." }),
-      { status: 403, headers: { "Content-Type": "application/json" } },
+      JSON.stringify({ error: creditCharge.message, code: creditCharge.code }),
+      { status, headers: { "Content-Type": "application/json" } },
     );
   }
 

@@ -1,6 +1,10 @@
 import "server-only";
 
 import type Stripe from "stripe";
+import {
+  FREE_DAILY_CREDITS,
+  PREMIUM_MONTHLY_CREDITS,
+} from "@/lib/credits/constants";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 import type { SubscriptionStatus } from "@/types/subscription";
@@ -59,27 +63,65 @@ export async function syncUserFromStripeSubscription(
   const periodEnd = periodEndFromSubscription(subscription);
   const isPremium = status === "premium" && periodEnd && periodEnd > new Date();
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      stripeCustomerId: customerId,
-      stripeSubscriptionId: subscription.id,
-      subscriptionStatus: isPremium ? "premium" : status,
-      subscriptionCurrentPeriodEnd: periodEnd,
-      premiumUntil: isPremium ? periodEnd : null,
-    },
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({
+      where: { id: userId },
+      data: {
+        stripeCustomerId: customerId,
+        stripeSubscriptionId: subscription.id,
+        subscriptionStatus: isPremium ? "premium" : status,
+        subscriptionCurrentPeriodEnd: periodEnd,
+        premiumUntil: isPremium ? periodEnd : null,
+        planType: isPremium ? "PREMIUM" : "FREE",
+        ...(isPremium
+          ? {
+              credits: PREMIUM_MONTHLY_CREDITS,
+              monthlyCredits: PREMIUM_MONTHLY_CREDITS,
+              creditsRefreshedAt: new Date(),
+            }
+          : {
+              credits: FREE_DAILY_CREDITS,
+              monthlyCredits: FREE_DAILY_CREDITS,
+            }),
+      },
+    });
+
+    if (isPremium) {
+      await tx.creditTransaction.create({
+        data: {
+          userId,
+          type: "ADD",
+          amount: PREMIUM_MONTHLY_CREDITS,
+          reason: "Premium subscription activated",
+        },
+      });
+    }
   });
 }
 
 export async function revokePremiumForUser(userId: string): Promise<void> {
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      subscriptionStatus: "canceled",
-      stripeSubscriptionId: null,
-      subscriptionCurrentPeriodEnd: null,
-      premiumUntil: null,
-    },
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({
+      where: { id: userId },
+      data: {
+        subscriptionStatus: "canceled",
+        stripeSubscriptionId: null,
+        subscriptionCurrentPeriodEnd: null,
+        premiumUntil: null,
+        planType: "FREE",
+        credits: FREE_DAILY_CREDITS,
+        monthlyCredits: FREE_DAILY_CREDITS,
+        creditsRefreshedAt: new Date(),
+      },
+    });
+    await tx.creditTransaction.create({
+      data: {
+        userId,
+        type: "ADD",
+        amount: FREE_DAILY_CREDITS,
+        reason: "Downgraded to free plan",
+      },
+    });
   });
 }
 
@@ -111,14 +153,28 @@ export async function syncFromCheckoutSession(
 
   if (session.mode === "payment" && session.payment_status === "paid") {
     const premiumUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        premiumUntil,
-        subscriptionStatus: "premium",
-        subscriptionCurrentPeriodEnd: premiumUntil,
-        ...(customerId ? { stripeCustomerId: customerId } : {}),
-      },
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          premiumUntil,
+          subscriptionStatus: "premium",
+          subscriptionCurrentPeriodEnd: premiumUntil,
+          planType: "PREMIUM",
+          credits: PREMIUM_MONTHLY_CREDITS,
+          monthlyCredits: PREMIUM_MONTHLY_CREDITS,
+          creditsRefreshedAt: new Date(),
+          ...(customerId ? { stripeCustomerId: customerId } : {}),
+        },
+      });
+      await tx.creditTransaction.create({
+        data: {
+          userId,
+          type: "ADD",
+          amount: PREMIUM_MONTHLY_CREDITS,
+          reason: "Premium payment completed",
+        },
+      });
     });
   }
 }

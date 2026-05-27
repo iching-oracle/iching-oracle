@@ -6,6 +6,7 @@ import {
   type ReadingInsightRow,
 } from "@/lib/insights/analytics";
 import { generatePatternInsight } from "@/lib/insights/generate";
+import { chargeCreditsForFeature } from "@/lib/credits/assert";
 import { isPremiumUser } from "@/lib/subscription";
 import { prisma } from "@/lib/prisma";
 import { normalizeLanguageCode } from "@/lib/i18n/languages";
@@ -126,6 +127,14 @@ export async function getInsightsPagePayload(
         statTeaser,
       };
     }
+  }
+
+  const creditCharge = await chargeCreditsForFeature(
+    userId,
+    "pattern_insight",
+  );
+  if (!creditCharge.ok) {
+    throw new Error(creditCharge.message);
   }
 
   const ai = await generatePatternInsight(analytics, readings, language);

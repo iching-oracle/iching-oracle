@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
+import {
+  generatePublicReadingMetadata,
+  PublicSeoReadingPage,
+} from "@/app/reading/[id]/public-seo-page";
 import { CastingSummary } from "@/components/readings/casting-summary";
 import { getReadingForUser } from "@/lib/data/get-reading-for-user";
 import { parseChangingLines } from "@/lib/iching";
@@ -8,26 +12,36 @@ import { formatHexagramInline, getHexagram } from "@/lib/hexagrams";
 import { PremiumInterpretation } from "@/components/readings/premium-interpretation";
 import { formatDateTimeForLanguage } from "@/lib/format-date";
 import { isLegacyPlaceholderInterpretation } from "@/lib/openai";
+import { isPrivateReadingId } from "@/lib/seo/slugs";
 import { prisma } from "@/lib/prisma";
 
 type PageProps = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: PageProps) {
   const { id } = await params;
+  if (!isPrivateReadingId(id)) {
+    const meta = await generatePublicReadingMetadata(id);
+    if (meta) return meta;
+  }
   return {
     title: `Reading | ICHING-ORACLE`,
     description: `Oracle reading ${id.slice(0, 8)}…`,
+    robots: { index: false, follow: false },
   };
 }
 
 export default async function ReadingPage({ params }: PageProps) {
+  const { id } = await params;
+
+  if (!isPrivateReadingId(id)) {
+    return <PublicSeoReadingPage slug={id} />;
+  }
+
   const session = await auth();
 
   if (!session?.user?.id) {
     redirect("/login?callbackUrl=/reading/new");
   }
-
-  const { id } = await params;
   const reading = await getReadingForUser(session.user.id, id);
 
   if (!reading) {

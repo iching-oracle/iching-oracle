@@ -6,7 +6,8 @@ import {
   getOracleChatState,
   getOracleConversationForUser,
 } from "@/lib/oracle-chat/conversation";
-import { assertCanSendOracleChat } from "@/lib/oracle-chat/limits";
+import { chargeCreditsForFeature } from "@/lib/credits/assert";
+import { CREDIT_ERROR_CODES } from "@/types/credits";
 import {
   streamOracleConversationChat,
   teeStreamForPersistence,
@@ -19,7 +20,6 @@ import {
 import { scheduleMemoryExtraction } from "@/lib/memory/schedule";
 import { oracleChatMessageSchema } from "@/lib/validations/oracle-chat";
 import { prisma } from "@/lib/prisma";
-import { ORACLE_CHAT_ERROR_CODES } from "@/types/oracle-chat";
 
 export async function GET(request: Request) {
   const session = await auth();
@@ -93,16 +93,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
   }
 
-  const canSend = await assertCanSendOracleChat(
+  const creditCharge = await chargeCreditsForFeature(
     session.user.id,
-    conversation.id,
+    "oracle_chat",
   );
-  if (!canSend.ok) {
+  if (!creditCharge.ok) {
     return NextResponse.json(
-      { error: canSend.message, code: canSend.code },
+      { error: creditCharge.message, code: creditCharge.code },
       {
         status:
-          canSend.code === ORACLE_CHAT_ERROR_CODES.RATE_LIMIT ? 429 : 403,
+          creditCharge.code === CREDIT_ERROR_CODES.RATE_LIMIT ? 429 : 403,
       },
     );
   }

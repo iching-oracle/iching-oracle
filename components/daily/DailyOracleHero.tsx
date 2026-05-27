@@ -2,23 +2,23 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { formatWeekdayDate } from "@/lib/format-date";
 
 type DailyOracleHeroProps = {
   date: string;
+  dateLabel: string;
   streak: number;
   isAuthenticated: boolean;
 };
 
 export function DailyOracleHero({
   date,
+  dateLabel,
   streak,
   isAuthenticated,
 }: DailyOracleHeroProps) {
-  const formatted = new Date(`${date}T12:00:00`).toLocaleDateString(undefined, {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  });
+  const formatted =
+    dateLabel || formatWeekdayDate(`${date}T12:00:00Z`, "en-US");
 
   return (
     <motion.header

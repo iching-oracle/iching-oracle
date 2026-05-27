@@ -18,7 +18,8 @@ import {
   getFreeInterpretationPlaceholder,
   hasPremiumAccess,
 } from "@/lib/premium";
-import { assertCanCreateReading } from "@/lib/subscription";
+import { chargeCreditsForFeature } from "@/lib/credits/assert";
+import { refundCredits } from "@/lib/credits/balance";
 import { normalizeLanguageCode } from "@/lib/i18n/languages";
 import { detectReadingCategory } from "@/lib/readings/category";
 import { extractReadingSummary } from "@/lib/readings/summary";
@@ -44,13 +45,16 @@ export async function saveReadingForUser(userId: string, question: string) {
     throw new Error("User not found.");
   }
 
-  const canCreate = await assertCanCreateReading(userId);
-  if (!canCreate.ok) {
-    throw new Error(canCreate.message);
-  }
-
   const language = normalizeLanguageCode(user.preferredLanguage);
   const isPremium = hasPremiumAccess(user);
+
+  const creditFeature = isPremium ? "deep_interpretation" : "basic_reading";
+  const creditCharge = await chargeCreditsForFeature(userId, creditFeature);
+  if (!creditCharge.ok) {
+    throw new Error(creditCharge.message);
+  }
+
+  const creditCost = isPremium ? 3 : 1;
 
   console.log("[readings] Premium user:", isPremium);
 
@@ -93,6 +97,11 @@ export async function saveReadingForUser(userId: string, question: string) {
         console.error("[readings] Advanced AI interpretation failed", error);
         interpretation = INTERPRETATION_UNAVAILABLE_MESSAGE;
         interpretationPending = true;
+        await refundCredits(
+          userId,
+          creditCost,
+          "Refund: interpretation generation failed",
+        );
       }
     }
   } else {

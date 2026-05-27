@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { MEMORY_TYPE_LABELS } from "@/lib/memory/constants";
 import type { MemoryType } from "@/types/memory";
+import { formatDate } from "@/lib/format-date";
 import type { MemoryDTO } from "@/types/memory";
 
 type MemoryCardProps = {
@@ -55,7 +56,7 @@ export function MemoryCard({ memory, onDelete, deleting }: MemoryCardProps) {
         <span>
           Referenced{" "}
           {memory.lastReferencedAt
-            ? new Date(memory.lastReferencedAt).toLocaleDateString()
+            ? formatDate(memory.lastReferencedAt, "en-US")
             : "not yet"}
         </span>
         <span>×{memory.occurrenceCount}</span>

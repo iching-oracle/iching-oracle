@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { FavoriteButton } from "@/components/journal/FavoriteButton";
 import { getCategoryLabel } from "@/lib/readings/category";
-import { formatDate } from "@/lib/format-date";
+import { coerceDate, formatDate } from "@/lib/format-date";
 import type { JournalReadingItem } from "@/types/reading-journal";
 
 type TimelineGroup = {
@@ -13,16 +13,15 @@ type TimelineGroup = {
   readings: JournalReadingItem[];
 };
 
-function groupByMonth(readings: JournalReadingItem[]): TimelineGroup[] {
+function groupByMonth(
+  readings: JournalReadingItem[],
+  locale: string,
+): TimelineGroup[] {
   const map = new Map<string, JournalReadingItem[]>();
 
   for (const reading of readings) {
-    const d = reading.createdAt;
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    const label = new Intl.DateTimeFormat("en-US", {
-      month: "long",
-      year: "numeric",
-    }).format(d);
+    const d = coerceDate(reading.createdAt);
+    const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
     const existing = map.get(key) ?? [];
     existing.push(reading);
     map.set(key, existing);
@@ -30,10 +29,11 @@ function groupByMonth(readings: JournalReadingItem[]): TimelineGroup[] {
 
   return Array.from(map.entries()).map(([key, items]) => ({
     key,
-    label: new Intl.DateTimeFormat("en-US", {
+    label: new Intl.DateTimeFormat(locale, {
       month: "long",
       year: "numeric",
-    }).format(items[0]!.createdAt),
+      timeZone: "UTC",
+    }).format(coerceDate(items[0]!.createdAt)),
     readings: items,
   }));
 }
@@ -49,7 +49,7 @@ export function ReadingTimeline({
   locale,
   detailBase = "/history",
 }: ReadingTimelineProps) {
-  const groups = groupByMonth(readings);
+  const groups = groupByMonth(readings, locale ?? "de-DE");
 
   return (
     <div className="relative space-y-10 pl-4 sm:pl-6">
@@ -88,8 +88,11 @@ export function ReadingTimeline({
                       <span className="text-cosmic-violet">
                         {getCategoryLabel(reading.category)}
                       </span>
-                      <time dateTime={reading.createdAt.toISOString()}>
-                        {formatDate(reading.createdAt, locale)}
+                      <time
+                        dateTime={coerceDate(reading.createdAt).toISOString()}
+                        suppressHydrationWarning
+                      >
+                        {formatDate(reading.createdAt, locale ?? "de-DE")}
                       </time>
                     </div>
                     <Link

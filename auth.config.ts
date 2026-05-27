@@ -22,15 +22,21 @@ export const authConfig = {
         nextUrl.pathname === "/register" ||
         nextUrl.pathname.startsWith("/verify-email") ||
         nextUrl.pathname === "/account-deleted";
+      const readingSegment = nextUrl.pathname.match(/^\/reading\/([^/]+)$/)?.[1];
+      const isPublicReadingSlug =
+        readingSegment && !/^c[a-z0-9]{20,}$/i.test(readingSegment);
+
       const isProtected =
         nextUrl.pathname.startsWith("/dashboard") ||
-        nextUrl.pathname.startsWith("/reading") ||
+        (nextUrl.pathname.startsWith("/reading") && !isPublicReadingSlug) ||
         nextUrl.pathname.startsWith("/readings") ||
         nextUrl.pathname.startsWith("/history") ||
         nextUrl.pathname.startsWith("/insights") ||
         nextUrl.pathname.startsWith("/oracle") ||
         nextUrl.pathname.startsWith("/settings") ||
-        nextUrl.pathname.startsWith("/payment");
+        nextUrl.pathname.startsWith("/billing") ||
+        nextUrl.pathname.startsWith("/payment") ||
+        nextUrl.pathname.startsWith("/admin");
 
       if (isProtected && !isLoggedIn) {
         return false;

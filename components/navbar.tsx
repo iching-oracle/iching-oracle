@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { auth } from "@/auth";
+import { CreditBadge } from "@/components/credits/credit-badge";
 import { LanguageSelector } from "@/components/language-selector";
 import { handleSignOut } from "@/lib/actions/auth";
 import { getPreferredLanguageForUser } from "@/lib/user/preferred-language";
@@ -38,6 +39,18 @@ export async function Navbar() {
             className="hidden text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-amber-gold sm:inline"
           >
             Daily
+          </Link>
+          <Link
+            href="/hexagrams"
+            className="hidden text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-amber-gold sm:inline"
+          >
+            Hexagrams
+          </Link>
+          <Link
+            href="/learn"
+            className="hidden text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-amber-gold sm:inline"
+          >
+            Learn
           </Link>
           <Link
             href="/pricing"
@@ -96,6 +109,7 @@ export async function Navbar() {
                 </svg>
                 History
               </Link>
+              <CreditBadge userId={user.id} />
               {preferredLanguage ? (
                 <LanguageSelector currentLanguage={preferredLanguage} />
               ) : null}

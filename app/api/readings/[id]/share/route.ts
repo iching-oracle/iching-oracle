@@ -13,8 +13,11 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
   let enable = false;
   try {
-    const body = (await request.json()) as { enable?: boolean };
-    enable = Boolean(body.enable);
+    const body = (await request.json()) as {
+      enable?: boolean;
+      isPublic?: boolean;
+    };
+    enable = Boolean(body.enable ?? body.isPublic);
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }

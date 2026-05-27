@@ -24,6 +24,15 @@ export {
 } from "@/lib/subscription/usage";
 
 export {
+  getCreditBalance,
+  chargeCreditsForFeature,
+  assertCreditsForFeature,
+  CREDIT_COSTS,
+  FREE_DAILY_CREDITS,
+  PREMIUM_MONTHLY_CREDITS,
+} from "@/lib/credits";
+
+export {
   getOrCreateStripeCustomer,
   createSubscriptionCheckoutSession,
   createBillingPortalSession,

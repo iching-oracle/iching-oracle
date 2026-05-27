@@ -32,7 +32,25 @@ export default async function NewReadingPage() {
           </p>
         </div>
 
+        <Link
+          href="/reading/guided"
+          className="mb-6 block rounded-2xl border border-amber-gold/25 bg-gradient-to-br from-amber-gold/10 via-zen-surface/80 to-cosmic-purple/10 p-6 text-center shadow-[0_0_40px_-15px_rgba(197,160,89,0.35)] transition-colors hover:border-amber-gold/40"
+        >
+          <p className="text-[10px] font-medium uppercase tracking-[0.35em] text-amber-gold">
+            Guided experience
+          </p>
+          <p className="mt-2 font-serif text-lg text-foreground">
+            Begin the ritual journey
+          </p>
+          <p className="mt-1 text-sm text-zen-muted">
+            A cinematic first reading — breath, cast, reveal, and share.
+          </p>
+        </Link>
+
         <div className="rounded-2xl border border-white/10 bg-zen-surface/70 p-8 shadow-[0_0_60px_-20px_rgba(139,92,246,0.4)] backdrop-blur-xl">
+          <p className="mb-4 text-xs font-medium uppercase tracking-widest text-zen-muted">
+            Quick consult
+          </p>
           <ConsultOracleForm />
         </div>
 

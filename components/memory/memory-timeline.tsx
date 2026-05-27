@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { MEMORY_TYPE_LABELS } from "@/lib/memory/constants";
+import { formatDate } from "@/lib/format-date";
 import type { MemoryTimelineEntry } from "@/types/memory";
 
 type MemoryTimelineProps = {
@@ -50,7 +51,9 @@ export function MemoryTimeline({ entries }: MemoryTimelineProps) {
                 <span>·</span>
                 <span>{PERIOD_LABELS[entry.period]}</span>
                 <span>·</span>
-                <span>{new Date(entry.createdAt).toLocaleDateString()}</span>
+                <span suppressHydrationWarning>
+                  {formatDate(entry.createdAt, "en-US")}
+                </span>
               </div>
               <p className="mt-2 text-sm leading-relaxed text-foreground">
                 {entry.summary}

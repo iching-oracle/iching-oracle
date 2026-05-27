@@ -5,6 +5,7 @@ import Link from "next/link";
 import { InsightStatCard } from "@/components/insights/InsightStatCard";
 import { InsightsCharts } from "@/components/insights/InsightsCharts";
 import { InsightsPremiumGate } from "@/components/insights/InsightsPremiumGate";
+import { formatDateTime } from "@/lib/format-date";
 import type { InsightsPagePayload } from "@/types/insights";
 
 type InsightsPageContentProps = {
@@ -53,7 +54,7 @@ export function InsightsPageContent({ data }: InsightsPageContentProps) {
         {data.generatedAt && isPremium ? (
           <p className="mt-2 text-[10px] uppercase tracking-widest text-zen-muted/80">
             {data.cacheHit ? "Cached insight · " : "Updated · "}
-            {new Date(data.generatedAt).toLocaleString()}
+            {formatDateTime(data.generatedAt, "en-US")}
           </p>
         ) : null}
       </motion.header>

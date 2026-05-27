@@ -3,10 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChatMessageBubble } from "@/components/chat/ChatMessageBubble";
 import { SuggestionChips } from "@/components/chat/SuggestionChips";
-import { UpgradeModal } from "@/components/subscription/UpgradeModal";
+import { InsufficientCreditsModal } from "@/components/credits/insufficient-credits-modal";
 import { FOLLOW_UP_SUGGESTIONS } from "@/lib/chat/suggestions";
 import type { ChatMessageDTO } from "@/types/chat";
-import { FOLLOWUP_ERROR_CODES } from "@/types/chat";
+import { CREDIT_ERROR_CODES } from "@/types/credits";
 
 type FollowUpChatProps = {
   readingId: string;
@@ -33,7 +33,9 @@ export function FollowUpChat({
   const [userMessageCount, setUserMessageCount] = useState(
     initialUserMessageCount,
   );
-  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [creditsModalOpen, setCreditsModalOpen] = useState(false);
+  const [creditsModalMessage, setCreditsModalMessage] = useState<string>();
+  const [creditsModalCode, setCreditsModalCode] = useState<string>();
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -83,9 +85,14 @@ export function FollowUpChat({
 
         if (!res.ok) {
           const data = (await res.json()) as { error?: string; code?: string };
-          if (data.code === FOLLOWUP_ERROR_CODES.MESSAGE_LIMIT) {
+          if (
+            data.code === CREDIT_ERROR_CODES.INSUFFICIENT ||
+            data.code === CREDIT_ERROR_CODES.PREMIUM_REQUIRED
+          ) {
             setCanSend(false);
-            setUpgradeOpen(true);
+            setCreditsModalMessage(data.error);
+            setCreditsModalCode(data.code);
+            setCreditsModalOpen(true);
           }
           setMessages((prev) => prev.filter((m) => m.id !== tempUserId));
           setError(
@@ -256,7 +263,13 @@ export function FollowUpChat({
           Follow-up limit reached for this reading.{" "}
           <button
             type="button"
-            onClick={() => setUpgradeOpen(true)}
+            onClick={() => {
+              setCreditsModalCode(CREDIT_ERROR_CODES.PREMIUM_REQUIRED);
+              setCreditsModalMessage(
+                "Premium unlocks unlimited follow-up guidance for each reading.",
+              );
+              setCreditsModalOpen(true);
+            }}
             className="font-medium underline underline-offset-2"
           >
             Upgrade to Premium
@@ -307,11 +320,11 @@ export function FollowUpChat({
         </div>
       ) : null}
 
-      <UpgradeModal
-        open={upgradeOpen}
-        onClose={() => setUpgradeOpen(false)}
-        title="Unlimited guidance"
-        message="Premium lets you continue the conversation without limits — a true spiritual companion for each reading."
+      <InsufficientCreditsModal
+        open={creditsModalOpen}
+        onClose={() => setCreditsModalOpen(false)}
+        message={creditsModalMessage}
+        code={creditsModalCode}
       />
     </section>
   );

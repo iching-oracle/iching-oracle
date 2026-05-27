@@ -6,6 +6,7 @@ import {
   type CreateReadingState,
 } from "@/lib/actions/readings";
 import { UpgradeModal } from "@/components/subscription/UpgradeModal";
+import { AiDisclaimer } from "@/components/trust/ai-disclaimer";
 import { SUBSCRIPTION_ERROR_CODES } from "@/types/subscription";
 
 const initialState: CreateReadingState = {};
@@ -66,10 +67,12 @@ export function ConsultOracleForm() {
         <button
           type="submit"
           disabled={isPending}
-          className="auth-btn-primary w-full"
+          className="auth-btn-primary min-h-[44px] w-full"
         >
           {isPending ? "Consulting the oracle…" : "Consult the Oracle"}
         </button>
+
+        <AiDisclaimer className="text-center" />
       </form>
 
       <UpgradeModal

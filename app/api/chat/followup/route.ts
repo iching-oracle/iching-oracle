@@ -7,7 +7,8 @@ import {
   getFollowUpChatState,
   getReadingForChat,
 } from "@/lib/chat/conversation";
-import { assertCanSendFollowUp } from "@/lib/chat/limits";
+import { chargeCreditsForFeature } from "@/lib/credits/assert";
+import { CREDIT_ERROR_CODES } from "@/types/credits";
 import { streamFollowUpChat, teeStreamForPersistence } from "@/lib/chat/stream";
 import {
   formatMemoriesForPrompt,
@@ -15,7 +16,6 @@ import {
 } from "@/lib/memory/retrieve";
 import { scheduleMemoryExtraction } from "@/lib/memory/schedule";
 import { followUpMessageSchema } from "@/lib/validations/chat";
-import { FOLLOWUP_ERROR_CODES } from "@/types/chat";
 
 export async function GET(request: Request) {
   const session = await auth();
@@ -92,16 +92,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
 
-  const canSend = await assertCanSendFollowUp(
+  const creditCharge = await chargeCreditsForFeature(
     session.user.id,
-    conversation.id,
+    "followup_chat",
   );
-  if (!canSend.ok) {
+  if (!creditCharge.ok) {
     return NextResponse.json(
-      { error: canSend.message, code: canSend.code },
+      { error: creditCharge.message, code: creditCharge.code },
       {
         status:
-          canSend.code === FOLLOWUP_ERROR_CODES.RATE_LIMIT ? 429 : 403,
+          creditCharge.code === CREDIT_ERROR_CODES.RATE_LIMIT ? 429 : 403,
       },
     );
   }

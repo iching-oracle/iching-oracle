@@ -24,13 +24,22 @@ model User {
   stripeSubscriptionId          String?
   subscriptionStatus            String    @default("free")
   subscriptionCurrentPeriodEnd  DateTime?
+  planType                      String    @default("FREE")
+  credits                       Int       @default(10)
+  monthlyCredits                Int       @default(10)
+  lifetimeCreditsUsed           Int       @default(0)
+  creditsRefreshedAt            DateTime?
   preferredLanguage    String  @default("de")
   memoryEnabled        Boolean   @default(true)
   memoryLastExtractedAt DateTime?
+  role                 String    @default("USER")
 
   accounts Account[]
+  supportTickets SupportTicket[]
   memories Memory[]
   memoryEvents MemoryEvent[]
+  aiUsages AIUsage[]
+  creditTransactions CreditTransaction[]
   sessions Session[]
   readings              Reading[]
   readingConversations  ReadingConversation[]
@@ -62,15 +71,67 @@ model Reading {
   language               String   @default("de")
   isPublic               Boolean  @default(false)
   shareId                String?  @unique
+  publicSlug             String?  @unique
+  seoTitle               String?
+  seoDescription         String?  @db.Text
+  seoIndexable           Boolean  @default(false)
+  viewCount              Int      @default(0)
+  shareCount             Int      @default(0)
+  publishedAt            DateTime?
   createdAt              DateTime @default(now())
 
   user              User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   conversation      ReadingConversation?
   oracleConversation OracleConversation?
+  seoPage           SeoPage?
 
   @@index([userId, createdAt(sort: Desc)])
   @@index([userId, isFavorite])
   @@index([userId, category])
+  @@index([seoIndexable, publishedAt(sort: Desc)])
+}
+
+/// Programmatic and editorial SEO landing pages (hexagram topics, clusters, guides).
+model SeoPage {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  type            String
+  templateKey     String
+  hexagramNumber  Int?
+  topic           String?
+  title           String
+  metaTitle       String
+  metaDescription String   @db.Text
+  canonicalPath   String   @unique
+  content         Json
+  wordCount       Int      @default(0)
+  status          String   @default("published")
+  noindex         Boolean  @default(false)
+  readingId       String?  @unique
+  viewCount       Int      @default(0)
+  shareCount      Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  reading Reading? @relation(fields: [readingId], references: [id], onDelete: SetNull)
+
+  @@index([type, status])
+  @@index([hexagramNumber, topic])
+  @@index([status, updatedAt(sort: Desc)])
+}
+
+/// Lightweight SEO / growth analytics events.
+model SeoAnalyticsEvent {
+  id        String   @id @default(cuid())
+  path      String
+  event     String
+  source    String?
+  keyword   String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([path, createdAt(sort: Desc)])
+  @@index([event, createdAt(sort: Desc)])
 }
 
 model ReadingConversation {
@@ -192,6 +253,33 @@ model PatternInsightCache {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model AIUsage {
+  id                  String   @id @default(cuid())
+  userId              String
+  featureType         String
+  creditsUsed         Int
+  estimatedTokenUsage Int?
+  createdAt           DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([userId, featureType])
+}
+
+model CreditTransaction {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  amount    Int
+  reason    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+}
+
 model ProcessedStripeEvent {
   id        String   @id
   createdAt DateTime @default(now())
@@ -254,4 +342,46 @@ model MemoryReference {
 
   @@index([memoryId, createdAt(sort: Desc)])
   @@index([userId, createdAt(sort: Desc)])
+}
+
+model WaitlistEntry {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  source    String?
+  referrer  String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt(sort: Desc)])
+}
+
+model SupportTicket {
+  id        String   @id @default(cuid())
+  userId    String?
+  email     String
+  name      String?
+  category  String
+  subject   String
+  message   String   @db.Text
+  status    String   @default("open")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([userId])
+}
+
+model SystemEvent {
+  id        String   @id @default(cuid())
+  level     String
+  category  String
+  message   String   @db.Text
+  metadata  Json?
+  userId    String?
+  path      String?
+  createdAt DateTime @default(now())
+
+  @@index([level, createdAt(sort: Desc)])
+  @@index([category, createdAt(sort: Desc)])
 }

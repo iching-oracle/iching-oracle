@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { castOracleReadingForConversation } from "@/lib/oracle-chat/cast";
 import { getOracleChatState } from "@/lib/oracle-chat/conversation";
 import { oracleCastSchema } from "@/lib/validations/oracle-chat";
-import { ORACLE_CHAT_ERROR_CODES } from "@/types/oracle-chat";
+import { CREDIT_ERROR_CODES } from "@/types/credits";
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -30,7 +30,8 @@ export async function POST(request: Request) {
 
   if (!result.ok) {
     const status =
-      result.code === ORACLE_CHAT_ERROR_CODES.CAST_LIMIT
+      result.code === CREDIT_ERROR_CODES.INSUFFICIENT ||
+      result.code === CREDIT_ERROR_CODES.PREMIUM_REQUIRED
         ? 403
         : result.code === "NOT_FOUND"
           ? 404

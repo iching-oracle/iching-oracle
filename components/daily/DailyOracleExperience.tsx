@@ -7,9 +7,13 @@ import type { DailyOraclePayload } from "@/types/daily-oracle";
 
 type DailyOracleExperienceProps = {
   oracle: DailyOraclePayload;
+  dateLabel: string;
 };
 
-export function DailyOracleExperience({ oracle }: DailyOracleExperienceProps) {
+export function DailyOracleExperience({
+  oracle,
+  dateLabel,
+}: DailyOracleExperienceProps) {
   return (
     <div className="relative min-h-full overflow-hidden bg-zen-bg">
       <div
@@ -25,6 +29,7 @@ export function DailyOracleExperience({ oracle }: DailyOracleExperienceProps) {
       <main className="relative z-10 mx-auto flex w-full max-w-2xl flex-col gap-10 px-6 py-12 sm:px-10 sm:py-16">
         <DailyOracleHero
           date={oracle.date}
+          dateLabel={dateLabel}
           streak={oracle.streak}
           isAuthenticated={oracle.isAuthenticated}
         />

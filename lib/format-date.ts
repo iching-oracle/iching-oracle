@@ -5,35 +5,63 @@ import {
   type SupportedLanguageCode,
 } from "@/lib/i18n/languages";
 
-export function formatDate(date: Date, locale = "de-DE"): string {
+/** Normalize serialized dates from RSC → client props. */
+export function coerceDate(value: Date | string): Date {
+  return value instanceof Date ? value : new Date(value);
+}
+
+/**
+ * Stable date formatting for SSR + hydration (fixed locale + UTC).
+ * Avoids bare toLocaleString() which differs between Node and the browser.
+ */
+export function formatDate(date: Date | string, locale = "de-DE"): string {
+  const d = coerceDate(date);
   return new Intl.DateTimeFormat(locale, {
     month: "long",
     day: "numeric",
     year: "numeric",
-  }).format(date);
+    timeZone: "UTC",
+  }).format(d);
 }
 
-export function formatDateTime(date: Date, locale = "de-DE"): string {
+export function formatDateTime(date: Date | string, locale = "de-DE"): string {
+  const d = coerceDate(date);
   return new Intl.DateTimeFormat(locale, {
     dateStyle: "long",
     timeStyle: "short",
-  }).format(date);
+    timeZone: "UTC",
+  }).format(d);
+}
+
+export function formatWeekdayDate(
+  date: Date | string,
+  locale = "en-US",
+): string {
+  const d = coerceDate(date);
+  return new Intl.DateTimeFormat(locale, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  }).format(d);
 }
 
 export function formatDateForLanguage(
-  date: Date,
+  date: Date | string,
   language: string | null | undefined,
 ): string {
   return formatDate(date, localeForLanguage(resolveLanguage(language)));
 }
 
 export function formatDateTimeForLanguage(
-  date: Date,
+  date: Date | string,
   language: string | null | undefined,
 ): string {
   return formatDateTime(date, localeForLanguage(resolveLanguage(language)));
 }
 
-function resolveLanguage(language: string | null | undefined): SupportedLanguageCode {
+function resolveLanguage(
+  language: string | null | undefined,
+): SupportedLanguageCode {
   return normalizeLanguageCode(language ?? DEFAULT_LANGUAGE);
 }

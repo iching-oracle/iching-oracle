@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { DailyOracleExperience } from "@/components/daily/DailyOracleExperience";
 import { resolveDailyOracleForPage } from "@/lib/daily-oracle/resolve";
+import { formatWeekdayDate } from "@/lib/format-date";
 
 export const metadata = {
   title: "Daily Oracle | ICHING-ORACLE",
@@ -16,5 +17,7 @@ export default async function DailyOraclePage() {
     cookieStore.set(setVisitorCookie);
   }
 
-  return <DailyOracleExperience oracle={oracle} />;
+  const dateLabel = formatWeekdayDate(`${oracle.date}T12:00:00Z`, "en-US");
+
+  return <DailyOracleExperience oracle={oracle} dateLabel={dateLabel} />;
 }

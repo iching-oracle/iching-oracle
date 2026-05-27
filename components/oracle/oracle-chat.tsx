@@ -5,9 +5,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ChatInput } from "@/components/oracle/chat-input";
 import { ChatMessage } from "@/components/oracle/chat-message";
 import { TypingIndicator } from "@/components/oracle/typing-indicator";
-import { UpgradeModal } from "@/components/subscription/UpgradeModal";
+import { InsufficientCreditsModal } from "@/components/credits/insufficient-credits-modal";
+import { CREDIT_ERROR_CODES } from "@/types/credits";
 import type { OracleChatMessageDTO, OracleChatState } from "@/types/oracle-chat";
-import { ORACLE_CHAT_ERROR_CODES } from "@/types/oracle-chat";
 
 const STARTER_PROMPTS = [
   "I feel uncertain about my path.",
@@ -39,7 +39,9 @@ export function OracleChat({ initialState }: OracleChatProps) {
   const [suggestCast, setSuggestCast] = useState(initialState.suggestCast);
   const [canCast, setCanCast] = useState(initialState.canCast);
   const [hasReading, setHasReading] = useState(initialState.hasReading);
-  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [creditsModalOpen, setCreditsModalOpen] = useState(false);
+  const [creditsModalMessage, setCreditsModalMessage] = useState<string>();
+  const [creditsModalCode, setCreditsModalCode] = useState<string>();
   const [started, setStarted] = useState(initialState.messages.length > 0);
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -108,11 +110,13 @@ export function OracleChat({ initialState }: OracleChatProps) {
         if (!res.ok) {
           const data = (await res.json()) as { error?: string; code?: string };
           if (
-            data.code === ORACLE_CHAT_ERROR_CODES.MESSAGE_LIMIT ||
-            data.code === ORACLE_CHAT_ERROR_CODES.CAST_LIMIT
+            data.code === CREDIT_ERROR_CODES.INSUFFICIENT ||
+            data.code === CREDIT_ERROR_CODES.PREMIUM_REQUIRED
           ) {
             setCanSend(false);
-            setUpgradeOpen(true);
+            setCreditsModalMessage(data.error);
+            setCreditsModalCode(data.code);
+            setCreditsModalOpen(true);
           }
           setMessages((prev) => prev.filter((m) => m.id !== tempUserId));
           setError(data.error ?? "The oracle could not respond.");
@@ -181,8 +185,13 @@ export function OracleChat({ initialState }: OracleChatProps) {
       };
 
       if (!res.ok) {
-        if (data.code === ORACLE_CHAT_ERROR_CODES.CAST_LIMIT) {
-          setUpgradeOpen(true);
+        if (
+          data.code === CREDIT_ERROR_CODES.INSUFFICIENT ||
+          data.code === CREDIT_ERROR_CODES.PREMIUM_REQUIRED
+        ) {
+          setCreditsModalMessage(data.error);
+          setCreditsModalCode(data.code);
+          setCreditsModalOpen(true);
         }
         setError(data.error ?? "Could not consult the oracle.");
         return;
@@ -349,18 +358,20 @@ export function OracleChat({ initialState }: OracleChatProps) {
           />
         ) : null}
 
-        {!canSend && messageLimit != null ? (
+        {!canSend ? (
           <p className="border-t border-white/5 px-4 py-2 text-center text-[10px] text-zen-muted">
-            Daily message limit reached ({messageLimit}/day on free plan)
+            <a href="/billing" className="text-amber-gold hover:underline">
+              View credits & billing
+            </a>
           </p>
         ) : null}
       </div>
 
-      <UpgradeModal
-        open={upgradeOpen}
-        onClose={() => setUpgradeOpen(false)}
-        title="Deepen your dialogue"
-        message="Premium unlocks unlimited oracle conversations, deeper reflections, and unlimited formal readings."
+      <InsufficientCreditsModal
+        open={creditsModalOpen}
+        onClose={() => setCreditsModalOpen(false)}
+        message={creditsModalMessage}
+        code={creditsModalCode}
       />
     </div>
   );

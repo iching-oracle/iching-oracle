@@ -8,6 +8,7 @@ import {
   syncFromCheckoutSession,
   syncUserFromStripeSubscription,
 } from "@/lib/subscription/stripe-sync";
+import { logSystemEvent } from "@/lib/monitoring/logger";
 import { getStripe } from "@/lib/stripe";
 
 export const runtime = "nodejs";
@@ -123,6 +124,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error("[stripe/webhook] Handler error", event.type, error);
+    await logSystemEvent({
+      level: "error",
+      category: "stripe_webhook",
+      message: `Webhook failed: ${event.type}`,
+      metadata: {
+        eventId: event.id,
+        error: error instanceof Error ? error.message : String(error),
+      },
+    });
     return NextResponse.json(
       { error: "Webhook handler failed" },
       { status: 500 },

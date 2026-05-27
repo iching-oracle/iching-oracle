@@ -14,8 +14,10 @@ export const config = {
     "/insights/:path*",
     "/oracle/:path*",
     "/settings/:path*",
+    "/billing",
     "/payment/:path*",
     "/login",
     "/register",
+    "/admin/:path*",
   ],
 };

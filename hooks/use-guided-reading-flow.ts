@@ -1,11 +1,15 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import type { QuestionCategory } from "@/lib/guided-reading/categories";
 import type { GuidedReadingResult, GuidedStep } from "@/types/guided-reading";
 import { CREDIT_ERROR_CODES } from "@/types/credits";
 
 export function useGuidedReadingFlow() {
-  const [step, setStep] = useState<GuidedStep>("welcome");
+  const [step, setStep] = useState<GuidedStep>("hero");
+  const [categoryId, setCategoryId] = useState<QuestionCategory["id"] | null>(
+    null,
+  );
   const [question, setQuestion] = useState("");
   const [result, setResult] = useState<GuidedReadingResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -33,33 +37,54 @@ export function useGuidedReadingFlow() {
     return data;
   }, [question]);
 
+  const selectCategory = useCallback((id: QuestionCategory["id"]) => {
+    setCategoryId(id);
+  }, []);
+
+  const continueFromCategory = useCallback(() => {
+    if (!categoryId) return;
+    setStep("question");
+  }, [categoryId]);
+
   const submitQuestion = useCallback((q: string) => {
     setError(null);
     setQuestion(q);
-    setStep("casting");
+    setStep("ritual");
   }, []);
 
-  const completeCast = useCallback((r: GuidedReadingResult) => {
+  const completeRitual = useCallback((r: GuidedReadingResult) => {
     setResult(r);
-    setStep("reveal");
+    setStep("reading");
   }, []);
 
-  const handleCastError = useCallback((message: string) => {
+  const handleRitualError = useCallback((message: string) => {
     setError(message);
     setStep("question");
+  }, []);
+
+  const resetFlow = useCallback(() => {
+    setResult(null);
+    setQuestion("");
+    setCategoryId(null);
+    setError(null);
+    setStep("hero");
   }, []);
 
   return {
     step,
     setStep,
+    categoryId,
     question,
     result,
     error,
     creditsModal,
     setCreditsModal,
     fetchReading,
+    selectCategory,
+    continueFromCategory,
     submitQuestion,
-    completeCast,
-    handleCastError,
+    completeRitual,
+    handleRitualError,
+    resetFlow,
   };
 }

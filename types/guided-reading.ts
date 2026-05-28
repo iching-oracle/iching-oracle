@@ -1,10 +1,10 @@
 import type { ReadingCategory } from "@/types/reading-journal";
 
 export type GuidedStep =
-  | "welcome"
+  | "hero"
+  | "category"
   | "question"
-  | "casting"
-  | "reveal"
+  | "ritual"
   | "reading"
   | "share";
 
@@ -31,3 +31,12 @@ export type DisplaySection = {
   content: string;
   premiumOnly?: boolean;
 };
+
+export type RevealBlock =
+  | { type: "hexagram"; id: string }
+  | { type: "hexagram-name"; id: string }
+  | { type: "core-meaning"; id: string; content: string }
+  | { type: "interpretation"; id: string; title: string; content: string; premiumOnly?: boolean }
+  | { type: "changing-lines"; id: string; content: string }
+  | { type: "guidance"; id: string; content: string }
+  | { type: "reflection"; id: string; content: string };

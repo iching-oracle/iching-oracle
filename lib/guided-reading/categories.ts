@@ -55,7 +55,7 @@ export const QUESTION_CATEGORIES: QuestionCategory[] = [
   },
   {
     id: "spirituality",
-    label: "Spiritual Growth",
+    label: "Spirituality",
     icon: "✦",
     description: "Inner path and awakening",
     prompts: [
@@ -66,7 +66,7 @@ export const QUESTION_CATEGORIES: QuestionCategory[] = [
   },
   {
     id: "decisions",
-    label: "Important Decisions",
+    label: "Life Decisions",
     icon: "⚖",
     description: "Crossroads and choice",
     prompts: [

@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { trackSubscriptionEvent } from "@/lib/analytics/subscription-events";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { useAnalytics } from "@/hooks/use-analytics";
 
 type UpgradeModalProps = {
   open: boolean;
@@ -18,18 +19,21 @@ export function UpgradeModal({
   message = "You've reached today's free reading limit. Premium opens unlimited consultations and deeper AI insight.",
 }: UpgradeModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const { track } = useAnalytics();
 
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
     if (open && !dialog.open) {
       dialog.showModal();
-      trackSubscriptionEvent("upgrade_clicked");
+      track(ANALYTICS_EVENTS.PAYWALL_VIEWED, {
+        properties: { source: "upgrade_modal" },
+      });
     }
     if (!open && dialog.open) {
       dialog.close();
     }
-  }, [open]);
+  }, [open, track]);
 
   return (
     <dialog

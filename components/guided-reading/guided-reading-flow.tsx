@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { OnboardingHero } from "@/components/guided-reading/onboarding-hero";
 import { CategorySelector } from "@/components/guided-reading/category-selector";
@@ -9,8 +10,15 @@ import { ProgressiveReadingReveal } from "@/components/guided-reading/progressiv
 import { ShareStep } from "@/components/guided-reading/share-step";
 import { InsufficientCreditsModal } from "@/components/credits/insufficient-credits-modal";
 import { useGuidedReadingFlow } from "@/hooks/use-guided-reading-flow";
+import { useAnalytics } from "@/hooks/use-analytics";
+import { useFunnel } from "@/hooks/use-funnel";
+import { ANALYTICS_EVENTS, ANALYTICS_FUNNELS } from "@/lib/analytics/events";
 
 export function GuidedReadingFlow() {
+  const { track } = useAnalytics();
+  const readingFunnel = useFunnel(ANALYTICS_FUNNELS.READING_CONVERSION);
+  const startedRef = useRef(false);
+
   const {
     step,
     setStep,
@@ -29,6 +37,27 @@ export function GuidedReadingFlow() {
     resetFlow,
   } = useGuidedReadingFlow();
 
+  useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    track(ANALYTICS_EVENTS.ONBOARDING_STARTED);
+    readingFunnel.trackStep("start_reading");
+  }, [track, readingFunnel]);
+
+  useEffect(() => {
+    if (step === "category" && categoryId) {
+      track(ANALYTICS_EVENTS.CATEGORY_SELECTED, {
+        properties: { category: categoryId },
+      });
+    }
+  }, [step, categoryId, track]);
+
+  useEffect(() => {
+    if (step === "question") {
+      track(ANALYTICS_EVENTS.QUESTION_STARTED);
+    }
+  }, [step, track]);
+
   return (
     <div className="relative min-h-[calc(100dvh-4.5rem)] bg-zen-bg">
       {error && (step === "question" || step === "category") && (
@@ -46,7 +75,15 @@ export function GuidedReadingFlow() {
 
       <AnimatePresence mode="wait">
         {step === "hero" && (
-          <OnboardingHero key="hero" onStart={() => setStep("category")} />
+          <OnboardingHero
+            key="hero"
+            onStart={() => {
+              track(ANALYTICS_EVENTS.CTA_CLICKED, {
+                properties: { cta_id: "start_reading_hero" },
+              });
+              setStep("category");
+            }}
+          />
         )}
 
         {step === "category" && (
@@ -64,7 +101,19 @@ export function GuidedReadingFlow() {
             key="question"
             categoryId={categoryId}
             initialQuestion={question}
-            onSubmit={submitQuestion}
+            onSubmit={(q) => {
+              track(ANALYTICS_EVENTS.QUESTION_SUBMITTED, {
+                properties: {
+                  category: categoryId ?? undefined,
+                  question_length: q.trim().length,
+                },
+              });
+              readingFunnel.trackStep("question_submitted", {
+                category: categoryId ?? undefined,
+                question_length: q.trim().length,
+              });
+              submitQuestion(q);
+            }}
             onBack={() => setStep("category")}
           />
         )}
@@ -74,7 +123,12 @@ export function GuidedReadingFlow() {
             key="ritual"
             question={question}
             fetchReading={fetchReading}
-            onComplete={completeRitual}
+            onComplete={(r) => {
+              track(ANALYTICS_EVENTS.READING_STARTED, {
+                properties: { category: r.category, hexagram: r.hexagram },
+              });
+              completeRitual(r);
+            }}
             onError={handleRitualError}
           />
         )}
@@ -83,8 +137,29 @@ export function GuidedReadingFlow() {
           <ProgressiveReadingReveal
             key="reading"
             result={result}
-            onShare={() => setStep("share")}
-            onNewReading={resetFlow}
+            onShare={() => {
+              track(ANALYTICS_EVENTS.READING_SHARED, {
+                properties: { reading_id: result.readingId },
+              });
+              setStep("share");
+            }}
+            onNewReading={() => {
+              track(ANALYTICS_EVENTS.NEW_READING_STARTED);
+              resetFlow();
+            }}
+            onReadingComplete={() => {
+              track(ANALYTICS_EVENTS.READING_COMPLETED, {
+                properties: {
+                  reading_id: result.readingId,
+                  category: result.category,
+                },
+              });
+              track(ANALYTICS_EVENTS.ONBOARDING_COMPLETED);
+              readingFunnel.trackStep("reading_completed", {
+                reading_id: result.readingId,
+                category: result.category,
+              });
+            }}
           />
         )}
 

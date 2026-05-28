@@ -22,12 +22,14 @@ type ProgressiveReadingRevealProps = {
   result: GuidedReadingResult;
   onShare: () => void;
   onNewReading: () => void;
+  onReadingComplete?: () => void;
 };
 
 export function ProgressiveReadingReveal({
   result,
   onShare,
   onNewReading,
+  onReadingComplete,
 }: ProgressiveReadingRevealProps) {
   const reduced = useReducedMotion();
   const [interpretation, setInterpretation] = useState(result.interpretation);
@@ -155,6 +157,13 @@ export function ProgressiveReadingReveal({
 
   const visibleBlocks = blocks.slice(0, visibleCount);
   const showActions = visibleCount >= blocks.length && !isLiveStreaming;
+  const completedRef = useRef(false);
+
+  useEffect(() => {
+    if (!showActions || completedRef.current) return;
+    completedRef.current = true;
+    onReadingComplete?.();
+  }, [showActions, onReadingComplete]);
 
   return (
     <motion.section

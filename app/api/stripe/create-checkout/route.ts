@@ -11,7 +11,7 @@ export async function POST() {
   }
 
   try {
-    trackSubscriptionEvent("checkout_opened", {
+    await trackSubscriptionEvent("checkout_opened", {
       userId: session.user.id,
     });
 

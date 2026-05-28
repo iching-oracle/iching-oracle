@@ -1,8 +1,13 @@
-import "server-only";
+"use client";
 
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import type { AnalyticsProperties } from "@/lib/analytics/properties";
-import { trackServerEvent } from "@/lib/analytics/server";
+import { captureClientEvent } from "@/lib/analytics/client";
+import {
+  CONSENT_STORAGE_KEY,
+  hasAnalyticsConsent,
+  parseConsent,
+} from "@/lib/compliance/consent";
 
 export type SubscriptionAnalyticsEvent =
   | "checkout_opened"
@@ -21,21 +26,25 @@ const EVENT_MAP: Record<SubscriptionAnalyticsEvent, string> = {
 
 type EventPayload = AnalyticsProperties & { userId?: string };
 
-/** Server-side subscription analytics (Stripe webhooks, API routes). */
-export async function trackSubscriptionEvent(
+/** Client-side subscription analytics (requires consent via captureClientEvent caller). */
+export function trackSubscriptionEventClient(
   event: SubscriptionAnalyticsEvent,
   payload?: EventPayload,
-): Promise<void> {
+): void {
+  const consent = parseConsent(
+    typeof window !== "undefined"
+      ? localStorage.getItem(CONSENT_STORAGE_KEY)
+      : null,
+  );
+  if (!hasAnalyticsConsent(consent)) return;
+
   const { userId, ...properties } = payload ?? {};
-  await trackServerEvent(EVENT_MAP[event], {
+  captureClientEvent(EVENT_MAP[event], {
     userId,
     properties: {
       ...properties,
       cta_id: event === "upgrade_clicked" ? "upgrade" : undefined,
-      source: "stripe",
-      plan_type: properties.plan_type ?? "PREMIUM",
-      price_cents: properties.price_cents ?? 999,
-      currency: properties.currency ?? "eur",
+      button_id: event,
     },
   });
 }

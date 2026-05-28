@@ -2,15 +2,12 @@ import "server-only";
 
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { getAdminEmailsFromEnv } from "@/lib/admin/edge-admin";
 import { prisma } from "@/lib/prisma";
 
+/** Comma-separated allowlist from ADMIN_EMAILS env. */
 export function getAdminEmails(): string[] {
-  const raw = process.env.ADMIN_EMAILS?.trim();
-  if (!raw) return [];
-  return raw
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
+  return getAdminEmailsFromEnv();
 }
 
 export async function isAdminUser(userId: string, email?: string | null): Promise<boolean> {

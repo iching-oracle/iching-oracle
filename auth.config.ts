@@ -1,5 +1,6 @@
 import type { NextAuthConfig } from "next-auth";
 import { getAuthSecret } from "@/lib/auth-env";
+import { isAdminSessionUser } from "@/lib/admin/edge-admin";
 
 /**
  * Edge-safe Auth.js config — used by middleware only.
@@ -40,6 +41,13 @@ export const authConfig = {
 
       if (isProtected && !isLoggedIn) {
         return false;
+      }
+
+      if (nextUrl.pathname.startsWith("/admin") && isLoggedIn) {
+        const user = auth?.user as { email?: string | null; role?: string };
+        if (!isAdminSessionUser(user)) {
+          return Response.redirect(new URL("/dashboard", nextUrl));
+        }
       }
 
       if (isAuthRoute && isLoggedIn) {

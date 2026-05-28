@@ -1,24 +1,15 @@
-import { AdminShell } from "@/components/admin/admin-shell";
-import { ReadingsChart } from "@/components/admin/readings-chart";
-import { getAdminOverviewStats } from "@/lib/admin/stats";
+import { AnalyticsDashboard } from "@/components/admin/analytics-dashboard/analytics-dashboard";
+import { requireAdminSession } from "@/lib/admin/guard";
+import { getMockAnalyticsDashboard } from "@/lib/admin/mock-analytics-data";
+
+export const metadata = {
+  title: "Analytics | Admin",
+  robots: { index: false, follow: false },
+};
 
 export default async function AdminAnalyticsPage() {
-  const stats = await getAdminOverviewStats();
+  await requireAdminSession();
+  const data = getMockAnalyticsDashboard();
 
-  return (
-    <AdminShell title="Analytics">
-      <section className="rounded-2xl border border-white/10 bg-zen-surface/40 p-6">
-        <h2 className="text-sm font-medium uppercase tracking-widest text-amber-gold">
-          Reading volume (30 days)
-        </h2>
-        <div className="mt-4">
-          <ReadingsChart data={stats.readingsByDay} />
-        </div>
-      </section>
-      <p className="mt-6 text-sm text-zen-muted">
-        Product analytics (PostHog / GA) respect cookie consent and appear in those
-        tools when configured.
-      </p>
-    </AdminShell>
-  );
+  return <AnalyticsDashboard data={data} />;
 }

@@ -5,8 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { loginSchema } from "@/lib/validations/auth";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { useAnalytics } from "@/hooks/use-analytics";
 
 export function LoginForm() {
+  const { track } = useAnalytics();
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
@@ -61,6 +64,9 @@ export function LoginForm() {
         return;
       }
 
+      track(ANALYTICS_EVENTS.USER_LOGGED_IN, {
+        properties: { source: "credentials" },
+      });
       router.push(callbackUrl);
       router.refresh();
     } catch {

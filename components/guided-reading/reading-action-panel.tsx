@@ -3,6 +3,8 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { gentleEase } from "@/lib/guided-reading/motion";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { useAnalytics } from "@/hooks/use-analytics";
 
 type ReadingActionPanelProps = {
   readingId: string;
@@ -15,6 +17,8 @@ export function ReadingActionPanel({
   onShare,
   onNewReading,
 }: ReadingActionPanelProps) {
+  const { track, trackButton } = useAnalytics();
+
   const actions = [
     {
       label: "Save Reading",
@@ -57,6 +61,19 @@ export function ReadingActionPanel({
             <Link
               key={action.label}
               href={action.href}
+              onClick={() => {
+                if (action.label === "Save Reading") {
+                  track(ANALYTICS_EVENTS.READING_SAVED, {
+                    properties: { reading_id: readingId },
+                  });
+                }
+                if (action.label === "Ask Follow-up Question") {
+                  track(ANALYTICS_EVENTS.FOLLOWUP_QUESTION_ASKED, {
+                    properties: { reading_id: readingId },
+                  });
+                }
+                trackButton(action.label.toLowerCase().replace(/\s+/g, "_"));
+              }}
               className={
                 action.primary
                   ? "auth-btn-primary min-h-[48px] text-center text-sm transition-transform hover:scale-[1.02]"
@@ -69,7 +86,10 @@ export function ReadingActionPanel({
             <button
               key={action.label}
               type="button"
-              onClick={action.onClick}
+              onClick={() => {
+                action.onClick?.();
+                trackButton(action.label.toLowerCase().replace(/\s+/g, "_"));
+              }}
               className="flex min-h-[48px] items-center justify-center rounded-full border border-white/15 bg-zen-bg/40 text-sm text-foreground backdrop-blur-sm transition-all hover:border-amber-gold/35 hover:bg-amber-gold/5 hover:shadow-[0_0_24px_-8px_rgba(197,160,89,0.4)]"
             >
               {action.label}

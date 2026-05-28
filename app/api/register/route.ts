@@ -4,6 +4,8 @@ import { sendVerificationEmail } from "@/lib/email";
 import { generateVerificationToken, getVerificationTokenExpiry } from "@/lib/tokens";
 import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/lib/validations/auth";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackServerEvent } from "@/lib/analytics/server";
 
 export async function POST(request: Request) {
   try {
@@ -63,6 +65,11 @@ export async function POST(request: Request) {
         { status: 503 },
       );
     }
+
+    await trackServerEvent(ANALYTICS_EVENTS.USER_SIGNED_UP, {
+      userId: user.id,
+      properties: { source: "credentials" },
+    });
 
     return NextResponse.json(
       {

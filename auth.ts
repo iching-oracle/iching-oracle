@@ -14,6 +14,8 @@ import {
 import { UnverifiedEmailError } from "@/lib/auth-errors";
 import { prisma } from "@/lib/prisma";
 import { loginSchema } from "@/lib/validations/auth";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackServerEvent } from "@/lib/analytics/server";
 
 const authSecret = getAuthSecret();
 const googleOAuth = getGoogleOAuthConfig();
@@ -93,14 +95,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           data: { emailVerified: new Date() },
         });
       }
+      if (user.id && account?.provider) {
+        await trackServerEvent(ANALYTICS_EVENTS.USER_LOGGED_IN, {
+          userId: user.id,
+          properties: { source: account.provider },
+        });
+      }
     },
   },
   callbacks: {
     ...authConfig.callbacks,
     async jwt({ token, user, account }) {
-      if (user) {
+      if (user?.id) {
         token.id = user.id;
         token.sub = user.id;
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { role: true },
+        });
+        token.role = dbUser?.role ?? "USER";
       }
       if (account) {
         token.provider = account.provider;
@@ -110,6 +123,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         session.user.id = (token.id ?? token.sub) as string;
+        session.user.role = token.role as string | undefined;
       }
       return session;
     },

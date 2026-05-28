@@ -69,8 +69,17 @@ export async function POST(request: Request) {
         const checkoutSession = event.data.object as Stripe.Checkout.Session;
         await syncFromCheckoutSession(checkoutSession);
         if (checkoutSession.metadata?.userId) {
-          trackSubscriptionEvent("subscription_started", {
+          await trackSubscriptionEvent("subscription_started", {
             userId: checkoutSession.metadata.userId,
+          });
+          const { trackServerEvent } = await import("@/lib/analytics/server");
+          const { ANALYTICS_EVENTS } = await import("@/lib/analytics/events");
+          await trackServerEvent(ANALYTICS_EVENTS.PAYMENT_COMPLETED, {
+            userId: checkoutSession.metadata.userId,
+            properties: {
+              plan_type: "PREMIUM",
+              source: "stripe",
+            },
           });
         }
         break;
@@ -94,7 +103,7 @@ export async function POST(request: Request) {
 
         if (userId) {
           await revokePremiumForUser(userId);
-          trackSubscriptionEvent("subscription_canceled", { userId });
+          await trackSubscriptionEvent("subscription_canceled", { userId });
         }
         break;
       }
@@ -110,7 +119,7 @@ export async function POST(request: Request) {
           const userId = await resolveUserIdFromCustomer(customerId);
           if (userId) {
             await markPastDue(userId);
-            trackSubscriptionEvent("payment_failed", { userId });
+            await trackSubscriptionEvent("payment_failed", { userId });
           }
         }
         break;

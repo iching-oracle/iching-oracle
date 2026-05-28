@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { trackSubscriptionEvent } from "@/lib/analytics/subscription-events";
+import { trackSubscriptionEventClient } from "@/lib/analytics/subscription-events-client";
 
 type UpgradeCheckoutButtonProps = {
   label?: string;
@@ -20,7 +20,7 @@ export function UpgradeCheckoutButton({
   async function startCheckout() {
     setLoading(true);
     setError(null);
-    trackSubscriptionEvent("upgrade_clicked");
+    trackSubscriptionEventClient("upgrade_clicked");
 
     try {
       const res = await fetch("/api/stripe/create-checkout", {
@@ -33,7 +33,7 @@ export function UpgradeCheckoutButton({
         return;
       }
 
-      trackSubscriptionEvent("checkout_opened");
+      trackSubscriptionEventClient("checkout_opened");
       window.location.href = data.url;
     } catch {
       setError("Something went wrong. Please try again.");

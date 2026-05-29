@@ -13,7 +13,9 @@ export type UserCreditRecord = SubscriptionUserRecord & {
   credits: number;
   monthlyCredits: number;
   lifetimeCreditsUsed: number;
-  creditsRefreshedAt: Date | null;
+  lastCreditRefillAt: Date | null;
+  lastCreditRefillPeriodEnd: Date | null;
+  creditsResetAt?: Date | null;
 };
 
 export function resolvePlanType(user: UserCreditRecord): PlanType {

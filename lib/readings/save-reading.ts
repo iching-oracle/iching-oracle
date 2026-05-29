@@ -25,6 +25,7 @@ import { detectReadingCategory } from "@/lib/readings/category";
 import { extractReadingSummary } from "@/lib/readings/summary";
 import { invalidatePatternInsightCache } from "@/lib/insights/invalidate";
 import { scheduleMemoryExtraction } from "@/lib/memory/schedule";
+import { touchUserActivity } from "@/lib/email/preferences";
 import { prisma } from "@/lib/prisma";
 
 /** Cast coins, interpret, and persist a new reading (always saves, even if AI fails). */
@@ -136,6 +137,7 @@ export async function saveReadingForUser(userId: string, question: string) {
 
   void invalidatePatternInsightCache(userId);
   scheduleMemoryExtraction(userId, "reading", reading.id);
+  void touchUserActivity(userId);
 
   return reading;
 }

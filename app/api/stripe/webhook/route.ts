@@ -8,6 +8,7 @@ import {
   syncFromCheckoutSession,
   syncUserFromStripeSubscription,
 } from "@/lib/subscription/stripe-sync";
+import { resetPremiumCreditsFromInvoice } from "@/lib/credits/premium-refill";
 import { logSystemEvent } from "@/lib/monitoring/logger";
 import { getStripe } from "@/lib/stripe";
 
@@ -104,6 +105,25 @@ export async function POST(request: Request) {
         if (userId) {
           await revokePremiumForUser(userId);
           await trackSubscriptionEvent("subscription_canceled", { userId });
+        }
+        break;
+      }
+
+      case "invoice.paid": {
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId =
+          typeof invoice.customer === "string"
+            ? invoice.customer
+            : invoice.customer?.id;
+
+        if (customerId) {
+          const userId = await resolveUserIdFromCustomer(customerId);
+          if (userId) {
+            const result = await resetPremiumCreditsFromInvoice(invoice, userId);
+            if (!result.ok) {
+              console.error("[stripe/webhook] Credit refill failed", result.reason);
+            }
+          }
         }
         break;
       }

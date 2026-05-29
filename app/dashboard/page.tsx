@@ -13,6 +13,10 @@ import { getPreferredLanguageForUser } from "@/lib/user/preferred-language";
 import { PremiumBadge } from "@/components/subscription/PremiumBadge";
 import { ManageSubscriptionButton } from "@/components/subscription/ManageSubscriptionButton";
 import { formatPremiumExpiry, hasPremiumAccess } from "@/lib/premium";
+import { ContinueJourneyPrompt } from "@/components/retention/continue-journey-prompt";
+import { ReflectionStreakWidget } from "@/components/retention/reflection-streak-widget";
+import { ReflectionTimeline } from "@/components/retention/reflection-timeline";
+import { getRetentionDashboardStats } from "@/lib/retention/dashboard-stats";
 import {
   FREE_DAILY_READING_LIMIT,
   getUsageLimitsForUser,
@@ -36,10 +40,11 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const [recentHistory, preferredLanguage, usage] = await Promise.all([
+  const [recentHistory, preferredLanguage, usage, retention] = await Promise.all([
     getRecentReadingHistory(session.user.id, 3),
     getPreferredLanguageForUser(session.user.id),
     getUsageLimitsForUser(session.user.id),
+    getRetentionDashboardStats(session.user.id),
   ]);
   const dateLocale = localeForLanguage(preferredLanguage);
 
@@ -87,6 +92,18 @@ export default async function DashboardPage() {
             </Link>
           </div>
         </div>
+
+        <ReflectionStreakWidget
+          streak={retention.dailyStreak}
+          lastDailyVisit={retention.lastDailyVisit}
+        />
+
+        <ContinueJourneyPrompt
+          daysSinceLastReading={retention.daysSinceLastReading}
+          hasReadings={retention.readingCount > 0}
+        />
+
+        <ReflectionTimeline userId={session.user.id} />
 
         <section className="rounded-2xl border border-white/10 bg-zen-surface/70 p-6 backdrop-blur-xl sm:p-8">
           <h2 className="sr-only">Account</h2>

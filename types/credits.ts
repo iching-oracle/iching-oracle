@@ -13,9 +13,14 @@ export type CreditTransactionType = "ADD" | "SPEND" | "REFUND";
 export type CreditBalanceDTO = {
   planType: PlanType;
   credits: number;
+  /** @deprecated use monthlyCreditQuota */
   monthlyCredits: number;
+  monthlyCreditQuota: number;
   lifetimeCreditsUsed: number;
   nextRefillAt: string | null;
+  creditsResetAt: string | null;
+  lastCreditRefillAt: string | null;
+  lastCreditRefillPeriodEnd: string | null;
   isPremium: boolean;
   subscriptionStatus: string;
   currentPeriodEnd: string | null;

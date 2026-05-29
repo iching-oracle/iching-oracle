@@ -4,9 +4,7 @@ import { auth } from "@/auth";
 import { PremiumBadge } from "@/components/subscription/PremiumBadge";
 import { formatPremiumExpiry } from "@/lib/premium";
 import { isPremiumUser } from "@/lib/subscription";
-import { syncFromCheckoutSession } from "@/lib/subscription/stripe-sync";
 import { prisma } from "@/lib/prisma";
-import { getStripe } from "@/lib/stripe";
 
 type PageProps = {
   searchParams: Promise<{ session_id?: string }>;
@@ -22,19 +20,7 @@ export default async function SuccessPage({ searchParams }: PageProps) {
     redirect("/login?callbackUrl=/success");
   }
 
-  const { session_id: sessionId } = await searchParams;
-
-  if (sessionId) {
-    try {
-      const checkoutSession =
-        await getStripe().checkout.sessions.retrieve(sessionId);
-      if (checkoutSession.metadata?.userId === session.user.id) {
-        await syncFromCheckoutSession(checkoutSession);
-      }
-    } catch (error) {
-      console.error("[success] Session sync failed", error);
-    }
-  }
+  await searchParams;
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -68,7 +54,7 @@ export default async function SuccessPage({ searchParams }: PageProps) {
           interpretation, and your full spiritual journal.
           {isPremium && expiryLabel
             ? ` Active through ${expiryLabel}.`
-            : " Your account will update momentarily if checkout just completed."}
+            : " Your account will update momentarily once checkout completes."}
         </p>
         <ul className="mt-6 space-y-2 text-left text-sm text-foreground/85">
           <li className="flex gap-2">

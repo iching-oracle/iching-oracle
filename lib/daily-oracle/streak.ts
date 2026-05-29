@@ -1,6 +1,8 @@
 import "server-only";
 
 import { parseDateOnly } from "@/lib/daily-oracle/seed";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackServerEvent } from "@/lib/analytics/server";
 import { prisma } from "@/lib/prisma";
 
 function daysBetween(a: Date, b: Date): number {
@@ -32,6 +34,12 @@ export async function updateDailyStreakForUser(
     } else if (gap === 1) {
       streak = streak + 1;
     } else {
+      if (user.dailyStreak > 1) {
+        void trackServerEvent(ANALYTICS_EVENTS.STREAK_RESTORED, {
+          userId,
+          properties: { previous_streak: user.dailyStreak },
+        });
+      }
       streak = 1;
     }
   }

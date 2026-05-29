@@ -92,6 +92,12 @@ export async function Navbar() {
                 Memory
               </Link>
               <Link
+                href="/settings/notifications"
+                className="hidden text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-amber-gold sm:inline"
+              >
+                Emails
+              </Link>
+              <Link
                 href="/history"
                 className="hidden items-center gap-1.5 text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-amber-gold sm:inline-flex"
               >

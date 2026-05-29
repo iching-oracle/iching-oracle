@@ -14,6 +14,9 @@ export default async function AdminUsersPage() {
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Plan</th>
               <th className="px-4 py-3">Credits</th>
+              <th className="px-4 py-3">Quota</th>
+              <th className="px-4 py-3">Last refill</th>
+              <th className="px-4 py-3">Next reset</th>
               <th className="px-4 py-3">Readings</th>
               <th className="px-4 py-3">Joined</th>
             </tr>
@@ -29,6 +32,19 @@ export default async function AdminUsersPage() {
                 </td>
                 <td className="px-4 py-3">{u.subscriptionStatus}</td>
                 <td className="px-4 py-3">{u.credits}</td>
+                <td className="px-4 py-3">{u.monthlyCredits}</td>
+                <td className="px-4 py-3">
+                  {u.lastCreditRefillAt
+                    ? formatDateTime(u.lastCreditRefillAt, "en-US")
+                    : "—"}
+                </td>
+                <td className="px-4 py-3">
+                  {u.creditsResetAt
+                    ? formatDateTime(u.creditsResetAt, "en-US")
+                    : u.subscriptionCurrentPeriodEnd
+                      ? formatDateTime(u.subscriptionCurrentPeriodEnd, "en-US")
+                      : "—"}
+                </td>
                 <td className="px-4 py-3">{u._count.readings}</td>
                 <td className="px-4 py-3">
                   {formatDateTime(u.createdAt, "en-US")}

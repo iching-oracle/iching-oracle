@@ -1,124 +1,146 @@
 import "server-only";
 
+import { FREE_DAILY_CREDITS } from "@/lib/credits/constants";
 import {
-  FREE_DAILY_CREDITS,
-  PREMIUM_MONTHLY_CREDITS,
-} from "@/lib/credits/constants";
-import {
-  allocationForUser,
-  resolvePlanType,
-  type UserCreditRecord,
-} from "@/lib/credits/plan";
+  computeCreditsResetAt,
+  nextUtcDayStart,
+  shouldRefillFreeDaily,
+  type RefillEligibilityInput,
+} from "@/lib/credits/billing-period";
+import { resolvePlanType, type UserCreditRecord } from "@/lib/credits/plan";
+import { isPremiumUser } from "@/lib/subscription";
 import { prisma } from "@/lib/prisma";
-import type { PlanType } from "@/types/credits";
 
-function startOfUtcDay(): Date {
-  const now = new Date();
-  return new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
-  );
-}
+export type FreeRefillResult =
+  | { ok: true; skipped: true; reason: string }
+  | { ok: true; skipped: false; quota: number }
+  | { ok: false; reason: string };
 
-function shouldRefillFree(user: UserCreditRecord, now: Date): boolean {
-  if (!user.creditsRefreshedAt) return true;
-  return user.creditsRefreshedAt < startOfUtcDay();
-}
-
-function shouldRefillPremium(
-  user: UserCreditRecord,
-  now: Date,
-): boolean {
-  if (!user.creditsRefreshedAt) return true;
-  const periodEnd = user.subscriptionCurrentPeriodEnd;
-  if (!periodEnd) {
-    const dayStart = startOfUtcDay();
-    return user.creditsRefreshedAt < dayStart;
-  }
-  const periodStart = new Date(periodEnd);
-  periodStart.setMonth(periodStart.getMonth() - 1);
-  return user.creditsRefreshedAt < periodStart;
-}
-
-export function computeNextRefillAt(
-  user: UserCreditRecord,
-  planType: PlanType,
-): Date | null {
-  const now = new Date();
-  if (planType === "FREE") {
-    const next = startOfUtcDay();
-    next.setUTCDate(next.getUTCDate() + 1);
-    return next;
-  }
-
-  if (user.subscriptionCurrentPeriodEnd && user.subscriptionCurrentPeriodEnd > now) {
-    return user.subscriptionCurrentPeriodEnd;
-  }
-
-  const next = new Date(now);
-  next.setUTCMonth(next.getUTCMonth() + 1, 1);
-  next.setUTCHours(0, 0, 0, 0);
-  return next;
-}
-
-/** Idempotent refill — call before balance checks. */
-export async function ensureCreditsRefreshed(userId: string): Promise<void> {
+/** Cron-only free tier reset. Never call from page loads or auth. */
+export async function refillFreeCreditsIfDue(
+  userId: string,
+): Promise<FreeRefillResult> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
       planType: true,
       credits: true,
       monthlyCredits: true,
-      creditsRefreshedAt: true,
+      lastCreditRefillAt: true,
+      lastCreditRefillPeriodEnd: true,
       subscriptionStatus: true,
       subscriptionCurrentPeriodEnd: true,
       premiumUntil: true,
     },
   });
 
-  if (!user) return;
+  if (!user) return { ok: false, reason: "user_not_found" };
 
   const record = user as UserCreditRecord;
-  const planType = resolvePlanType(record);
-  const now = new Date();
-  const needsRefill =
-    planType === "PREMIUM"
-      ? shouldRefillPremium(record, now)
-      : shouldRefillFree(record, now);
+  const isPremium = isPremiumUser(user);
+  const input: RefillEligibilityInput = {
+    planType: user.planType,
+    isPremium,
+    lastCreditRefillAt: user.lastCreditRefillAt,
+    lastCreditRefillPeriodEnd: user.lastCreditRefillPeriodEnd,
+    subscriptionCurrentPeriodEnd: user.subscriptionCurrentPeriodEnd,
+  };
 
-  if (!needsRefill) {
+  if (!shouldRefillFreeDaily(input)) {
+    const planType = resolvePlanType(record);
     if (user.planType !== planType) {
       await prisma.user.update({
         where: { id: userId },
         data: { planType },
       });
     }
-    return;
+    return { ok: true, skipped: true, reason: "not_due" };
   }
 
-  const allocation =
-    planType === "PREMIUM" ? PREMIUM_MONTHLY_CREDITS : FREE_DAILY_CREDITS;
+  const now = new Date();
+  const nextReset = nextUtcDayStart(now);
 
-  await prisma.$transaction(async (tx) => {
-    await tx.user.update({
-      where: { id: userId },
-      data: {
-        planType,
-        credits: allocation,
-        monthlyCredits: allocation,
-        creditsRefreshedAt: now,
-      },
+  try {
+    await prisma.$transaction(async (tx) => {
+      const current = await tx.user.findUnique({
+        where: { id: userId },
+        select: {
+          planType: true,
+          lastCreditRefillAt: true,
+          subscriptionStatus: true,
+          subscriptionCurrentPeriodEnd: true,
+          premiumUntil: true,
+        },
+      });
+      if (!current) throw new Error("USER_NOT_FOUND");
+      if (isPremiumUser(current)) throw new Error("PREMIUM_USER");
+
+      const eligibility: RefillEligibilityInput = {
+        planType: current.planType,
+        isPremium: false,
+        lastCreditRefillAt: current.lastCreditRefillAt,
+        lastCreditRefillPeriodEnd: null,
+        subscriptionCurrentPeriodEnd: current.subscriptionCurrentPeriodEnd,
+      };
+      if (!shouldRefillFreeDaily(eligibility, now)) {
+        throw new Error("NOT_DUE");
+      }
+
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          planType: "FREE",
+          credits: FREE_DAILY_CREDITS,
+          monthlyCredits: FREE_DAILY_CREDITS,
+          lastCreditRefillAt: now,
+          creditsResetAt: nextReset,
+          lastCreditRefillPeriodEnd: null,
+        },
+      });
+
+      await tx.creditTransaction.create({
+        data: {
+          userId,
+          type: "ADD",
+          amount: FREE_DAILY_CREDITS,
+          reason: "Daily free credit reset",
+        },
+      });
     });
 
-    await tx.creditTransaction.create({
-      data: {
-        userId,
-        type: "ADD",
-        amount: allocation,
-        reason:
-          planType === "PREMIUM"
-            ? "Monthly premium credit refill"
-            : "Daily free credit refill",
-      },
-    });
-  });
+    return { ok: true, skipped: false, quota: FREE_DAILY_CREDITS };
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === "NOT_DUE") {
+        return { ok: true, skipped: true, reason: "not_due" };
+      }
+      if (error.message === "PREMIUM_USER") {
+        return { ok: true, skipped: true, reason: "premium_user" };
+      }
+    }
+    console.error("[credits] Free refill failed", error);
+    return { ok: false, reason: "transaction_failed" };
+  }
+}
+
+export { computeCreditsResetAt } from "@/lib/credits/billing-period";
+
+export function computeNextRefillAt(
+  user: UserCreditRecord & { creditsResetAt?: Date | null },
+  planType: ReturnType<typeof resolvePlanType>,
+): Date | null {
+  if (user.creditsResetAt && user.creditsResetAt > new Date()) {
+    return user.creditsResetAt;
+  }
+
+  return computeCreditsResetAt(
+    {
+      planType: user.planType,
+      isPremium: planType === "PREMIUM",
+      lastCreditRefillAt: user.lastCreditRefillAt,
+      lastCreditRefillPeriodEnd: user.lastCreditRefillPeriodEnd,
+      subscriptionCurrentPeriodEnd: user.subscriptionCurrentPeriodEnd,
+    },
+    planType,
+  );
 }

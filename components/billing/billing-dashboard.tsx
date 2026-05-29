@@ -32,8 +32,14 @@ export function BillingDashboard({
   usage,
   transactions,
 }: BillingDashboardProps) {
-  const refillLabel = balance.nextRefillAt
-    ? formatDateTime(balance.nextRefillAt, "en-US")
+  const refillLabel = balance.creditsResetAt
+    ? formatDateTime(balance.creditsResetAt, "en-US")
+    : balance.nextRefillAt
+      ? formatDateTime(balance.nextRefillAt, "en-US")
+      : "—";
+
+  const lastRefillLabel = balance.lastCreditRefillAt
+    ? formatDateTime(balance.lastCreditRefillAt, "en-US")
     : "—";
 
   return (
@@ -51,7 +57,7 @@ export function BillingDashboard({
             {balance.credits}
           </p>
           <p className="mt-1 text-xs text-zen-muted">
-            of {balance.monthlyCredits} this period
+            of {balance.monthlyCreditQuota} this period
           </p>
         </motion.div>
 
@@ -79,14 +85,25 @@ export function BillingDashboard({
           className="rounded-2xl border border-white/10 bg-zen-surface/70 p-6 backdrop-blur-xl"
         >
           <p className="text-[10px] uppercase tracking-[0.3em] text-zen-muted">
-            Next refill
+            Next reset
           </p>
           <p className="mt-2 text-sm text-foreground">{refillLabel}</p>
+          <p className="mt-1 text-xs text-zen-muted">
+            Last refill: {lastRefillLabel}
+          </p>
           <p className="mt-1 text-xs text-zen-muted">
             Lifetime used: {balance.lifetimeCreditsUsed}
           </p>
         </motion.div>
       </div>
+
+      {balance.isPremium && balance.currentPeriodEnd ? (
+        <p className="rounded-xl border border-white/10 bg-zen-surface/50 px-4 py-3 text-sm text-zen-muted">
+          Billing cycle ends{" "}
+          {formatDateTime(balance.currentPeriodEnd, "en-US")}. Credits reset when
+          Stripe confirms your renewal payment.
+        </p>
+      ) : null}
 
       {balance.lowCreditWarning ? (
         <p className="rounded-xl border border-amber-gold/30 bg-amber-gold/10 px-4 py-3 text-sm text-amber-gold">

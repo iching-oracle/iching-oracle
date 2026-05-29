@@ -8,6 +8,9 @@ import {
   getOrCreateDailyOracleForVisitor,
 } from "@/lib/daily-oracle/service";
 import {
+  touchUserActivity,
+} from "@/lib/email/preferences";
+import {
   VISITOR_COOKIE_NAME,
   visitorCookieOptions,
 } from "@/lib/daily-oracle/visitor";
@@ -21,6 +24,7 @@ export async function resolveDailyOracleForPage(): Promise<{
 
   if (session?.user?.id) {
     const oracle = await getOrCreateDailyOracleForUser(session.user.id);
+    void touchUserActivity(session.user.id);
     return { oracle };
   }
 

@@ -8,7 +8,7 @@ import {
   parseLineValues,
   serializeLineValues,
 } from "@/lib/daily-oracle/seed";
-import { updateDailyStreakForUser } from "@/lib/daily-oracle/streak";
+import { updateDailyStreakForUser, getDailyStreakForUser } from "@/lib/daily-oracle/streak";
 import { normalizeLanguageCode } from "@/lib/i18n/languages";
 import {
   findHexagramNumber,
@@ -92,7 +92,10 @@ async function createDailyOracleRecord(params: {
 export async function getOrCreateDailyOracleForUser(
   userId: string,
   dateKey = getTodayDateString(),
+  options?: { updateStreak?: boolean },
 ): Promise<DailyOraclePayload> {
+  const updateStreak = options?.updateStreak !== false;
+
   const existing = await prisma.dailyOracle.findUnique({
     where: {
       userId_date: {
@@ -103,7 +106,9 @@ export async function getOrCreateDailyOracleForUser(
   });
 
   if (existing) {
-    const streak = await updateDailyStreakForUser(userId, dateKey);
+    const streak = updateStreak
+      ? await updateDailyStreakForUser(userId, dateKey)
+      : await getDailyStreakForUser(userId);
     return toPayload(existing, { streak, isAuthenticated: true });
   }
 
@@ -121,7 +126,9 @@ export async function getOrCreateDailyOracleForUser(
     language,
   });
 
-  const streak = await updateDailyStreakForUser(userId, dateKey);
+  const streak = updateStreak
+    ? await updateDailyStreakForUser(userId, dateKey)
+    : await getDailyStreakForUser(userId);
   return toPayload(record, { streak, isAuthenticated: true });
 }
 

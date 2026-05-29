@@ -1,7 +1,7 @@
 import "server-only";
 
 import { LOW_CREDIT_THRESHOLD } from "@/lib/credits/constants";
-import { computeNextRefillAt, ensureCreditsRefreshed } from "@/lib/credits/refill";
+import { computeNextRefillAt } from "@/lib/credits/refill";
 import { resolvePlanType, type UserCreditRecord } from "@/lib/credits/plan";
 import { isPremiumUser } from "@/lib/subscription";
 import { prisma } from "@/lib/prisma";
@@ -12,7 +12,9 @@ const userSelect = {
   credits: true,
   monthlyCredits: true,
   lifetimeCreditsUsed: true,
-  creditsRefreshedAt: true,
+  lastCreditRefillAt: true,
+  creditsResetAt: true,
+  lastCreditRefillPeriodEnd: true,
   subscriptionStatus: true,
   subscriptionCurrentPeriodEnd: true,
   premiumUntil: true,
@@ -23,8 +25,6 @@ const userSelect = {
 export async function getCreditBalance(
   userId: string,
 ): Promise<CreditBalanceDTO | null> {
-  await ensureCreditsRefreshed(userId);
-
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: userSelect,
@@ -40,8 +40,13 @@ export async function getCreditBalance(
     planType,
     credits: user.credits,
     monthlyCredits: user.monthlyCredits,
+    monthlyCreditQuota: user.monthlyCredits,
     lifetimeCreditsUsed: user.lifetimeCreditsUsed,
     nextRefillAt: nextRefill?.toISOString() ?? null,
+    creditsResetAt: user.creditsResetAt?.toISOString() ?? null,
+    lastCreditRefillAt: user.lastCreditRefillAt?.toISOString() ?? null,
+    lastCreditRefillPeriodEnd:
+      user.lastCreditRefillPeriodEnd?.toISOString() ?? null,
     isPremium: isPremiumUser(user),
     subscriptionStatus: user.subscriptionStatus,
     currentPeriodEnd: user.subscriptionCurrentPeriodEnd?.toISOString() ?? null,
@@ -53,7 +58,6 @@ export async function hasEnoughCredits(
   userId: string,
   amount: number,
 ): Promise<boolean> {
-  await ensureCreditsRefreshed(userId);
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { credits: true },
@@ -120,8 +124,6 @@ export async function spendCredits(params: {
     });
     return { ok: true };
   }
-
-  await ensureCreditsRefreshed(userId);
 
   try {
     await prisma.$transaction(async (tx) => {

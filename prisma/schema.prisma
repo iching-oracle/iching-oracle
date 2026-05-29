@@ -26,9 +26,13 @@ model User {
   subscriptionCurrentPeriodEnd  DateTime?
   planType                      String    @default("FREE")
   credits                       Int       @default(10)
+  /// Monthly/daily quota cap (reset target, not accumulated balance)
   monthlyCredits                Int       @default(10)
   lifetimeCreditsUsed           Int       @default(0)
-  creditsRefreshedAt            DateTime?
+  lastCreditRefillAt            DateTime?
+  creditsResetAt                DateTime?
+  /// Stripe billing period end when credits were last reset
+  lastCreditRefillPeriodEnd     DateTime?
   preferredLanguage    String  @default("de")
   memoryEnabled        Boolean   @default(true)
   memoryLastExtractedAt DateTime?
@@ -48,6 +52,55 @@ model User {
   dailyOracles  DailyOracle[]
   dailyStreak   Int @default(0)
   lastDailyVisit DateTime?
+  lastActivityAt DateTime?
+
+  /// Email lifecycle preferences (GDPR; transactional auth emails always allowed)
+  emailDailyGuidance      Boolean  @default(true)
+  emailWeeklyReflection   Boolean  @default(true)
+  emailReengagement       Boolean  @default(true)
+  emailProductUpdates     Boolean  @default(false)
+  emailMarketing          Boolean  @default(false)
+  emailUnsubscribeToken   String?  @unique
+  emailGlobalUnsubscribedAt DateTime?
+  lastDailyEmailAt        DateTime?
+  lastWeeklyEmailAt       DateTime?
+  lastReengagementEmailAt DateTime?
+  lastReengagementTier    Int?
+
+  emailSendLogs EmailSendLog[]
+  creditBillingRefills CreditBillingRefill[]
+}
+
+model CreditBillingRefill {
+  id              String   @id @default(cuid())
+  userId          String
+  stripeInvoiceId String?  @unique
+  periodStart     DateTime
+  periodEnd       DateTime
+  quota           Int
+  createdAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, periodEnd])
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+model EmailSendLog {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  resendId  String?
+  subject   String?
+  openedAt  DateTime?
+  clickedAt DateTime?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type, createdAt(sort: Desc)])
+  @@index([type, createdAt(sort: Desc)])
 }
 
 model Reading {

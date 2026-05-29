@@ -38,7 +38,12 @@ export const ANALYTICS_EVENTS = {
   PAYMENT_COMPLETED: "payment_completed",
   SUBSCRIPTION_CANCELLED: "subscription_cancelled",
 
-  // Feedback
+  // Email lifecycle
+  EMAIL_SENT: "email_sent",
+  EMAIL_OPENED: "email_opened",
+  EMAIL_CLICKED: "email_clicked",
+  REENGAGEMENT_SUCCESS: "reengagement_success",
+  STREAK_RESTORED: "streak_restored",
   READING_FEEDBACK: "reading_feedback",
 
   // Errors

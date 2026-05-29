@@ -19,6 +19,6 @@ export {
   getUserPlanLimits,
 } from "@/lib/credits/assert";
 
-export { ensureCreditsRefreshed } from "@/lib/credits/refill";
+export { refillFreeCreditsIfDue, computeNextRefillAt } from "@/lib/credits/refill";
 export { getUsageHistory, getTransactionHistory } from "@/lib/credits/history";
 export { resolvePlanType } from "@/lib/credits/plan";

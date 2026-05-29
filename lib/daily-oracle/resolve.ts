@@ -1,6 +1,5 @@
 import "server-only";
 
-import { randomBytes } from "crypto";
 import { cookies } from "next/headers";
 import { auth } from "@/auth";
 import {
@@ -13,13 +12,11 @@ import {
 } from "@/lib/email/preferences";
 import {
   VISITOR_COOKIE_NAME,
-  visitorCookieOptions,
 } from "@/lib/daily-oracle/visitor";
 import type { DailyOraclePayload } from "@/types/daily-oracle";
 
 export async function resolveDailyOracleForPage(): Promise<{
   oracle: DailyOraclePayload;
-  setVisitorCookie?: ReturnType<typeof visitorCookieOptions>;
 }> {
   const session = await auth();
   const userId = await resolveValidUserId(session?.user?.id);
@@ -31,21 +28,13 @@ export async function resolveDailyOracleForPage(): Promise<{
   }
 
   const cookieStore = await cookies();
-  let visitorKey = cookieStore.get(VISITOR_COOKIE_NAME)?.value?.trim();
-  const shouldSetCookie = !visitorKey;
+  const visitorKey = cookieStore.get(VISITOR_COOKIE_NAME)?.value?.trim();
 
   if (!visitorKey) {
-    visitorKey = randomBytes(16).toString("hex");
+    throw new Error("Visitor cookie missing after ensure-visitor redirect");
   }
 
   const oracle = await getOrCreateDailyOracleForVisitor(visitorKey);
-
-  if (shouldSetCookie) {
-    return {
-      oracle,
-      setVisitorCookie: visitorCookieOptions(visitorKey),
-    };
-  }
 
   return { oracle };
 }

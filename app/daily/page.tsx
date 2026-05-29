@@ -1,6 +1,10 @@
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 import { DailyOracleExperience } from "@/components/daily/DailyOracleExperience";
+import { resolveValidUserId } from "@/lib/daily-oracle/identity";
 import { resolveDailyOracleForPage } from "@/lib/daily-oracle/resolve";
+import { VISITOR_COOKIE_NAME } from "@/lib/daily-oracle/visitor";
 import { formatWeekdayDate } from "@/lib/format-date";
 
 export const metadata = {
@@ -10,12 +14,17 @@ export const metadata = {
 };
 
 export default async function DailyOraclePage() {
-  const { oracle, setVisitorCookie } = await resolveDailyOracleForPage();
+  const session = await auth();
+  const userId = await resolveValidUserId(session?.user?.id);
 
-  if (setVisitorCookie) {
+  if (!userId) {
     const cookieStore = await cookies();
-    cookieStore.set(setVisitorCookie);
+    if (!cookieStore.get(VISITOR_COOKIE_NAME)?.value?.trim()) {
+      redirect("/api/daily-oracle/ensure-visitor");
+    }
   }
+
+  const { oracle } = await resolveDailyOracleForPage();
 
   const dateLabel = formatWeekdayDate(`${oracle.date}T12:00:00Z`, "en-US");
 

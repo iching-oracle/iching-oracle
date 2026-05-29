@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { auth } from "@/auth";
 import { getTodayOracleTeaser } from "@/lib/daily-oracle/service";
+import { resolveValidUserId } from "@/lib/daily-oracle/identity";
 import { VISITOR_COOKIE_NAME } from "@/lib/daily-oracle/visitor";
 import { getHexagram } from "@/lib/hexagrams";
 
@@ -9,11 +10,9 @@ export async function DailyOraclePreview() {
   const session = await auth();
   const cookieStore = await cookies();
   const visitorKey = cookieStore.get(VISITOR_COOKIE_NAME)?.value?.trim();
+  const userId = await resolveValidUserId(session?.user?.id);
 
-  const teaser = await getTodayOracleTeaser(
-    session?.user?.id ?? null,
-    visitorKey ?? null,
-  );
+  const teaser = await getTodayOracleTeaser(userId, visitorKey ?? null);
   const hex = getHexagram(teaser.hexagramNumber);
 
   return (

@@ -3,8 +3,11 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  /// Pooled/runtime URL (PgBouncer, Neon pooler, Prisma Accelerate prisma://…)
+  url       = env("DATABASE_URL")
+  /// Direct connection for migrations only — set to non-pooled URL in production
+  directUrl = env("DIRECT_URL")
 }
 
 model User {

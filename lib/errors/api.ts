@@ -2,6 +2,11 @@ import "server-only";
 
 import { NextResponse } from "next/server";
 import { USER_MESSAGES } from "@/lib/errors/messages";
+import {
+  isPrismaConnectionError,
+  isPrismaTimeoutError,
+  prismaErrorCategory,
+} from "@/lib/errors/prisma";
 import { logSystemEvent } from "@/lib/monitoring/logger";
 
 export type ApiErrorCode =
@@ -13,6 +18,7 @@ export type ApiErrorCode =
   | "INSUFFICIENT_CREDITS"
   | "AI_FAILED"
   | "PAYMENT_FAILED"
+  | "DATABASE_UNAVAILABLE"
   | "INTERNAL";
 
 type ApiErrorBody = {
@@ -70,16 +76,35 @@ export async function handleRouteError(
   const internal =
     error instanceof Error ? error.message : String(error);
 
+  const dbCategory = prismaErrorCategory(error);
+
   await logSystemEvent({
     level: "error",
-    category: context.category,
+    category:
+      dbCategory === "connection" || dbCategory === "timeout"
+        ? "database_connection"
+        : context.category,
     message: internal.slice(0, 4000),
     userId: context.userId,
     path: context.path,
     metadata: {
       stack: error instanceof Error ? error.stack : undefined,
+      dbCategory,
+      prismaConnectionError: isPrismaConnectionError(error),
     },
   });
+
+  if (isPrismaConnectionError(error)) {
+    return apiError(503, USER_MESSAGES.databaseBusy, {
+      code: "DATABASE_UNAVAILABLE",
+    });
+  }
+
+  if (isPrismaTimeoutError(error)) {
+    return apiError(503, USER_MESSAGES.databaseUnavailable, {
+      code: "DATABASE_UNAVAILABLE",
+    });
+  }
 
   return apiError(500, context.userMessage ?? USER_MESSAGES.generic, {
     code: "INTERNAL",

@@ -19,6 +19,10 @@ export const USER_MESSAGES = {
     "Payment could not be completed. Please check your card or try again.",
   checkoutFailed: "Unable to start checkout. Please try again in a moment.",
   network: "Connection interrupted. Check your network and try again.",
+  databaseUnavailable:
+    "The oracle's records are momentarily unreachable. Please try again shortly.",
+  databaseBusy:
+    "The oracle is receiving many visitors. Please wait a moment and try again.",
   notFound: "This path leads nowhere. The page may have moved.",
   supportFailed: "Could not send your message. Please try again or email us.",
 } as const;

@@ -7,6 +7,7 @@ import {
   getOrCreateDailyOracleForUser,
   getOrCreateDailyOracleForVisitor,
 } from "@/lib/daily-oracle/service";
+import { resolveValidUserId } from "@/lib/daily-oracle/identity";
 import {
   touchUserActivity,
 } from "@/lib/email/preferences";
@@ -21,10 +22,11 @@ export async function resolveDailyOracleForPage(): Promise<{
   setVisitorCookie?: ReturnType<typeof visitorCookieOptions>;
 }> {
   const session = await auth();
+  const userId = await resolveValidUserId(session?.user?.id);
 
-  if (session?.user?.id) {
-    const oracle = await getOrCreateDailyOracleForUser(session.user.id);
-    void touchUserActivity(session.user.id);
+  if (userId) {
+    const oracle = await getOrCreateDailyOracleForUser(userId);
+    void touchUserActivity(userId);
     return { oracle };
   }
 

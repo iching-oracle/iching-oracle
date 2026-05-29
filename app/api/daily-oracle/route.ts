@@ -6,6 +6,7 @@ import {
   getOrCreateDailyOracleForUser,
   getOrCreateDailyOracleForVisitor,
 } from "@/lib/daily-oracle/service";
+import { resolveValidUserId } from "@/lib/daily-oracle/identity";
 import {
   VISITOR_COOKIE_NAME,
   visitorCookieOptions,
@@ -14,9 +15,10 @@ import {
 export async function GET() {
   try {
     const session = await auth();
+    const userId = await resolveValidUserId(session?.user?.id);
 
-    if (session?.user?.id) {
-      const oracle = await getOrCreateDailyOracleForUser(session.user.id);
+    if (userId) {
+      const oracle = await getOrCreateDailyOracleForUser(userId);
       return NextResponse.json({ oracle });
     }
 

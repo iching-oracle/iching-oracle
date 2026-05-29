@@ -116,7 +116,12 @@ export async function getOrCreateDailyOracleForUser(
     where: { id: userId },
     select: { preferredLanguage: true },
   });
-  const language = normalizeLanguageCode(user?.preferredLanguage);
+
+  if (!user) {
+    throw new Error("DAILY_ORACLE_USER_NOT_FOUND");
+  }
+
+  const language = normalizeLanguageCode(user.preferredLanguage);
 
   const record = await createDailyOracleRecord({
     userId,

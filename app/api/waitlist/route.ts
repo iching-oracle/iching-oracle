@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { joinWaitlist } from "@/lib/beta/waitlist";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
+import { trackServerEvent } from "@/lib/analytics/server";
 import {
   RATE_LIMITS,
   rateLimitByIp,
@@ -10,8 +12,10 @@ import { handleRouteError } from "@/lib/errors/api";
 
 const bodySchema = z.object({
   email: z.string().email().max(254),
+  name: z.string().max(120).optional(),
   source: z.string().max(64).optional(),
   referrer: z.string().max(256).optional(),
+  referralCode: z.string().max(64).optional(),
 });
 
 export async function POST(request: Request) {
@@ -32,23 +36,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Valid email required" }, { status: 400 });
   }
 
-  const email = parsed.data.email.toLowerCase().trim();
-
   try {
-    await prisma.waitlistEntry.upsert({
-      where: { email },
-      create: {
-        email,
-        source: parsed.data.source,
-        referrer: parsed.data.referrer,
-      },
-      update: {
-        source: parsed.data.source ?? undefined,
+    const result = await joinWaitlist(parsed.data);
+
+    await trackServerEvent(ANALYTICS_EVENTS.BETA_WAITLIST_JOINED, {
+      properties: {
+        source: parsed.data.source ?? "unknown",
+        created: result.created,
+        position: result.position,
       },
     });
 
     return NextResponse.json({
-      message: "Welcome — you are on the early access list.",
+      message: result.created
+        ? "Welcome — you are on the early access list."
+        : "You are already on the list. We will be in touch.",
+      position: result.position,
+      created: result.created,
     });
   } catch (error) {
     return handleRouteError(error, {

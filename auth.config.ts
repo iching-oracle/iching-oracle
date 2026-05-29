@@ -34,6 +34,7 @@ export const authConfig = {
         nextUrl.pathname.startsWith("/history") ||
         nextUrl.pathname.startsWith("/insights") ||
         nextUrl.pathname.startsWith("/oracle") ||
+        nextUrl.pathname.startsWith("/beta/profile") ||
         nextUrl.pathname.startsWith("/settings") ||
         nextUrl.pathname.startsWith("/billing") ||
         nextUrl.pathname.startsWith("/payment") ||

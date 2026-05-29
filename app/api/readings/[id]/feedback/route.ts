@@ -7,11 +7,17 @@ import { trackServerEvent } from "@/lib/analytics/server";
 import { prisma } from "@/lib/prisma";
 
 const bodySchema = z.object({
-  helpful: z.boolean(),
+  resonance: z.enum(["deeply", "somewhat", "not_really"]).optional(),
+  helpful: z.boolean().optional(),
+  comment: z.string().max(2000).optional(),
   category: z.string().max(64).optional(),
 });
 
 type RouteParams = { params: Promise<{ id: string }> };
+
+function resonanceFromHelpful(helpful: boolean): "deeply" | "not_really" {
+  return helpful ? "deeply" : "not_really";
+}
 
 export async function POST(request: Request, { params }: RouteParams) {
   const session = await auth();
@@ -42,14 +48,50 @@ export async function POST(request: Request, { params }: RouteParams) {
     return apiValidation("Invalid feedback");
   }
 
+  const resonance =
+    parsed.data.resonance ??
+    (typeof parsed.data.helpful === "boolean"
+      ? resonanceFromHelpful(parsed.data.helpful)
+      : null);
+
+  if (!resonance) {
+    return apiValidation("Resonance or helpful required");
+  }
+
   try {
+    await prisma.readingFeedback.upsert({
+      where: {
+        userId_readingId: {
+          userId: session.user.id,
+          readingId,
+        },
+      },
+      create: {
+        userId: session.user.id,
+        readingId,
+        resonance,
+        comment: parsed.data.comment?.trim(),
+        category: parsed.data.category ?? reading.category,
+      },
+      update: {
+        resonance,
+        comment: parsed.data.comment?.trim(),
+      },
+    });
+
     await trackServerEvent(ANALYTICS_EVENTS.READING_FEEDBACK, {
       userId: session.user.id,
       properties: {
         reading_id: readingId,
-        helpful: parsed.data.helpful,
+        resonance,
         category: parsed.data.category ?? reading.category,
+        has_comment: Boolean(parsed.data.comment?.trim()),
       },
+    });
+
+    await trackServerEvent(ANALYTICS_EVENTS.BETA_FEEDBACK_SUBMITTED, {
+      userId: session.user.id,
+      properties: { resonance, source: "reading" },
     });
 
     return NextResponse.json({ ok: true });

@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { sendVerificationEmail } from "@/lib/email";
+import { isBetaInviteOnly } from "@/lib/beta/config";
+import { sendBetaWelcomeEmail } from "@/lib/beta/emails";
+import { redeemInviteCode, validateInviteCode } from "@/lib/beta/invites";
 import { generateVerificationToken, getVerificationTokenExpiry } from "@/lib/tokens";
 import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/lib/validations/auth";
@@ -34,8 +37,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: message }, { status: 400 });
     }
 
-    const { name, email, password } = parsed.data;
+    const { name, email, password, inviteCode } = parsed.data;
     const normalizedEmail = email.toLowerCase();
+
+    let inviteId: string | undefined;
+    if (isBetaInviteOnly()) {
+      if (!inviteCode?.trim()) {
+        return NextResponse.json(
+          { error: "A beta invite code is required to register." },
+          { status: 403 },
+        );
+      }
+      const inviteCheck = await validateInviteCode(inviteCode, normalizedEmail);
+      if (!inviteCheck.ok) {
+        return NextResponse.json({ error: inviteCheck.reason }, { status: 403 });
+      }
+      inviteId = inviteCheck.inviteId;
+    } else if (inviteCode?.trim()) {
+      const inviteCheck = await validateInviteCode(inviteCode, normalizedEmail);
+      if (inviteCheck.ok) inviteId = inviteCheck.inviteId;
+    }
 
     const existing = await prisma.user.findUnique({
       where: { email: normalizedEmail },
@@ -75,6 +96,28 @@ export async function POST(request: Request) {
         },
         { status: 503 },
       );
+    }
+
+    if (inviteId) {
+      try {
+        await redeemInviteCode({
+          inviteId,
+          userId: user.id,
+          email: normalizedEmail,
+        });
+        void sendBetaWelcomeEmail(normalizedEmail, name.trim());
+        await trackServerEvent(ANALYTICS_EVENTS.BETA_INVITE_REDEEMED, {
+          userId: user.id,
+          properties: { source: "credentials" },
+        });
+      } catch (inviteError) {
+        console.error("[register] Invite redeem failed", inviteError);
+        await prisma.user.delete({ where: { id: user.id } });
+        return NextResponse.json(
+          { error: "Invite code could not be redeemed. Please try again." },
+          { status: 400 },
+        );
+      }
     }
 
     await trackServerEvent(ANALYTICS_EVENTS.USER_SIGNED_UP, {

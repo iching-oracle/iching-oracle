@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { PasswordField } from "@/components/password-field";
 import {
@@ -10,8 +11,12 @@ import {
 import { registerSchema } from "@/lib/validations/auth";
 
 export function RegisterForm() {
+  const searchParams = useSearchParams();
+  const inviteFromUrl = searchParams.get("invite") ?? "";
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [inviteCode, setInviteCode] = useState(inviteFromUrl);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -32,9 +37,10 @@ export function RegisterForm() {
       email,
       password,
       confirmPassword,
+      inviteCode: inviteCode.trim() || undefined,
     });
     return parsed.success && !isLoading;
-  }, [name, email, password, confirmPassword, isLoading]);
+  }, [name, email, password, confirmPassword, inviteCode, isLoading]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -46,6 +52,7 @@ export function RegisterForm() {
       email,
       password,
       confirmPassword,
+      inviteCode: inviteCode.trim() || undefined,
     });
 
     if (!parsed.success) {
@@ -58,7 +65,10 @@ export function RegisterForm() {
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(parsed.data),
+        body: JSON.stringify({
+          ...parsed.data,
+          inviteCode: inviteCode.trim() || undefined,
+        }),
       });
 
       const data = (await res.json()) as { error?: string; message?: string };
@@ -141,6 +151,28 @@ export function RegisterForm() {
             className="auth-input"
             placeholder="you@example.com"
           />
+        </div>
+
+        <div>
+          <label htmlFor="invite-code" className="auth-label">
+            Beta invite code
+          </label>
+          <input
+            id="invite-code"
+            name="inviteCode"
+            type="text"
+            value={inviteCode}
+            onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+            className="auth-input font-mono tracking-wider"
+            placeholder="ORACLE-XXXXXXXX"
+            autoComplete="off"
+          />
+          <p className="mt-1 text-xs text-zen-muted">
+            Required during closed beta.{" "}
+            <Link href="/beta" className="text-amber-gold hover:underline">
+              Join the waitlist
+            </Link>
+          </p>
         </div>
 
         <PasswordField

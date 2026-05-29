@@ -81,6 +81,9 @@ export default async function DashboardPage() {
             <Link href="/insights" className="auth-btn-secondary text-center">
               Insights
             </Link>
+            <Link href="/beta/profile" className="auth-btn-secondary text-center">
+              Beta
+            </Link>
             <Link href="/history" className="auth-btn-secondary text-center">
               History
             </Link>

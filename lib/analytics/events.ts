@@ -46,6 +46,14 @@ export const ANALYTICS_EVENTS = {
   STREAK_RESTORED: "streak_restored",
   READING_FEEDBACK: "reading_feedback",
 
+  // Beta program
+  BETA_WAITLIST_JOINED: "beta_waitlist_joined",
+  BETA_INVITE_REDEEMED: "beta_invite_redeemed",
+  BETA_FEEDBACK_SUBMITTED: "beta_feedback_submitted",
+  BETA_BUG_REPORTED: "beta_bug_reported",
+  BETA_FEATURE_REQUESTED: "beta_feature_requested",
+  BETA_ANNOUNCEMENT_VIEWED: "beta_announcement_viewed",
+
   // Errors
   AI_GENERATION_FAILED: "ai_generation_failed",
   PAYMENT_FAILED: "payment_failed",

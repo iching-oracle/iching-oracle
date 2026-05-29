@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { AuthAmbient } from "@/components/auth-ambient";
 import { AuthGlassCard } from "@/components/auth-glass-card";
 import { RegisterForm } from "@/components/register-form";
@@ -13,9 +14,11 @@ export default function RegisterPage() {
       <AuthAmbient />
       <AuthGlassCard
         title="Begin your path"
-        subtitle="Register to save readings and unlock future subscription features."
+        subtitle="Register with your beta invite to join the early explorer community."
       >
-        <RegisterForm />
+        <Suspense fallback={<p className="text-sm text-zen-muted">Loading…</p>}>
+          <RegisterForm />
+        </Suspense>
       </AuthGlassCard>
     </div>
   );

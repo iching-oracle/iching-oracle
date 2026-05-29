@@ -69,6 +69,10 @@ export function initPostHogClient(): void {
     persistence: "localStorage+cookie",
     autocapture: false,
     respect_dnt: true,
+    session_recording: {
+      maskAllInputs: true,
+      maskTextSelector: "[data-ph-mask]",
+    },
   });
 
   posthogInitialized = true;

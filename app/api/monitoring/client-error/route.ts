@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { logSystemEvent } from "@/lib/monitoring/logger";
+import {
+  RATE_LIMITS,
+  rateLimitByIp,
+  rateLimitResponse,
+} from "@/lib/rate-limit/presets";
 
 const bodySchema = z.object({
   message: z.string().max(2000),
@@ -10,6 +15,15 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const limited = await rateLimitByIp(
+    request,
+    "client-error",
+    RATE_LIMITS.clientError,
+  );
+  if (!limited.ok) {
+    return rateLimitResponse(limited);
+  }
+
   let body: unknown;
   try {
     body = await request.json();

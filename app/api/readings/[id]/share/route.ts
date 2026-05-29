@@ -2,13 +2,28 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { getAppUrl } from "@/lib/stripe";
 import { setReadingShareEnabled } from "@/lib/share/service";
+import {
+  RATE_LIMITS,
+  rateLimitByUser,
+  rateLimitResponse,
+} from "@/lib/rate-limit/presets";
+import { apiUnauthorized } from "@/lib/errors/api";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: Request, { params }: RouteParams) {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiUnauthorized();
+  }
+
+  const limited = await rateLimitByUser(
+    session.user.id,
+    "share",
+    RATE_LIMITS.share,
+  );
+  if (!limited.ok) {
+    return rateLimitResponse(limited);
   }
 
   let enable = false;

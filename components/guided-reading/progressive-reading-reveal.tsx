@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { HexagramDisplay } from "@/components/HexagramDisplay";
 import { GuidedPremiumGate } from "@/components/guided-reading/guided-premium-gate";
 import { ReadingActionPanel } from "@/components/guided-reading/reading-action-panel";
+import { ReadingFeedback } from "@/components/feedback/reading-feedback";
 import { RitualAmbient } from "@/components/guided-reading/ritual-ambient";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { useSimulatedStream } from "@/hooks/use-simulated-stream";
@@ -207,11 +208,17 @@ export function ProgressiveReadingReveal({
         </div>
 
         {showActions && (
-          <ReadingActionPanel
-            readingId={result.readingId}
-            onShare={onShare}
-            onNewReading={onNewReading}
-          />
+          <>
+            <ReadingFeedback
+              readingId={result.readingId}
+              category={result.category}
+            />
+            <ReadingActionPanel
+              readingId={result.readingId}
+              onShare={onShare}
+              onNewReading={onNewReading}
+            />
+          </>
         )}
       </div>
     </motion.section>

@@ -6,8 +6,19 @@ import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/lib/validations/auth";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { trackServerEvent } from "@/lib/analytics/server";
+import {
+  RATE_LIMITS,
+  rateLimitByIp,
+  rateLimitResponse,
+} from "@/lib/rate-limit/presets";
+import { handleRouteError } from "@/lib/errors/api";
 
 export async function POST(request: Request) {
+  const limited = await rateLimitByIp(request, "register", RATE_LIMITS.register);
+  if (!limited.ok) {
+    return rateLimitResponse(limited);
+  }
+
   try {
     const body = await request.json();
     const parsed = registerSchema.safeParse(body);
@@ -80,10 +91,9 @@ export async function POST(request: Request) {
       { status: 201 },
     );
   } catch (error) {
-    console.error("[register]", error);
-    return NextResponse.json(
-      { error: "Registration failed. Please try again." },
-      { status: 500 },
-    );
+    return handleRouteError(error, {
+      category: "register",
+      path: "/api/register",
+    });
   }
 }

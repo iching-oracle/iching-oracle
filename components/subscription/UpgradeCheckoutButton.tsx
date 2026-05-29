@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { trackSubscriptionEventClient } from "@/lib/analytics/subscription-events-client";
+import { showPaymentError } from "@/hooks/use-app-toast";
+import { USER_MESSAGES } from "@/lib/errors/messages";
 
 type UpgradeCheckoutButtonProps = {
   label?: string;
@@ -29,14 +31,16 @@ export function UpgradeCheckoutButton({
       const data = (await res.json()) as { url?: string; error?: string };
 
       if (!res.ok || !data.url) {
-        setError(data.error ?? "Could not start checkout.");
+        setError(data.error ?? USER_MESSAGES.checkoutFailed);
+        showPaymentError(startCheckout);
         return;
       }
 
       trackSubscriptionEventClient("checkout_opened");
       window.location.href = data.url;
     } catch {
-      setError("Something went wrong. Please try again.");
+      setError(USER_MESSAGES.checkoutFailed);
+      showPaymentError(startCheckout);
     } finally {
       setLoading(false);
     }

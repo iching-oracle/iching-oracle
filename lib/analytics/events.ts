@@ -38,6 +38,9 @@ export const ANALYTICS_EVENTS = {
   PAYMENT_COMPLETED: "payment_completed",
   SUBSCRIPTION_CANCELLED: "subscription_cancelled",
 
+  // Feedback
+  READING_FEEDBACK: "reading_feedback",
+
   // Errors
   AI_GENERATION_FAILED: "ai_generation_failed",
   PAYMENT_FAILED: "payment_failed",

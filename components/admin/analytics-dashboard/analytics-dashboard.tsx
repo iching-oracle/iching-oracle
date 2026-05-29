@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { MockAnalyticsDashboard } from "@/lib/admin/mock-analytics-data";
+import type { AnalyticsDashboardData } from "@/lib/admin/analytics-dashboard-types";
 import {
   DashboardSidebar,
   type AnalyticsSectionId,
@@ -19,7 +19,7 @@ import { BehaviorList } from "@/components/admin/analytics-dashboard/behavior-li
 import { RetentionChart } from "@/components/admin/analytics-dashboard/retention-chart";
 
 type AnalyticsDashboardProps = {
-  data: MockAnalyticsDashboard;
+  data: AnalyticsDashboardData;
 };
 
 export function AnalyticsDashboard({ data }: AnalyticsDashboardProps) {
@@ -66,7 +66,10 @@ export function AnalyticsDashboard({ data }: AnalyticsDashboardProps) {
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <DashboardTopbar onOpenMenu={() => setMobileOpen(true)} />
+        <DashboardTopbar
+          meta={data.meta}
+          onOpenMenu={() => setMobileOpen(true)}
+        />
 
         <main ref={mainRef} className="flex-1 overflow-y-auto px-4 py-8 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-6xl space-y-16 pb-20">

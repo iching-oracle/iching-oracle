@@ -13,25 +13,43 @@ import { CREDIT_ERROR_CODES } from "@/types/credits";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { readingAnalyticsMeta } from "@/lib/analytics/privacy";
 import { trackServerEvent } from "@/lib/analytics/server";
+import {
+  RATE_LIMITS,
+  rateLimitByUser,
+  rateLimitResponse,
+} from "@/lib/rate-limit/presets";
+import {
+  apiUnauthorized,
+  apiValidation,
+} from "@/lib/errors/api";
+import { USER_MESSAGES } from "@/lib/errors/messages";
 
 export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiUnauthorized();
+  }
+
+  const dailyLimit = await rateLimitByUser(
+    session.user.id,
+    "reading-daily",
+    RATE_LIMITS.readingDaily,
+  );
+  if (!dailyLimit.ok) {
+    return rateLimitResponse(dailyLimit, USER_MESSAGES.rateLimited);
   }
 
   let body: unknown;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    return apiValidation("Invalid JSON");
   }
 
   const parsed = createReadingSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Invalid question" },
-      { status: 400 },
+    return apiValidation(
+      parsed.error.issues[0]?.message ?? "Invalid question",
     );
   }
 
@@ -102,9 +120,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json(payload);
   } catch (error) {
-    console.error("[api/readings/guided]", error);
     const message =
-      error instanceof Error ? error.message : "Could not complete reading.";
+      error instanceof Error ? error.message : USER_MESSAGES.readingFailed;
     const isCredits =
       message.includes("credits") ||
       message.includes("Premium") ||
@@ -122,9 +139,15 @@ export async function POST(request: Request) {
       },
     );
 
+    const userMessage = isCredits
+      ? message.includes("Too many")
+        ? USER_MESSAGES.rateLimitedShort
+        : message
+      : USER_MESSAGES.readingFailed;
+
     return NextResponse.json(
       {
-        error: message,
+        error: userMessage,
         code: isCredits ? CREDIT_ERROR_CODES.INSUFFICIENT : undefined,
       },
       { status: isCredits ? 403 : 500 },

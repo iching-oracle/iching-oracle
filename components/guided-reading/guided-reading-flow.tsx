@@ -13,6 +13,8 @@ import { useGuidedReadingFlow } from "@/hooks/use-guided-reading-flow";
 import { useAnalytics } from "@/hooks/use-analytics";
 import { useFunnel } from "@/hooks/use-funnel";
 import { ANALYTICS_EVENTS, ANALYTICS_FUNNELS } from "@/lib/analytics/events";
+import { showOracleError, showRateLimit } from "@/hooks/use-app-toast";
+import { USER_MESSAGES } from "@/lib/errors/messages";
 
 export function GuidedReadingFlow() {
   const { track } = useAnalytics();
@@ -58,6 +60,19 @@ export function GuidedReadingFlow() {
     }
   }, [step, track]);
 
+  useEffect(() => {
+    if (!error) return;
+    if (
+      error.includes("limit") ||
+      error.includes("credits") ||
+      error.includes("Too many")
+    ) {
+      showRateLimit(error);
+    } else {
+      showOracleError();
+    }
+  }, [error]);
+
   return (
     <div className="relative min-h-[calc(100dvh-4.5rem)] bg-zen-bg">
       {error && (step === "question" || step === "category") && (
@@ -68,7 +83,9 @@ export function GuidedReadingFlow() {
           role="alert"
         >
           <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-            {error}
+            {error.includes("credits") || error.includes("limit")
+              ? error
+              : USER_MESSAGES.readingFailed}
           </p>
         </motion.div>
       )}

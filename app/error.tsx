@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { ErrorFallback } from "@/components/errors/error-fallback";
 
+import { USER_MESSAGES } from "@/lib/errors/messages";
+
 export default function Error({
   error,
   reset,
@@ -24,8 +26,8 @@ export default function Error({
 
   return (
     <ErrorFallback
-      title="The thread slipped"
-      message="An unexpected error occurred. You can try again or return to your dashboard."
+      title="The oracle is temporarily clouded"
+      message={USER_MESSAGES.oracleClouded}
       reset={reset}
     />
   );

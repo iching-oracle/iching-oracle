@@ -372,6 +372,15 @@ model SupportTicket {
   @@index([userId])
 }
 
+/// Fixed-window HTTP rate limit counters (serverless-safe).
+model RateLimitBucket {
+  key     String   @id
+  count   Int      @default(0)
+  resetAt DateTime
+
+  @@index([resetAt])
+}
+
 /// First-party product analytics (privacy-safe properties only).
 model ProductAnalyticsEvent {
   id         String   @id @default(cuid())

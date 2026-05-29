@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
-import { logSystemEvent } from "@/lib/monitoring/logger";
 import { prisma } from "@/lib/prisma";
+import {
+  RATE_LIMITS,
+  rateLimitByIp,
+  rateLimitResponse,
+} from "@/lib/rate-limit/presets";
+import { handleRouteError } from "@/lib/errors/api";
+import { USER_MESSAGES } from "@/lib/errors/messages";
 
 const bodySchema = z.object({
   email: z.string().email().max(254),
@@ -20,6 +26,11 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const limited = await rateLimitByIp(request, "support", RATE_LIMITS.support);
+  if (!limited.ok) {
+    return rateLimitResponse(limited, USER_MESSAGES.rateLimitedShort);
+  }
+
   const session = await auth();
 
   let body: unknown;
@@ -51,15 +62,11 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    await logSystemEvent({
-      level: "error",
+    return handleRouteError(error, {
       category: "support",
-      message: "Support ticket creation failed",
-      metadata: { error: String(error) },
+      userMessage: USER_MESSAGES.supportFailed,
+      userId: session?.user?.id,
+      path: "/api/support",
     });
-    return NextResponse.json(
-      { error: "Could not submit ticket" },
-      { status: 500 },
-    );
   }
 }

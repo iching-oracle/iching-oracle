@@ -54,7 +54,7 @@ export async function createSubscriptionCheckoutSession(params: {
     customer: customerId,
     line_items: [{ price: getPriceId(), quantity: 1 }],
     success_url: `${appUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${appUrl}/pricing`,
+    cancel_url: `${appUrl}/payment/cancel`,
     allow_promotion_codes: true,
     billing_address_collection: "auto",
     metadata: {

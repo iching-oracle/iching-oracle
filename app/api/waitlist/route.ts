@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import {
+  RATE_LIMITS,
+  rateLimitByIp,
+  rateLimitResponse,
+} from "@/lib/rate-limit/presets";
+import { handleRouteError } from "@/lib/errors/api";
 
 const bodySchema = z.object({
   email: z.string().email().max(254),
@@ -9,6 +15,11 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const limited = await rateLimitByIp(request, "waitlist", RATE_LIMITS.waitlist);
+  if (!limited.ok) {
+    return rateLimitResponse(limited);
+  }
+
   let body: unknown;
   try {
     body = await request.json();
@@ -40,10 +51,9 @@ export async function POST(request: Request) {
       message: "Welcome — you are on the early access list.",
     });
   } catch (error) {
-    console.error("[api/waitlist]", error);
-    return NextResponse.json(
-      { error: "Could not join waitlist" },
-      { status: 500 },
-    );
+    return handleRouteError(error, {
+      category: "waitlist",
+      path: "/api/waitlist",
+    });
   }
 }

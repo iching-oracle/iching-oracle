@@ -35,7 +35,7 @@ function isCacheFresh(generatedAt: Date): boolean {
 export async function getInsightsPagePayload(
   userId: string,
   locale = "en-US",
-): Promise<InsightsPagePayload> {
+): Promise<InsightsPagePayload | null> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
@@ -47,7 +47,7 @@ export async function getInsightsPagePayload(
   });
 
   if (!user) {
-    throw new Error("User not found");
+    return null;
   }
 
   const premium = isPremiumUser(user);

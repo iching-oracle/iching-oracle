@@ -14,7 +14,7 @@ export async function CreditBadge({ userId }: CreditBadgeProps) {
   return (
     <Link
       href="/billing"
-      className={`hidden items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider transition-colors sm:inline-flex ${
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider transition-colors duration-200 ${
         warn
           ? "border-amber-gold/50 bg-amber-gold/15 text-amber-gold"
           : "border-white/10 bg-zen-surface/60 text-zen-muted hover:border-amber-gold/30 hover:text-amber-gold"

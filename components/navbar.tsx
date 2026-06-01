@@ -3,170 +3,102 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { CreditBadge } from "@/components/credits/credit-badge";
 import { LanguageSelector } from "@/components/language-selector";
+import { NavbarDesktopNav, NavbarMobileMenu } from "@/components/navbar/navbar-navigation";
 import { handleSignOut } from "@/lib/actions/auth";
 import { getPreferredLanguageForUser } from "@/lib/user/preferred-language";
 
 export async function Navbar() {
   const session = await auth();
   const user = session?.user;
+  const isLoggedIn = Boolean(user?.id);
   const preferredLanguage =
     user?.id != null ? await getPreferredLanguageForUser(user.id) : null;
 
   return (
-    <header className="sticky top-0 z-20 border-b border-white/[0.06] bg-zen-bg/80 backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-zen-bg/85 backdrop-blur-md">
       <nav
-        className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4 sm:px-10 lg:px-12"
+        className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:h-[3.75rem] sm:gap-4 sm:px-8 lg:px-10"
         aria-label="Main"
       >
         <Link
           href="/"
-          className="group flex shrink-0 items-center gap-3 transition-opacity hover:opacity-90"
+          className="group flex shrink-0 items-center gap-2.5 transition-opacity duration-200 hover:opacity-90 sm:gap-3"
         >
           <span
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-amber-gold/20 bg-zen-surface/80 text-lg text-amber-gold shadow-[0_0_20px_-8px_rgba(197,160,89,0.5)] transition-shadow duration-300 group-hover:shadow-[0_0_28px_-6px_rgba(197,160,89,0.65)]"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-amber-gold/15 bg-zen-surface/60 text-base text-amber-gold shadow-[0_0_16px_-10px_rgba(197,160,89,0.45)] transition-shadow duration-300 group-hover:shadow-[0_0_22px_-8px_rgba(197,160,89,0.55)] sm:h-9 sm:w-9 sm:text-lg"
             aria-hidden
           >
             ☰
           </span>
-          <span className="text-xs font-medium uppercase tracking-[0.28em] text-foreground/90 sm:text-sm">
+          <span className="text-[10px] font-medium uppercase tracking-[0.22em] text-foreground/90 sm:text-[11px] sm:tracking-[0.26em]">
             ICHING-ORACLE
           </span>
         </Link>
 
-        <div className="flex items-center gap-3 sm:gap-5">
-          <Link
-            href="/beta"
-            className="hidden text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-amber-gold sm:inline"
-          >
-            Beta
-          </Link>
-          <Link
-            href="/daily"
-            className="hidden text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-amber-gold sm:inline"
-          >
-            Daily
-          </Link>
-          <Link
-            href="/hexagrams"
-            className="hidden text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-amber-gold sm:inline"
-          >
-            Hexagrams
-          </Link>
-          <Link
-            href="/learn"
-            className="hidden text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-amber-gold sm:inline"
-          >
-            Learn
-          </Link>
-          <Link
-            href="/pricing"
-            className="hidden text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-amber-gold sm:inline"
-          >
-            Premium
-          </Link>
-          <Link
-            href="/#methods"
-            className="hidden text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-amber-gold sm:inline"
-          >
-            Methods
-          </Link>
+        <NavbarDesktopNav isLoggedIn={isLoggedIn} />
 
-          {user ? (
+        <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-2.5">
+          {isLoggedIn && user ? (
             <>
-              <Link
-                href="/oracle/chat"
-                className="hidden text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-cosmic-violet sm:inline"
-              >
-                Oracle
-              </Link>
-              <Link
-                href="/dashboard"
-                className="hidden text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-cosmic-violet sm:inline"
-              >
-                Dashboard
-              </Link>
-              <Link
-                href="/insights"
-                className="hidden text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-amber-gold sm:inline"
-              >
-                Insights
-              </Link>
-              <Link
-                href="/settings/memory"
-                className="hidden text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-amber-gold sm:inline"
-              >
-                Memory
-              </Link>
-              <Link
-                href="/settings/notifications"
-                className="hidden text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-amber-gold sm:inline"
-              >
-                Emails
-              </Link>
-              <Link
-                href="/history"
-                className="hidden items-center gap-1.5 text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-amber-gold sm:inline-flex"
-              >
-                <svg
-                  className="h-3.5 w-3.5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  aria-hidden
-                >
-                  <path d="M12 7v14" />
-                  <path d="M5.5 4.5A2.5 2.5 0 0 0 3 7v13h9" />
-                  <path d="M18.5 4.5A2.5 2.5 0 0 1 21 7v13h-9" />
-                </svg>
-                History
-              </Link>
               <CreditBadge userId={user.id} />
               {preferredLanguage ? (
-                <LanguageSelector currentLanguage={preferredLanguage} />
+                <LanguageSelector
+                  currentLanguage={preferredLanguage}
+                  className="hidden sm:inline-flex"
+                />
               ) : null}
-              <div className="flex items-center gap-2 sm:gap-3">
+              <div className="hidden items-center gap-2 md:flex">
                 {user.image ? (
                   <Image
                     src={user.image}
                     alt=""
                     width={32}
                     height={32}
-                    className="h-8 w-8 rounded-full border border-cosmic-purple/40 object-cover"
+                    className="h-8 w-8 rounded-full border border-white/10 object-cover"
                   />
                 ) : (
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full border border-cosmic-purple/40 bg-cosmic-deep/50 text-xs font-medium text-cosmic-violet">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-zen-surface/80 text-xs font-medium text-amber-gold/90">
                     {(user.name?.[0] ?? user.email?.[0] ?? "?").toUpperCase()}
                   </span>
                 )}
-                <span className="hidden max-w-[120px] truncate text-sm text-foreground/90 md:inline">
+                <span className="max-w-[7rem] truncate text-sm text-foreground/85 lg:max-w-[9rem]">
                   {user.name ?? user.email}
                 </span>
               </div>
-              <form action={handleSignOut}>
+              <form action={handleSignOut} className="hidden sm:block">
                 <button
                   type="submit"
-                  className="rounded-full border border-white/10 px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-zen-muted transition-colors hover:border-amber-gold/40 hover:text-amber-gold sm:px-4"
+                  className="rounded-full border border-white/[0.08] px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.14em] text-zen-muted transition-all duration-200 hover:border-amber-gold/35 hover:text-amber-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-gold/50"
                 >
                   Sign out
                 </button>
               </form>
+              <NavbarMobileMenu
+                isLoggedIn={isLoggedIn}
+                signOutAction={handleSignOut}
+                preferredLanguage={preferredLanguage}
+              />
             </>
           ) : (
-            <>
+            <div className="hidden items-center gap-2 sm:flex">
               <Link
                 href="/login"
-                className="text-xs font-medium uppercase tracking-[0.2em] text-zen-muted transition-colors hover:text-amber-gold"
+                className="rounded-md px-2.5 py-1.5 text-[11px] font-medium uppercase tracking-[0.16em] text-zen-muted transition-colors duration-200 hover:text-amber-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-gold/50"
               >
                 Login
               </Link>
               <Link
                 href="/register"
-                className="rounded-full border border-cosmic-purple/40 bg-cosmic-purple/10 px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-cosmic-violet transition-all hover:border-cosmic-violet/60 hover:bg-cosmic-purple/20 hover:shadow-[0_0_20px_-6px_rgba(139,92,246,0.5)] sm:px-4"
+                className="rounded-full border border-amber-gold/25 bg-amber-gold/10 px-3.5 py-1.5 text-[10px] font-medium uppercase tracking-[0.14em] text-amber-gold transition-all duration-200 hover:border-amber-gold/45 hover:bg-amber-gold/15 hover:shadow-[0_0_20px_-8px_rgba(197,160,89,0.4)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-gold/50"
               >
                 Register
               </Link>
-            </>
+              <NavbarMobileMenu
+                isLoggedIn={false}
+                signOutAction={handleSignOut}
+                preferredLanguage={null}
+              />
+            </div>
           )}
         </div>
       </nav>

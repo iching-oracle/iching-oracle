@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { InsightsPageContent } from "@/components/insights/InsightsPageContent";
+import { resolveValidUserId } from "@/lib/auth/session-user";
 import { getInsightsPagePayload } from "@/lib/insights/service";
 import { localeForLanguage } from "@/lib/i18n/languages";
 import { prisma } from "@/lib/prisma";
@@ -18,22 +19,27 @@ type PageProps = {
 
 export default async function InsightsPage({ searchParams }: PageProps) {
   const session = await auth();
-  if (!session?.user?.id) {
+  const userId = await resolveValidUserId(session?.user?.id);
+  if (!userId) {
     redirect("/login?callbackUrl=/insights");
   }
 
   const params = await searchParams;
   if (params.refresh === "1") {
     await prisma.patternInsightCache.deleteMany({
-      where: { userId: session.user.id },
+      where: { userId },
     });
   }
 
   const [language] = await Promise.all([
-    getPreferredLanguageForUser(session.user.id),
+    getPreferredLanguageForUser(userId),
   ]);
   const locale = localeForLanguage(language);
-  const data = await getInsightsPagePayload(session.user.id, locale);
+  const data = await getInsightsPagePayload(userId, locale);
+
+  if (!data) {
+    redirect("/login?callbackUrl=/insights");
+  }
 
   return (
     <div className="relative min-h-full overflow-hidden bg-zen-bg">

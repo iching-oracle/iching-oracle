@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { showSuccess } from "@/hooks/use-app-toast";
 import { loginSchema } from "@/lib/validations/auth";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { useAnalytics } from "@/hooks/use-analytics";
@@ -14,6 +15,7 @@ export function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
   const configError = searchParams.get("error") === "Configuration";
+  const passwordResetSuccess = searchParams.get("reset") === "success";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,6 +36,12 @@ export function LoginForm() {
       })
       .catch(() => setGoogleEnabled(false));
   }, []);
+
+  useEffect(() => {
+    if (passwordResetSuccess) {
+      showSuccess("Your password has been updated. You can sign in now.");
+    }
+  }, [passwordResetSuccess]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -110,9 +118,17 @@ export function LoginForm() {
         </div>
 
         <div>
-          <label htmlFor="password" className="auth-label">
-            Password
-          </label>
+          <div className="mb-1.5 flex items-center justify-between gap-2">
+            <label htmlFor="password" className="auth-label mb-0">
+              Password
+            </label>
+            <Link
+              href="/forgot-password"
+              className="text-xs font-medium text-amber-gold transition-colors hover:text-amber-glow"
+            >
+              Forgot password?
+            </Link>
+          </div>
           <input
             id="password"
             name="password"

@@ -20,6 +20,10 @@ export const RATE_LIMITS = {
   readingDaily: { limit: 40, windowSec: 86400 },
   /** Auth attempts per IP per 15 min */
   auth: { limit: 20, windowSec: 900 },
+  /** Password reset requests per IP per hour */
+  forgotPassword: { limit: 5, windowSec: 3600 },
+  /** Password reset submissions per IP per 15 min */
+  resetPassword: { limit: 10, windowSec: 900 },
 } as const;
 
 export async function rateLimitByIp(

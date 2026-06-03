@@ -58,22 +58,32 @@ export function SiteFooter() {
             </p>
             <ul className="mt-4 space-y-2 text-sm">
               <li>
-                <Link href="/privacy" className="text-zen-muted hover:text-amber-gold">
-                  Privacy
+                <Link href="/privacy" className="text-zen-muted transition-colors hover:text-amber-gold">
+                  Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="text-zen-muted hover:text-amber-gold">
-                  Terms
+                <Link href="/terms" className="text-zen-muted transition-colors hover:text-amber-gold">
+                  Terms of Service
                 </Link>
               </li>
               <li>
-                <Link href="/disclaimer" className="text-zen-muted hover:text-amber-gold">
+                <Link href="/impressum" className="text-zen-muted transition-colors hover:text-amber-gold">
+                  Impressum
+                </Link>
+              </li>
+              <li>
+                <Link href="/support" className="text-zen-muted transition-colors hover:text-amber-gold">
+                  Contact
+                </Link>
+              </li>
+              <li>
+                <Link href="/disclaimer" className="text-zen-muted transition-colors hover:text-amber-gold">
                   Disclaimer
                 </Link>
               </li>
               <li>
-                <Link href="/refund-policy" className="text-zen-muted hover:text-amber-gold">
+                <Link href="/refund-policy" className="text-zen-muted transition-colors hover:text-amber-gold">
                   Refunds
                 </Link>
               </li>

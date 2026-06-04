@@ -51,8 +51,8 @@ export async function GET(request: Request) {
   const { getOrCreateActiveConversation } = await import(
     "@/lib/oracle-chat/conversation"
   );
-  const conversation = await getOrCreateActiveConversation(session.user.id);
-  const state = await getOracleChatState(session.user.id, conversation.id);
+  const conversation = await getOrCreateActiveConversation(userId);
+  const state = await getOracleChatState(userId, conversation.id);
   if (!state) {
     return NextResponse.json({ error: "Could not load conversation" }, { status: 500 });
   }
@@ -93,12 +93,12 @@ export async function POST(request: Request) {
   let conversationId = parsed.data.conversationId;
 
   if (!conversationId) {
-    const created = await createOracleConversation(session.user.id);
+    const created = await createOracleConversation(userId);
     conversationId = created.id;
   }
 
   const conversation = await getOracleConversationForUser(
-    session.user.id,
+    userId,
     conversationId!,
   );
 

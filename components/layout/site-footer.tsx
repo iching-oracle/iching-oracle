@@ -73,8 +73,13 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/support" className="text-zen-muted transition-colors hover:text-amber-gold">
+                <Link href="/contact" className="text-zen-muted transition-colors hover:text-amber-gold">
                   Contact
+                </Link>
+              </li>
+              <li>
+                <Link href="/support" className="text-zen-muted transition-colors hover:text-amber-gold">
+                  Support
                 </Link>
               </li>
               <li>

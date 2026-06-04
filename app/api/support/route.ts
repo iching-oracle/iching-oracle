@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
+import { resolveValidUserId } from "@/lib/auth/session-user";
 import { prisma } from "@/lib/prisma";
 import {
   RATE_LIMITS,
@@ -32,6 +33,7 @@ export async function POST(request: Request) {
   }
 
   const session = await auth();
+  const userId = await resolveValidUserId(session?.user?.id);
 
   let body: unknown;
   try {
@@ -51,7 +53,7 @@ export async function POST(request: Request) {
   try {
     await prisma.supportTicket.create({
       data: {
-        userId: session?.user?.id,
+        userId: userId ?? null,
         email: parsed.data.email.toLowerCase().trim(),
         name: parsed.data.name?.trim(),
         category: parsed.data.category,
@@ -65,7 +67,7 @@ export async function POST(request: Request) {
     return handleRouteError(error, {
       category: "support",
       userMessage: USER_MESSAGES.supportFailed,
-      userId: session?.user?.id,
+      userId: userId ?? undefined,
       path: "/api/support",
     });
   }

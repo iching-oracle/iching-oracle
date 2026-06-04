@@ -3,7 +3,11 @@ import "server-only";
 import { USER_MESSAGES } from "@/lib/errors/messages";
 import { apiRateLimited } from "@/lib/errors/api";
 import { getClientIp } from "@/lib/rate-limit/client-ip";
-import { enforceRateLimit } from "@/lib/rate-limit/enforce";
+import {
+  enforceRateLimit,
+  peekRateLimit,
+  type RateLimitResult,
+} from "@/lib/rate-limit/enforce";
 
 export const RATE_LIMITS = {
   /** Registration attempts per IP per hour */
@@ -12,6 +16,8 @@ export const RATE_LIMITS = {
   waitlist: { limit: 8, windowSec: 3600 },
   /** Support tickets per IP per hour */
   support: { limit: 5, windowSec: 3600 },
+  /** Public contact form per IP per hour */
+  contact: { limit: 5, windowSec: 3600 },
   /** Client error reports per IP per hour */
   clientError: { limit: 30, windowSec: 3600 },
   /** Share enable per user per hour */
@@ -26,13 +32,55 @@ export const RATE_LIMITS = {
   resetPassword: { limit: 10, windowSec: 900 },
 } as const;
 
+const RATE_LIMIT_OK: RateLimitResult = {
+  ok: true,
+  remaining: 999,
+  resetAt: new Date(Date.now() + 3600_000),
+};
+
+/** Skip IP limits in local dev unless ENFORCE_RATE_LIMIT=true. */
+export function isRateLimitEnforced(): boolean {
+  if (process.env.ENFORCE_RATE_LIMIT === "true") return true;
+  return process.env.NODE_ENV === "production";
+}
+
+function rateLimitKey(request: Request, scope: string): string {
+  const ip = getClientIp(request);
+  return `ip:${scope}:${ip}`;
+}
+
+export async function peekRateLimitByIp(
+  request: Request,
+  scope: string,
+  preset: { limit: number; windowSec: number },
+): Promise<RateLimitResult> {
+  if (!isRateLimitEnforced()) return RATE_LIMIT_OK;
+  return peekRateLimit(
+    rateLimitKey(request, scope),
+    preset.limit,
+    preset.windowSec,
+  );
+}
+
+export async function consumeRateLimitByIp(
+  request: Request,
+  scope: string,
+  preset: { limit: number; windowSec: number },
+): Promise<RateLimitResult> {
+  if (!isRateLimitEnforced()) return RATE_LIMIT_OK;
+  return enforceRateLimit(
+    rateLimitKey(request, scope),
+    preset.limit,
+    preset.windowSec,
+  );
+}
+
 export async function rateLimitByIp(
   request: Request,
   scope: string,
   preset: { limit: number; windowSec: number },
 ) {
-  const ip = getClientIp(request);
-  return enforceRateLimit(`ip:${scope}:${ip}`, preset.limit, preset.windowSec);
+  return consumeRateLimitByIp(request, scope, preset);
 }
 
 export async function rateLimitByUser(

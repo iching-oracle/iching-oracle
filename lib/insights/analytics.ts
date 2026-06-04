@@ -3,11 +3,14 @@ import "server-only";
 import { getHexagram } from "@/lib/hexagrams";
 import { getCategoryLabel } from "@/lib/readings/category";
 import { isReadingCategory } from "@/lib/readings/category";
+import { computeBehavioralTrends, computeSpiritualGrowthSignals } from "@/lib/insights/behavioral-trends";
+import { computeEmotionalToneByMonth } from "@/lib/insights/emotional-analytics";
 import type {
   ReadingInsightAnalytics,
   MonthBucket,
   CategoryMonthRow,
   HexagramFrequency,
+  ResonanceSnapshot,
 } from "@/types/insights";
 import type { ReadingCategory } from "@/types/reading-journal";
 
@@ -91,9 +94,16 @@ export function buildStatTeaser(analytics: ReadingInsightAnalytics): string {
   return parts.join(" ");
 }
 
+const EMPTY_GROWTH: ReadingInsightAnalytics["spiritualGrowth"] = {
+  reflectionDepth: "early",
+  categoryShiftNote: null,
+  journalConsistency: 0,
+};
+
 export function computeReadingAnalytics(
   readings: ReadingInsightRow[],
   locale = "en-US",
+  resonance: ResonanceSnapshot | null = null,
 ): ReadingInsightAnalytics {
   if (readings.length === 0) {
     return {
@@ -107,6 +117,10 @@ export function computeReadingAnalytics(
       dominantCategoryByMonth: [],
       categoryTotals: {},
       questionThemes: [],
+      emotionalToneByMonth: [],
+      behavioralTrends: [],
+      spiritualGrowth: EMPTY_GROWTH,
+      resonance: null,
       revision: "0_none",
     };
   }
@@ -220,6 +234,14 @@ export function computeReadingAnalytics(
     });
 
   const questionThemes = countQuestionThemes(readings.map((r) => r.question));
+  const emotionalToneByMonth = computeEmotionalToneByMonth(readings, locale);
+  const behavioralTrends = computeBehavioralTrends(
+    monthlyVolume,
+    readingsThisMonth,
+    readings.length,
+    categoryTotals,
+  );
+  const spiritualGrowth = computeSpiritualGrowthSignals(readings, categoryTotals);
 
   return {
     totalReadings: readings.length,
@@ -232,6 +254,10 @@ export function computeReadingAnalytics(
     dominantCategoryByMonth,
     categoryTotals,
     questionThemes,
+    emotionalToneByMonth,
+    behavioralTrends,
+    spiritualGrowth,
+    resonance,
     revision,
   };
 }

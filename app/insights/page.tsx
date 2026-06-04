@@ -5,7 +5,7 @@ import { InsightsPageContent } from "@/components/insights/InsightsPageContent";
 import { resolveValidUserId } from "@/lib/auth/session-user";
 import { getInsightsPagePayload } from "@/lib/insights/service";
 import { localeForLanguage } from "@/lib/i18n/languages";
-import { prisma } from "@/lib/prisma";
+import { invalidatePatternInsightCache } from "@/lib/insights/invalidate";
 import { getPreferredLanguageForUser } from "@/lib/user/preferred-language";
 
 export const metadata = {
@@ -26,16 +26,16 @@ export default async function InsightsPage({ searchParams }: PageProps) {
 
   const params = await searchParams;
   if (params.refresh === "1") {
-    await prisma.patternInsightCache.deleteMany({
-      where: { userId },
-    });
+    await invalidatePatternInsightCache(userId);
   }
 
   const [language] = await Promise.all([
     getPreferredLanguageForUser(userId),
   ]);
   const locale = localeForLanguage(language);
-  const data = await getInsightsPagePayload(userId, locale);
+  const data = await getInsightsPagePayload(userId, locale, {
+    forceRefresh: params.refresh === "1",
+  });
 
   if (!data) {
     redirect("/login?callbackUrl=/insights");

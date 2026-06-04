@@ -2,9 +2,15 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { EmotionalTrendChart } from "@/components/insights/EmotionalTrendChart";
 import { InsightStatCard } from "@/components/insights/InsightStatCard";
+import { InsightTimeline } from "@/components/insights/InsightTimeline";
+import { InsightsAiDisclaimer } from "@/components/insights/InsightsAiDisclaimer";
 import { InsightsCharts } from "@/components/insights/InsightsCharts";
 import { InsightsPremiumGate } from "@/components/insights/InsightsPremiumGate";
+import { MilestonePanel } from "@/components/insights/MilestonePanel";
+import { PatternCard } from "@/components/insights/PatternCard";
+import { PeriodReportCard } from "@/components/insights/PeriodReportCard";
 import { formatDateTime } from "@/lib/format-date";
 import type { InsightsPagePayload } from "@/types/insights";
 
@@ -13,7 +19,17 @@ type InsightsPageContentProps = {
 };
 
 export function InsightsPageContent({ data }: InsightsPageContentProps) {
-  const { analytics, ai, isPremium, statTeaser } = data;
+  const {
+    analytics,
+    ai,
+    isPremium,
+    statTeaser,
+    weeklyReport,
+    monthlyReport,
+    timeline,
+    milestones,
+  } = data;
+  const spiritualGrowth = analytics.spiritualGrowth;
   const locked = !isPremium;
   const empty = analytics.totalReadings === 0;
 
@@ -58,6 +74,8 @@ export function InsightsPageContent({ data }: InsightsPageContentProps) {
           </p>
         ) : null}
       </motion.header>
+
+      <InsightsAiDisclaimer />
 
       {locked ? (
         <InsightsPremiumGate
@@ -106,6 +124,58 @@ export function InsightsPageContent({ data }: InsightsPageContentProps) {
         />
       </div>
 
+      {isPremium && analytics.behavioralTrends.length > 0 ? (
+        <section>
+          <h2 className="mb-4 text-xs font-medium uppercase tracking-widest text-zen-muted">
+            Behavioral trends
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {analytics.behavioralTrends.map((t, i) => (
+              <PatternCard
+                key={t.id}
+                label={t.label}
+                value={
+                  t.direction === "rising"
+                    ? "Gathering momentum"
+                    : t.direction === "softening"
+                      ? "Quieter season"
+                      : "Steady rhythm"
+                }
+                hint={t.detail}
+                index={i}
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {isPremium ? (
+        <div className="grid gap-4 sm:grid-cols-3">
+          <PatternCard
+            label="Reflection depth"
+            value={spiritualGrowth.reflectionDepth}
+            hint="Based on journal length and starred readings"
+            index={0}
+          />
+          <PatternCard
+            label="Journal consistency"
+            value={`${spiritualGrowth.journalConsistency}%`}
+            hint="Activity spread across months"
+            index={1}
+          />
+          <PatternCard
+            label="Memory"
+            value={data.memoryEnabled ? `${data.memoryCount} themes` : "Off"}
+            hint={
+              data.memoryEnabled
+                ? "Long-term oracle memory active"
+                : "Enable in settings"
+            }
+            index={2}
+          />
+        </div>
+      ) : null}
+
       {ai && isPremium ? (
         <motion.section
           initial={{ opacity: 0, y: 16 }}
@@ -153,6 +223,40 @@ export function InsightsPageContent({ data }: InsightsPageContentProps) {
               </ul>
             </div>
           </div>
+          {ai.emotionalGuidance && ai.emotionalGuidance.length > 0 ? (
+            <div className="mt-8">
+              <h3 className="text-xs uppercase tracking-widest text-cosmic-violet">
+                Emotional guidance
+              </h3>
+              <ul className="mt-3 space-y-2">
+                {ai.emotionalGuidance.map((g) => (
+                  <li key={g} className="text-sm text-foreground/85">
+                    {g}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {ai.growthSummary ? (
+            <div className="mt-8 border-t border-white/10 pt-6">
+              <h3 className="text-xs uppercase tracking-widest text-amber-gold">
+                Spiritual growth (AI reflection)
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-foreground/85">
+                {ai.growthSummary}
+              </p>
+            </div>
+          ) : null}
+          {ai.oracleTrendAnalysis ? (
+            <div className="mt-6">
+              <h3 className="text-xs uppercase tracking-widest text-amber-gold">
+                Oracle trend analysis
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-zen-muted">
+                {ai.oracleTrendAnalysis}
+              </p>
+            </div>
+          ) : null}
         </motion.section>
       ) : locked ? (
         <div className="relative">
@@ -168,7 +272,23 @@ export function InsightsPageContent({ data }: InsightsPageContentProps) {
         </div>
       ) : null}
 
+      {isPremium && (weeklyReport || monthlyReport) ? (
+        <div className="grid gap-6 lg:grid-cols-2">
+          {weeklyReport ? (
+            <PeriodReportCard report={weeklyReport} variant="weekly" />
+          ) : null}
+          {monthlyReport ? (
+            <PeriodReportCard report={monthlyReport} variant="monthly" />
+          ) : null}
+        </div>
+      ) : null}
+
       <InsightsCharts analytics={analytics} blurred={locked} />
+
+      <EmotionalTrendChart
+        data={analytics.emotionalToneByMonth}
+        blurred={locked}
+      />
 
       {analytics.topHexagrams.length > 0 ? (
         <section className={locked ? "pointer-events-none blur-md" : ""}>
@@ -197,6 +317,16 @@ export function InsightsPageContent({ data }: InsightsPageContentProps) {
         </section>
       ) : null}
 
+      <InsightTimeline entries={timeline} blurred={locked} />
+
+      <MilestonePanel milestones={milestones} isPremium={isPremium} />
+
+      {spiritualGrowth.categoryShiftNote ? (
+        <p className="text-center text-sm italic text-zen-muted">
+          {spiritualGrowth.categoryShiftNote}
+        </p>
+      ) : null}
+
       {ai && isPremium ? (
         <section className="rounded-2xl border border-white/10 bg-zen-surface/60 p-6 backdrop-blur-xl sm:p-8">
           <h2 className="text-xs font-medium uppercase tracking-widest text-amber-gold">
@@ -213,6 +343,14 @@ export function InsightsPageContent({ data }: InsightsPageContentProps) {
             ))}
           </ul>
         </section>
+      ) : null}
+
+      {data.memoryEnabled ? (
+        <p className="text-center text-xs text-zen-muted">
+          <Link href="/settings/memory" className="hover:text-amber-gold">
+            Manage oracle memory →
+          </Link>
+        </p>
       ) : null}
 
       {isPremium ? (

@@ -59,6 +59,8 @@ model User {
   readingConversations  ReadingConversation[]
   oracleConversations   OracleConversation[]
   patternInsightCache   PatternInsightCache?
+  insightReportCaches   InsightReportCache[]
+  oracleMilestones      OracleMilestone[]
   dailyOracles  DailyOracle[]
   dailyStreak   Int @default(0)
   lastDailyVisit DateTime?
@@ -150,6 +152,7 @@ model Reading {
   conversation      ReadingConversation?
   oracleConversation OracleConversation?
   seoPage           SeoPage?
+  milestones        OracleMilestone[]
 
   @@index([userId, createdAt(sort: Desc)])
   @@index([userId, isFavorite])
@@ -317,6 +320,40 @@ model PatternInsightCache {
   generatedAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// Cached weekly / monthly AI reflection reports (premium).
+model InsightReportCache {
+  id          String   @id @default(cuid())
+  userId      String
+  reportType  String
+  periodKey   String
+  revision    String
+  payload     Json
+  generatedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, reportType, periodKey])
+  @@index([userId, reportType, generatedAt(sort: Desc)])
+}
+
+/// User-curated spiritual milestones and saved insight moments.
+model OracleMilestone {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  note      String?  @db.Text
+  kind      String   @default("milestone")
+  readingId String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reading Reading? @relation(fields: [readingId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([userId, kind])
 }
 
 model AIUsage {

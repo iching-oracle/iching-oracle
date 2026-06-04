@@ -6,6 +6,8 @@
   --amber-gold: #c5a059;
   --sage-green: #45a29e;
   --zen-muted: #8b8d94;
+  --header-height: 3.5rem;
+  --mobile-nav-height: 4.25rem;
 }
 
 @theme inline {
@@ -138,5 +140,76 @@ body {
 
   .auth-btn-secondary {
     @apply inline-flex items-center justify-center rounded-full border border-white/15 bg-zen-elevated/60 px-6 py-3 text-sm font-medium tracking-wide text-foreground transition-all duration-300 hover:border-cosmic-violet/50 hover:bg-cosmic-purple/10 hover:text-cosmic-violet disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .tap-feedback {
+    @apply transition-transform duration-200 active:scale-[0.97];
+  }
+
+  .mobile-page {
+    @apply relative mx-auto w-full max-w-4xl px-4 py-8 sm:px-8 sm:py-12 md:px-10 md:py-16;
+  }
+
+  .mobile-page--reading {
+    @apply max-w-2xl px-4 py-6 sm:py-10;
+  }
+
+  .mobile-page--focus {
+    @apply max-w-xl;
+  }
+
+  .reading-prose {
+    @apply max-w-[36rem] text-[1.0625rem] leading-[1.75] tracking-[0.01em] text-foreground/92;
+  }
+
+  .reading-prose h3 {
+    @apply font-serif text-lg text-amber-gold/90 sm:text-xl;
+  }
+
+  .ritual-card {
+    @apply rounded-2xl border border-white/[0.08] bg-zen-surface/50 p-5 backdrop-blur-md sm:border-white/10 sm:p-7;
+  }
+
+  .mobile-bottom-nav {
+    @apply fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.06] bg-zen-bg/90 backdrop-blur-xl;
+  }
+
+  .mobile-bottom-nav__glow {
+    @apply pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-amber-gold/35 to-transparent;
+  }
+
+  .mobile-bottom-nav__list {
+    @apply mx-auto flex h-[var(--mobile-nav-height)] max-w-lg items-stretch px-1 pt-1;
+  }
+
+  .mobile-bottom-nav__item {
+    @apply relative flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1.5;
+  }
+
+  .mobile-bottom-nav__item--active {
+    @apply text-amber-gold;
+  }
+
+  .mobile-bottom-nav__active-pill {
+    @apply absolute inset-x-1 inset-y-1 rounded-xl bg-amber-gold/[0.08] shadow-[0_0_24px_-8px_rgba(197,160,89,0.45)];
+  }
+
+  .mobile-main-with-nav {
+    @apply flex min-h-0 flex-1 flex-col max-md:pb-[calc(var(--mobile-nav-height)+env(safe-area-inset-bottom,0px))];
+  }
+}
+
+@supports (height: 100dvh) {
+  .mobile-oracle-viewport {
+    height: calc(
+      100dvh - var(--header-height) - var(--mobile-nav-height) -
+        env(safe-area-inset-bottom, 0px)
+    );
+  }
+}
+
+@media (min-width: 768px) {
+  .mobile-oracle-viewport {
+    height: calc(100dvh - 3.75rem);
   }
 }

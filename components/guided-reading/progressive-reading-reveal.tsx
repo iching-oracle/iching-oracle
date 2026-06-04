@@ -299,8 +299,8 @@ function BlockContent({
   const content = "content" in block ? block.content : "";
 
   return (
-    <article className="rounded-2xl border border-white/10 bg-zen-surface/45 p-6 backdrop-blur-md sm:p-8">
-      <h3 className="font-serif text-lg text-amber-gold/90">{title}</h3>
+    <article className="ritual-card">
+      <h3 className="font-serif text-lg text-amber-gold/90 sm:text-xl">{title}</h3>
       <StreamedParagraph content={content} simulate={simulateText} />
     </article>
   );
@@ -318,7 +318,7 @@ function StreamedParagraph({
   if (!content.trim()) return null;
 
   return (
-    <p className="mt-4 whitespace-pre-wrap text-base leading-relaxed text-foreground/90">
+    <p className="reading-prose mt-4 whitespace-pre-wrap">
       {simulate ? text : content}
       {simulate && text.length < content.length && (
         <span className="ml-0.5 inline-block w-0.5 animate-pulse bg-amber-gold/60" />

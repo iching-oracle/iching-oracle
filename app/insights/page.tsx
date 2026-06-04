@@ -52,11 +52,11 @@ export default async function InsightsPage({ searchParams }: PageProps) {
         aria-hidden
       />
 
-      <main className="relative z-10 mx-auto max-w-6xl px-6 py-12 sm:px-10 sm:py-16">
+      <main className="mobile-page relative z-10 max-w-6xl">
         <InsightsPageContent data={data} />
         <Link
           href="/dashboard"
-          className="mt-12 inline-block text-sm text-zen-muted transition-colors hover:text-amber-gold"
+          className="mt-12 hidden text-sm text-zen-muted transition-colors hover:text-amber-gold md:inline-block"
         >
           ← Dashboard
         </Link>

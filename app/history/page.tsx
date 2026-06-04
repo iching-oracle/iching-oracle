@@ -76,7 +76,7 @@ export default async function HistoryPage({ searchParams }: PageProps) {
   const dateLocale = localeForLanguage(preferredLanguage);
 
   return (
-    <div className="relative mx-auto w-full max-w-6xl px-6 py-12 sm:px-10 sm:py-16">
+    <div className="mobile-page relative max-w-6xl">
       <div
         className="pointer-events-none absolute -left-20 top-0 h-72 w-72 rounded-full bg-cosmic-purple/15 blur-[100px]"
         aria-hidden

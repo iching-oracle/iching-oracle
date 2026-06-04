@@ -7,6 +7,7 @@ import { ConsentProvider } from "@/components/trust/consent-provider";
 import { AnalyticsProvider } from "@/components/analytics/analytics-provider";
 import { ToastProvider } from "@/components/ui/toast-provider";
 import { BetaChrome } from "@/components/beta/beta-chrome";
+import { MobileLayoutShell } from "@/components/mobile/mobile-layout-shell";
 import { SentryUserSync } from "@/components/monitoring/sentry-user-sync";
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -16,9 +17,10 @@ export function Providers({ children }: { children: ReactNode }) {
       <ConsentProvider>
         <AnalyticsProvider>
           <ToastProvider />
-          <div className="flex min-h-full flex-1 flex-col">{children}</div>
+          <MobileLayoutShell footer={<SiteFooter />}>
+            {children}
+          </MobileLayoutShell>
           <BetaChrome />
-          <SiteFooter />
         </AnalyticsProvider>
       </ConsentProvider>
     </SessionProvider>

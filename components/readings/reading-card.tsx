@@ -24,7 +24,7 @@ export function ReadingCard({
   return (
     <Link
       href={`/reading/${id}`}
-      className="group block rounded-xl border border-white/[0.08] bg-zen-elevated/40 p-5 transition-all duration-300 hover:border-amber-gold/35 hover:bg-zen-elevated/70 hover:shadow-[0_0_32px_-12px_rgba(197,160,89,0.3)]"
+      className="tap-feedback group block rounded-2xl border border-white/[0.08] bg-zen-elevated/40 p-5 transition-all duration-300 active:scale-[0.99] hover:border-amber-gold/35 hover:bg-zen-elevated/70 hover:shadow-[0_0_32px_-12px_rgba(197,160,89,0.3)]"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">

@@ -30,7 +30,7 @@ export default async function OracleChatPage() {
       : await getEmptyOracleChatState(userId, active.id);
 
   return (
-    <div className="relative min-h-[calc(100dvh-4rem)] bg-zen-bg">
+    <div className="relative bg-zen-bg max-md:min-h-0 max-md:flex-1">
       <OracleChat initialState={state} />
     </div>
   );

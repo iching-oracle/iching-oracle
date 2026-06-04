@@ -73,11 +73,13 @@ export async function Navbar() {
                   Sign out
                 </button>
               </form>
-              <NavbarMobileMenu
-                isLoggedIn={isLoggedIn}
-                signOutAction={handleSignOut}
-                preferredLanguage={preferredLanguage}
-              />
+              <div className={isLoggedIn ? "md:block hidden" : ""}>
+                <NavbarMobileMenu
+                  isLoggedIn={isLoggedIn}
+                  signOutAction={handleSignOut}
+                  preferredLanguage={preferredLanguage}
+                />
+              </div>
             </>
           ) : (
             <div className="hidden items-center gap-2 sm:flex">

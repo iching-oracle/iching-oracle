@@ -16,7 +16,7 @@ export default async function GuidedReadingPage() {
   }
 
   return (
-    <div className="relative">
+    <div className="mobile-page mobile-page--reading relative max-md:py-4">
       <div className="absolute left-0 right-0 top-4 z-30 flex justify-center px-4 sm:justify-end sm:pr-8">
         <Link
           href="/reading/new"

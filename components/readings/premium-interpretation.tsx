@@ -60,7 +60,7 @@ export function PremiumInterpretation({
     return (
       <div className="mt-3 space-y-3">
         {interpretationPending ? <InterpretationPendingNotice /> : null}
-        <div className="whitespace-pre-wrap text-base leading-relaxed text-foreground/90">
+        <div className="reading-prose whitespace-pre-wrap">
           {interpretation}
         </div>
       </div>
@@ -70,7 +70,7 @@ export function PremiumInterpretation({
   if (isFreePlaceholder) {
     return (
       <div className="mt-3 space-y-6">
-        <div className="whitespace-pre-wrap text-base leading-relaxed text-foreground/90">
+        <div className="reading-prose whitespace-pre-wrap">
           {interpretation}
         </div>
         <p className="text-sm text-zen-muted">
@@ -93,7 +93,7 @@ export function PremiumInterpretation({
         </p>
       ) : (
         <div className="relative">
-          <div className="whitespace-pre-wrap text-base leading-relaxed text-foreground/90">
+          <div className="reading-prose whitespace-pre-wrap">
             {getInterpretationPreview(interpretation)}
           </div>
           <div

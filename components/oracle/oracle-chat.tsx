@@ -222,7 +222,7 @@ export function OracleChat({ initialState }: OracleChatProps) {
   const showWelcome = !started && messages.length === 0;
 
   return (
-    <div className="relative flex h-[calc(100dvh-4.5rem)] flex-col overflow-hidden sm:h-[calc(100dvh-5rem)]">
+    <div className="mobile-oracle-viewport relative flex flex-col overflow-hidden">
       <motion.div
         className="pointer-events-none absolute inset-0"
         animate={{ opacity: [0.4, 0.65, 0.4] }}

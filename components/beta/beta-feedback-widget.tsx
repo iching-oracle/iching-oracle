@@ -68,7 +68,7 @@ export function BetaFeedbackWidget() {
 
   return (
     <>
-      <div className="fixed bottom-6 right-6 z-30 flex flex-col items-end gap-2 sm:bottom-8 sm:right-8">
+      <div className="fixed bottom-[calc(var(--mobile-nav-height)+env(safe-area-inset-bottom,0px)+1rem)] right-4 z-30 flex flex-col items-end gap-2 md:bottom-8 md:right-8">
         <button
           type="button"
           onClick={() => setOpen("pulse")}

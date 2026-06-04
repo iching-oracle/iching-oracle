@@ -16,6 +16,7 @@ import { formatPremiumExpiry, hasPremiumAccess } from "@/lib/premium";
 import { ContinueJourneyPrompt } from "@/components/retention/continue-journey-prompt";
 import { ReflectionStreakWidget } from "@/components/retention/reflection-streak-widget";
 import { ReflectionTimeline } from "@/components/retention/reflection-timeline";
+import { MobilePage } from "@/components/mobile/mobile-page";
 import { getRetentionDashboardStats } from "@/lib/retention/dashboard-stats";
 import {
   FREE_DAILY_READING_LIMIT,
@@ -54,7 +55,7 @@ export default async function DashboardPage() {
   const premiumExpiry = formatPremiumExpiry(user.premiumUntil);
 
   return (
-    <div className="relative mx-auto w-full max-w-4xl px-6 py-12 sm:px-10 sm:py-16">
+    <MobilePage className="relative">
       <div
         className="pointer-events-none absolute -left-20 top-0 h-64 w-64 rounded-full bg-cosmic-purple/15 blur-[100px]"
         aria-hidden
@@ -210,11 +211,11 @@ export default async function DashboardPage() {
 
         <Link
           href="/"
-          className="inline-block text-sm text-zen-muted transition-colors hover:text-amber-gold"
+          className="max-md:hidden inline-block text-sm text-zen-muted transition-colors hover:text-amber-gold"
         >
           ← Back to home
         </Link>
       </div>
-    </div>
+    </MobilePage>
   );
 }

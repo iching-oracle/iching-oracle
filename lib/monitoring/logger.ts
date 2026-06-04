@@ -3,6 +3,9 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import type { SystemEventLevel } from "@/types/trust";
 import { prisma } from "@/lib/prisma";
+import { captureException } from "@/lib/monitoring/sentry";
+import { sanitizeMonitoringContext } from "@/lib/monitoring/sanitize";
+import { getMonitoringEnvironment } from "@/lib/monitoring/env";
 
 export type LogEventInput = {
   level: SystemEventLevel;
@@ -14,15 +17,24 @@ export type LogEventInput = {
 };
 
 export async function logSystemEvent(input: LogEventInput): Promise<void> {
+  const env = getMonitoringEnvironment();
+  const safeMeta = sanitizeMonitoringContext(input.metadata);
   const prefix = `[${input.category}]`;
   const line = `${prefix} ${input.message}`;
 
   if (input.level === "error") {
-    console.error(line, input.metadata ?? "");
+    console.error(line, safeMeta ?? "");
+    captureException(new Error(input.message.slice(0, 500)), {
+      category: input.category,
+      userId: input.userId,
+      path: input.path,
+      extra: { ...safeMeta, environment: env },
+      level: "error",
+    });
   } else if (input.level === "warn") {
-    console.warn(line, input.metadata ?? "");
+    console.warn(line, safeMeta ?? "");
   } else {
-    console.info(line, input.metadata ?? "");
+    console.info(line, safeMeta ?? "");
   }
 
   try {
@@ -31,7 +43,7 @@ export async function logSystemEvent(input: LogEventInput): Promise<void> {
         level: input.level,
         category: input.category.slice(0, 64),
         message: input.message.slice(0, 4000),
-        metadata: (input.metadata ?? undefined) as Prisma.InputJsonValue | undefined,
+        metadata: (safeMeta ?? undefined) as Prisma.InputJsonValue | undefined,
         userId: input.userId,
         path: input.path?.slice(0, 500),
       },
@@ -50,8 +62,8 @@ export function captureClientError(
     category: "client",
     message: error instanceof Error ? error.message : "Client error",
     metadata: {
-      ...context,
-      stack: error instanceof Error ? error.stack : undefined,
+      ...sanitizeMonitoringContext(context),
+      stack: error instanceof Error ? error.stack?.slice(0, 2000) : undefined,
     },
   });
 }

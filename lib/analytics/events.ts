@@ -33,6 +33,7 @@ export const ANALYTICS_EVENTS = {
 
   // Subscription
   PAYWALL_VIEWED: "paywall_viewed",
+  UPGRADE_CLICKED: "upgrade_clicked",
   SUBSCRIPTION_STARTED: "subscription_started",
   CHECKOUT_INITIATED: "checkout_initiated",
   PAYMENT_COMPLETED: "payment_completed",

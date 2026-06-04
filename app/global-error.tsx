@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { ErrorFallback } from "@/components/errors/error-fallback";
+import { reportClientError } from "@/lib/monitoring/report-error";
 import { USER_MESSAGES } from "@/lib/errors/messages";
 
 export default function GlobalError({
@@ -12,15 +13,9 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    void fetch("/api/monitoring/client-error", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message: error.message,
-        stack: error.stack,
-        path: typeof window !== "undefined" ? window.location.pathname : undefined,
-        component: "global-error",
-      }),
+    reportClientError(error, {
+      path: typeof window !== "undefined" ? window.location.pathname : undefined,
+      component: "global-error",
     });
   }, [error]);
 

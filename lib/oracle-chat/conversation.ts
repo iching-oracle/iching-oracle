@@ -1,5 +1,6 @@
 import "server-only";
 
+import { assertValidUserId } from "@/lib/auth/session-user";
 import { getOracleChatLimits } from "@/lib/oracle-chat/limits";
 import { shouldSuggestOracleCast } from "@/lib/oracle-chat/suggest-cast";
 import { prisma } from "@/lib/prisma";
@@ -63,8 +64,9 @@ export async function getOracleConversationForUser(
 }
 
 export async function createOracleConversation(userId: string) {
+  const validUserId = await assertValidUserId(userId);
   return prisma.oracleConversation.create({
-    data: { userId },
+    data: { userId: validUserId },
     include: { messages: { orderBy: { createdAt: "asc" } } },
   });
 }

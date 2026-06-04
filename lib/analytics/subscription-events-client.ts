@@ -18,7 +18,7 @@ export type SubscriptionAnalyticsEvent =
 
 const EVENT_MAP: Record<SubscriptionAnalyticsEvent, string> = {
   checkout_opened: ANALYTICS_EVENTS.CHECKOUT_INITIATED,
-  upgrade_clicked: ANALYTICS_EVENTS.CTA_CLICKED,
+  upgrade_clicked: ANALYTICS_EVENTS.UPGRADE_CLICKED,
   subscription_started: ANALYTICS_EVENTS.SUBSCRIPTION_STARTED,
   subscription_canceled: ANALYTICS_EVENTS.SUBSCRIPTION_CANCELLED,
   payment_failed: ANALYTICS_EVENTS.PAYMENT_FAILED,

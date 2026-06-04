@@ -15,6 +15,7 @@ import {
   retrieveStripeSubscription,
 } from "@/lib/subscription/stripe-sync";
 import { logStripeWebhook } from "@/lib/subscription/webhook-log";
+import { captureException } from "@/lib/monitoring/sentry";
 import { getStripe } from "@/lib/stripe";
 
 export const runtime = "nodejs";
@@ -78,6 +79,10 @@ export async function POST(request: Request) {
     event = verifyStripeEvent(rawBody, signature);
   } catch (error) {
     console.error("[stripe/webhook] Signature verification failed", error);
+    captureException(error, {
+      category: "stripe_webhook",
+      tags: { phase: "signature" },
+    });
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
@@ -259,6 +264,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error("[stripe/webhook] Handler error", event.type, error);
+    captureException(error, {
+      category: "stripe_webhook",
+      tags: { event_type: event.type },
+      extra: { event_id: event.id },
+    });
     await logStripeWebhook({
       eventId: event.id,
       eventType: event.type,

@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AnalyticsDashboardData } from "@/lib/admin/analytics-dashboard-types";
+import type { RecentSignupRow } from "@/lib/admin/recent-signups";
+import { RecentSignupsTable } from "@/components/admin/analytics-dashboard/recent-signups-table";
 import {
   DashboardSidebar,
   type AnalyticsSectionId,
@@ -20,9 +22,13 @@ import { RetentionChart } from "@/components/admin/analytics-dashboard/retention
 
 type AnalyticsDashboardProps = {
   data: AnalyticsDashboardData;
+  recentSignups?: RecentSignupRow[];
 };
 
-export function AnalyticsDashboard({ data }: AnalyticsDashboardProps) {
+export function AnalyticsDashboard({
+  data,
+  recentSignups = [],
+}: AnalyticsDashboardProps) {
   const [activeSection, setActiveSection] = useState<AnalyticsSectionId>("overview");
   const [mobileOpen, setMobileOpen] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
@@ -98,6 +104,14 @@ export function AnalyticsDashboard({ data }: AnalyticsDashboardProps) {
                   delay={0.08}
                 />
               </div>
+              {recentSignups.length > 0 ? (
+                <div className="space-y-3">
+                  <h3 className="font-serif text-lg text-foreground">
+                    Recent signups
+                  </h3>
+                  <RecentSignupsTable signups={recentSignups} />
+                </div>
+              ) : null}
             </section>
 
             {/* AI Insights */}

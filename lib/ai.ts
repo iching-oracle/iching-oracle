@@ -6,6 +6,8 @@ import {
   type SupportedLanguageCode,
 } from "@/lib/i18n/languages";
 import { formatChangingLines } from "@/lib/iching";
+import { fetchAiCompletion } from "@/lib/monitoring/ai-client";
+import { captureException } from "@/lib/monitoring/sentry";
 
 const DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
 const DEFAULT_MODEL = "deepseek-chat";
@@ -238,19 +240,23 @@ export async function generateInterpretationFromPrompt(
     { role: "user", content: prompt },
   ];
 
-  const response = await fetch(DEEPSEEK_API_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
+  const response = await fetchAiCompletion(
+    DEEPSEEK_API_URL,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        temperature: DEFAULT_TEMPERATURE,
+        max_tokens: DEFAULT_MAX_TOKENS,
+      }),
     },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature: DEFAULT_TEMPERATURE,
-      max_tokens: DEFAULT_MAX_TOKENS,
-    }),
-  });
+    { category: "deepseek_interpretation" },
+  );
 
   if (!response.ok) {
     const errorBody = await response.text();
@@ -301,6 +307,7 @@ export async function generateInterpretation(
     return { text, pending: false };
   } catch (error) {
     console.error("[deepseek] generateInterpretation failed", error);
+    captureException(error, { category: "deepseek_interpretation" });
     return {
       text: INTERPRETATION_UNAVAILABLE_MESSAGE,
       pending: true,

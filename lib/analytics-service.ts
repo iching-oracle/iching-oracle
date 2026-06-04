@@ -137,7 +137,11 @@ async function buildAnalyticsDashboard(): Promise<AnalyticsDashboardData> {
     overview: {
       metrics: buildOverviewMetrics({
         dau,
+        totalUsers: db.totalUsers,
+        premiumUsers: db.activeSubscribers,
         totalReadings,
+        readingsToday: db.readingsToday,
+        recentSignups7d: db.recentSignups7d,
         avgSessionSec,
         conversionRate,
         activeSubscribers: db.activeSubscribers,
@@ -433,7 +437,11 @@ async function buildErrorSection(
 
 function buildOverviewMetrics(input: {
   dau: number;
+  totalUsers: number;
+  premiumUsers: number;
   totalReadings: number;
+  readingsToday: number;
+  recentSignups7d: number;
   avgSessionSec: number;
   conversionRate: number;
   activeSubscribers: number;
@@ -445,13 +453,32 @@ function buildOverviewMetrics(input: {
   const userSpark = input.userGrowth.map((p) => p.value);
 
   return [
-    metric("dau", "Daily Active Users", formatNum(input.dau), userSpark),
+    metric("users", "Total Users", formatNum(input.totalUsers), userSpark),
+    metric(
+      "premium",
+      "Premium Users",
+      formatNum(input.premiumUsers),
+      userSpark,
+    ),
     metric(
       "readings",
       "Total Readings",
       formatNum(input.totalReadings),
       readingSpark,
     ),
+    metric(
+      "readings-today",
+      "Readings Today",
+      formatNum(input.readingsToday),
+      readingSpark,
+    ),
+    metric(
+      "signups",
+      "Signups (7d)",
+      formatNum(input.recentSignups7d),
+      userSpark,
+    ),
+    metric("dau", "Daily Active Users", formatNum(input.dau), userSpark),
     metric(
       "session",
       "Avg Session Time",

@@ -3,9 +3,8 @@
 import { useEffect } from "react";
 import { ErrorFallback } from "@/components/errors/error-fallback";
 import { reportClientError } from "@/lib/monitoring/report-error";
-import { USER_MESSAGES } from "@/lib/errors/messages";
 
-export default function Error({
+export default function AdminError({
   error,
   reset,
 }: {
@@ -13,16 +12,13 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    reportClientError(error, {
-      path: typeof window !== "undefined" ? window.location.pathname : undefined,
-      component: "error-boundary",
-    });
+    reportClientError(error, { component: "admin-error" });
   }, [error]);
 
   return (
     <ErrorFallback
-      title="The oracle is temporarily clouded"
-      message={USER_MESSAGES.oracleClouded}
+      title="Admin panel unavailable"
+      message="We could not load this admin view. Try again or check server logs."
       reset={reset}
     />
   );

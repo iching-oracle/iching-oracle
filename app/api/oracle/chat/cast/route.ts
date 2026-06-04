@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { resolveValidUserId } from "@/lib/auth/session-user";
 import { castOracleReadingForConversation } from "@/lib/oracle-chat/cast";
 import { getOracleChatState } from "@/lib/oracle-chat/conversation";
 import { oracleCastSchema } from "@/lib/validations/oracle-chat";
@@ -7,8 +8,12 @@ import { CREDIT_ERROR_CODES } from "@/types/credits";
 
 export async function POST(request: Request) {
   const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const userId = await resolveValidUserId(session?.user?.id);
+  if (!userId) {
+    return NextResponse.json(
+      { error: "Session expired. Please sign in again." },
+      { status: 401 },
+    );
   }
 
   let body: unknown;
@@ -24,7 +29,7 @@ export async function POST(request: Request) {
   }
 
   const result = await castOracleReadingForConversation(
-    session.user.id,
+    userId,
     parsed.data.conversationId,
   );
 
@@ -42,10 +47,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const state = await getOracleChatState(
-    session.user.id,
-    parsed.data.conversationId,
-  );
+  const state = await getOracleChatState(userId, parsed.data.conversationId);
 
   return NextResponse.json({
     readingId: result.readingId,

@@ -15,3 +15,19 @@ export async function resolveValidUserId(
 
   return user?.id ?? null;
 }
+
+/** Thrown when JWT user id has no matching User row (deleted account, stale token). */
+export class StaleSessionError extends Error {
+  constructor() {
+    super("Session user not found");
+    this.name = "StaleSessionError";
+  }
+}
+
+export async function assertValidUserId(
+  sessionUserId: string | undefined | null,
+): Promise<string> {
+  const id = await resolveValidUserId(sessionUserId);
+  if (!id) throw new StaleSessionError();
+  return id;
+}

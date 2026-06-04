@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { resolveValidUserId } from "@/lib/auth/session-user";
 import { OracleChat } from "@/components/oracle/oracle-chat";
 import {
   getEmptyOracleChatState,
@@ -16,16 +17,17 @@ export const metadata = {
 export default async function OracleChatPage() {
   const session = await auth();
 
-  if (!session?.user?.id) {
+  const userId = await resolveValidUserId(session?.user?.id);
+  if (!userId) {
     redirect("/login?callbackUrl=/oracle/chat");
   }
 
-  const active = await getOrCreateActiveConversation(session.user.id);
+  const active = await getOrCreateActiveConversation(userId);
   const state =
     active.messages.length > 0
-      ? (await getOracleChatState(session.user.id, active.id)) ??
-        (await getEmptyOracleChatState(session.user.id, active.id))
-      : await getEmptyOracleChatState(session.user.id, active.id);
+      ? (await getOracleChatState(userId, active.id)) ??
+        (await getEmptyOracleChatState(userId, active.id))
+      : await getEmptyOracleChatState(userId, active.id);
 
   return (
     <div className="relative min-h-[calc(100dvh-4rem)] bg-zen-bg">

@@ -7,10 +7,12 @@ import { ConsentProvider } from "@/components/trust/consent-provider";
 import { AnalyticsProvider } from "@/components/analytics/analytics-provider";
 import { ToastProvider } from "@/components/ui/toast-provider";
 import { BetaChrome } from "@/components/beta/beta-chrome";
+import { SentryUserSync } from "@/components/monitoring/sentry-user-sync";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <SessionProvider>
+      <SentryUserSync />
       <ConsentProvider>
         <AnalyticsProvider>
           <ToastProvider />

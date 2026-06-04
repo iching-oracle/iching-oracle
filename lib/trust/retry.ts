@@ -1,9 +1,16 @@
+export type RetryOptions = {
+  attempts?: number;
+  delayMs?: number;
+  shouldRetry?: (error: unknown, attempt: number) => boolean;
+};
+
 export async function withRetry<T>(
   fn: () => Promise<T>,
-  options: { attempts?: number; delayMs?: number } = {},
+  options: RetryOptions = {},
 ): Promise<T> {
   const attempts = options.attempts ?? 3;
   const delayMs = options.delayMs ?? 800;
+  const shouldRetry = options.shouldRetry ?? (() => true);
   let lastError: unknown;
 
   for (let i = 0; i < attempts; i++) {
@@ -11,9 +18,9 @@ export async function withRetry<T>(
       return await fn();
     } catch (err) {
       lastError = err;
-      if (i < attempts - 1) {
-        await new Promise((r) => setTimeout(r, delayMs * (i + 1)));
-      }
+      const isLast = i >= attempts - 1;
+      if (isLast || !shouldRetry(err, i + 1)) break;
+      await new Promise((r) => setTimeout(r, delayMs * (i + 1)));
     }
   }
 

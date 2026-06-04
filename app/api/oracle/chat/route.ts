@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { resolveValidUserId } from "@/lib/auth/session-user";
 import {
   addOracleMessage,
   createOracleConversation,
@@ -21,17 +22,26 @@ import { scheduleMemoryExtraction } from "@/lib/memory/schedule";
 import { oracleChatMessageSchema } from "@/lib/validations/oracle-chat";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(request: Request) {
+async function getOracleChatUserId() {
   const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const userId = await resolveValidUserId(session?.user?.id);
+  return { session, userId };
+}
+
+export async function GET(request: Request) {
+  const { userId } = await getOracleChatUserId();
+  if (!userId) {
+    return NextResponse.json(
+      { error: "Session expired. Please sign in again." },
+      { status: 401 },
+    );
   }
 
   const url = new URL(request.url);
   const conversationId = url.searchParams.get("conversationId")?.trim();
 
   if (conversationId) {
-    const state = await getOracleChatState(session.user.id, conversationId);
+    const state = await getOracleChatState(userId, conversationId);
     if (!state) {
       return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
     }
@@ -51,9 +61,12 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { userId } = await getOracleChatUserId();
+  if (!userId) {
+    return NextResponse.json(
+      { error: "Session expired. Please sign in again." },
+      { status: 401 },
+    );
   }
 
   if (!process.env.DEEPSEEK_API_KEY?.trim()) {
@@ -93,10 +106,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
   }
 
-  const creditCharge = await chargeCreditsForFeature(
-    session.user.id,
-    "oracle_chat",
-  );
+  const creditCharge = await chargeCreditsForFeature(userId, "oracle_chat");
   if (!creditCharge.ok) {
     return NextResponse.json(
       { error: creditCharge.message, code: creditCharge.code },
@@ -110,7 +120,7 @@ export async function POST(request: Request) {
   await addOracleMessage(conversation.id, "user", message);
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: userId },
     select: { preferredLanguage: true },
   });
   const language = normalizeLanguageCode(user?.preferredLanguage);
@@ -119,7 +129,7 @@ export async function POST(request: Request) {
 
   try {
     const memories = await retrieveRelevantMemories(
-      session.user.id,
+      userId,
       message,
       "oracle_chat",
       conversation.id,
@@ -127,7 +137,7 @@ export async function POST(request: Request) {
     const memoryBlock = formatMemoriesForPrompt(memories);
 
     const rawStream = await streamOracleConversationChat({
-      userId: session.user.id,
+      userId,
       language,
       messages: history as typeof conversation.messages,
       reading: conversation.reading,
@@ -137,11 +147,7 @@ export async function POST(request: Request) {
 
     const stream = teeStreamForPersistence(rawStream, async (fullText) => {
       await addOracleMessage(conversation!.id, "assistant", fullText);
-      scheduleMemoryExtraction(
-        session.user.id,
-        "oracle_chat",
-        conversation.id,
-      );
+      scheduleMemoryExtraction(userId, "oracle_chat", conversation.id);
     });
 
     return new Response(stream, {

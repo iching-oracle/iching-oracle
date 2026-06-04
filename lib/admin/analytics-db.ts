@@ -26,6 +26,8 @@ export type DatabaseAnalyticsSnapshot = {
   subscriptionsStarted30d: number;
   conversionRate: number;
   activeSubscribers: number;
+  readingsToday: number;
+  recentSignups7d: number;
   mrr: number;
   avgResponseTimeMs: number;
   readingsPerDay: Array<{ day: string; value: number }>;
@@ -57,6 +59,8 @@ export async function fetchDatabaseAnalyticsSnapshot(): Promise<DatabaseAnalytic
     newUsers30d,
     premiumUsers,
     totalReadings,
+    readingsToday,
+    recentSignups7d,
     readings30d,
     dau,
     wau,
@@ -90,6 +94,10 @@ export async function fetchDatabaseAnalyticsSnapshot(): Promise<DatabaseAnalytic
       },
     }),
     prisma.reading.count(),
+    prisma.reading.count({
+      where: { createdAt: { gte: daysAgo(1) } },
+    }),
+    prisma.user.count({ where: { createdAt: { gte: since7 } } }),
     prisma.reading.count({ where: { createdAt: { gte: since30 } } }),
     countDistinctUsers(since1),
     countDistinctUsers(since7),
@@ -124,6 +132,8 @@ export async function fetchDatabaseAnalyticsSnapshot(): Promise<DatabaseAnalytic
     totalUsers,
     newUsers30d,
     totalReadings,
+    readingsToday,
+    recentSignups7d,
     readingsGenerated30d,
     readingsCompleted30d,
     followUps30d,

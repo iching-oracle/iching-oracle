@@ -11,3 +11,5 @@ export {
   questionLength,
   readingAnalyticsMeta,
 } from "./privacy";
+export { FEATURE_FLAGS } from "./feature-flags";
+export type { FeatureFlagKey } from "./feature-flags";

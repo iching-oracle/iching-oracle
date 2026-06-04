@@ -35,6 +35,52 @@ export async function getAdminInvites(limit = 50) {
   });
 }
 
+export async function getAdminRecentSignups(limit = 8) {
+  const rows = await prisma.user.findMany({
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      isBetaMember: true,
+      createdAt: true,
+    },
+  });
+  return rows.map((r) => ({
+    id: r.id,
+    email: r.email,
+    name: r.name,
+    isBetaMember: r.isBetaMember,
+    createdAt: r.createdAt.toISOString(),
+  }));
+}
+
+export async function getAdminRecentFeedback(limit = 12) {
+  const rows = await prisma.productFeedback.findMany({
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    select: {
+      id: true,
+      type: true,
+      message: true,
+      rating: true,
+      severity: true,
+      createdAt: true,
+      user: { select: { email: true } },
+    },
+  });
+  return rows.map((r) => ({
+    id: r.id,
+    type: r.type,
+    message: r.message.slice(0, 200),
+    rating: r.rating,
+    severity: r.severity,
+    createdAt: r.createdAt.toISOString(),
+    userEmail: r.user?.email ?? null,
+  }));
+}
+
 export async function adminApproveWaitlist(waitlistId: string) {
   await requireAdminSession();
   const result = await approveWaitlistAndInvite(waitlistId);

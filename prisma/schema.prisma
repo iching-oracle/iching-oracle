@@ -471,6 +471,8 @@ model ProductFeedback {
   userId    String?
   type      String
   message   String   @db.Text
+  /// 1–5 satisfaction pulse (optional)
+  rating    Int?
   severity  String?
   flow      String?
   pagePath  String?

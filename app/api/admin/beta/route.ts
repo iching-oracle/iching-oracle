@@ -5,6 +5,8 @@ import {
   adminCreateInvite,
   adminRevokeInvite,
   getAdminInvites,
+  getAdminRecentFeedback,
+  getAdminRecentSignups,
   getAdminWaitlist,
 } from "@/lib/admin/beta";
 import { requireAdminSession } from "@/lib/admin/auth";
@@ -26,8 +28,12 @@ export async function GET(request: Request) {
       return NextResponse.json({ invites });
     }
 
-    const insights = await getBetaInsights();
-    return NextResponse.json({ insights });
+    const [insights, recentSignups, recentFeedback] = await Promise.all([
+      getBetaInsights(),
+      getAdminRecentSignups(),
+      getAdminRecentFeedback(),
+    ]);
+    return NextResponse.json({ insights, recentSignups, recentFeedback });
   } catch (error) {
     return handleRouteError(error, { category: "admin_beta", path: "/api/admin/beta" });
   }

@@ -1,20 +1,34 @@
-import { AmbientBackground } from "./components/home/AmbientBackground";
-import { DailyOraclePreview } from "./components/home/DailyOraclePreview";
-import { DailyVerse } from "./components/home/DailyVerse";
-import { Hero } from "./components/home/Hero";
-import { MethodGrid } from "./components/home/MethodGrid";
+import { auth } from "@/auth";
+import { DailyOraclePreview } from "@/app/components/home/DailyOraclePreview";
+import { LandingPage } from "@/components/landing/landing-page";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
-export default function Home() {
+export const metadata = buildPageMetadata({
+  title: "AI I Ching Oracle — Ancient Wisdom, Modern Insight",
+  description:
+    "Premium AI-powered I Ching readings for self-reflection and guidance. Ask your question, receive your hexagram, and explore personalized interpretation.",
+  path: "/",
+  keywords: [
+    "i ching",
+    "iching oracle",
+    "ai divination",
+    "hexagram reading",
+    "spiritual guidance",
+  ],
+});
+
+export default async function Home() {
+  const session = await auth();
+  const isLoggedIn = Boolean(session?.user?.id);
+
   return (
-    <div className="relative flex min-h-full flex-col overflow-hidden bg-zen-bg">
-      <AmbientBackground />
-
-      <main className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 pb-16 sm:px-10 lg:px-12">
-        <Hero />
-        <MethodGrid />
-        <DailyOraclePreview />
-        <DailyVerse />
-      </main>
-    </div>
+    <LandingPage
+      isLoggedIn={isLoggedIn}
+      dailyOracleSlot={
+        <div className="py-4 sm:py-8">
+          <DailyOraclePreview />
+        </div>
+      }
+    />
   );
 }

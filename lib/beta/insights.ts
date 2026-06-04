@@ -13,11 +13,17 @@ export async function getBetaInsights(): Promise<BetaInsightsDTO> {
     bugCount,
     waitlistPending,
     waitlistInvited,
+    waitlistJoined,
+    totalWaitlist,
     betaMembers,
     signupCount,
     onboardingCompleted,
     betaUsersActive,
     featureRequests,
+    feedbackCount30d,
+    ratingAgg,
+    invitesActive,
+    inviteRedemptions,
   ] = await Promise.all([
     prisma.readingFeedback.count({ where: { resonance: "deeply" } }),
     prisma.readingFeedback.count({ where: { resonance: "somewhat" } }),
@@ -25,6 +31,8 @@ export async function getBetaInsights(): Promise<BetaInsightsDTO> {
     prisma.productFeedback.count({ where: { type: "bug" } }),
     prisma.waitlistEntry.count({ where: { status: "pending" } }),
     prisma.waitlistEntry.count({ where: { status: "invited" } }),
+    prisma.waitlistEntry.count({ where: { status: "joined" } }),
+    prisma.waitlistEntry.count(),
     prisma.user.count({ where: { isBetaMember: true } }),
     prisma.user.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
     prisma.productAnalyticsEvent.count({
@@ -46,12 +54,26 @@ export async function getBetaInsights(): Promise<BetaInsightsDTO> {
       orderBy: { _count: { message: "desc" } },
       take: 8,
     }),
+    prisma.productFeedback.count({
+      where: { createdAt: { gte: thirtyDaysAgo } },
+    }),
+    prisma.productFeedback.aggregate({
+      _avg: { rating: true },
+      where: { rating: { not: null }, createdAt: { gte: thirtyDaysAgo } },
+    }),
+    prisma.inviteCode.count({
+      where: {
+        revokedAt: null,
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
+    }),
+    prisma.inviteCode.aggregate({ _sum: { useCount: true } }),
   ]);
 
   const totalResonance = deeplyCount + somewhatCount + notReallyCount;
   const resonanceScore =
     totalResonance > 0
-      ? Math.round(((deeplyCount * 100 + somewhatCount * 50) / totalResonance))
+      ? Math.round((deeplyCount * 100 + somewhatCount * 50) / totalResonance)
       : 0;
 
   const onboardingCompletionPct =
@@ -59,6 +81,11 @@ export async function getBetaInsights(): Promise<BetaInsightsDTO> {
 
   const betaRetentionPct =
     betaMembers > 0 ? Math.round((betaUsersActive / betaMembers) * 100) : 0;
+
+  const waitlistConversionPct =
+    totalWaitlist > 0 ? Math.round((waitlistJoined / totalWaitlist) * 100) : 0;
+
+  const avgRating = ratingAgg._avg.rating;
 
   return {
     resonanceScore,
@@ -75,5 +102,13 @@ export async function getBetaInsights(): Promise<BetaInsightsDTO> {
     waitlistPending,
     waitlistInvited,
     betaMembers,
+    totalWaitlist,
+    waitlistJoined,
+    feedbackCount30d,
+    avgFeedbackRating:
+      avgRating != null ? Math.round(avgRating * 10) / 10 : null,
+    inviteCodesActive: invitesActive,
+    inviteRedemptions: inviteRedemptions._sum.useCount ?? 0,
+    waitlistConversionPct,
   };
 }

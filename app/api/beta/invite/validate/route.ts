@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { validateInviteCode } from "@/lib/beta/invites";
 import { normalizeInviteCode } from "@/lib/beta/invite-code";
+import {
+  RATE_LIMITS,
+  rateLimitByIp,
+  rateLimitResponse,
+} from "@/lib/rate-limit/presets";
 
 const bodySchema = z.object({
   code: z.string().min(4).max(32),
@@ -9,6 +14,11 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const limited = await rateLimitByIp(request, "auth", RATE_LIMITS.auth);
+  if (!limited.ok) {
+    return rateLimitResponse(limited);
+  }
+
   const body = await request.json().catch(() => null);
   const parsed = bodySchema.safeParse(body);
   if (!parsed.success) {

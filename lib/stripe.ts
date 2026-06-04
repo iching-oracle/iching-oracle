@@ -18,8 +18,7 @@ export function getAppUrl(): string {
   return url.replace(/\/$/, "");
 }
 
-export const PREMIUM_PRICE_CENTS = 999;
-export const PREMIUM_CURRENCY = "eur";
+export { PREMIUM_PRICE_CENTS, PREMIUM_CURRENCY } from "@/lib/pricing/constants";
 
 let stripeClient: Stripe | null = null;
 

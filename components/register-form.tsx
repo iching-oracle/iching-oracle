@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PasswordField } from "@/components/password-field";
 import {
   getPasswordRuleStatuses,
@@ -10,13 +10,21 @@ import {
 } from "@/lib/password";
 import { registerSchema } from "@/lib/validations/auth";
 
-export function RegisterForm() {
+type RegisterFormProps = {
+  inviteRequired?: boolean;
+};
+
+export function RegisterForm({ inviteRequired = false }: RegisterFormProps) {
   const searchParams = useSearchParams();
   const inviteFromUrl = searchParams.get("invite") ?? "";
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [inviteCode, setInviteCode] = useState(inviteFromUrl);
+  const [inviteStatus, setInviteStatus] = useState<
+    "idle" | "checking" | "valid" | "invalid"
+  >("idle");
+  const [inviteHint, setInviteHint] = useState<string | null>(null);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +39,42 @@ export function RegisterForm() {
   const allPasswordRulesPass = passwordRules.every((rule) => rule.passed);
   const confirmMatches = passwordsMatch(password, confirmPassword);
 
+  useEffect(() => {
+    const code = inviteCode.trim();
+    if (code.length < 6) {
+      setInviteStatus("idle");
+      setInviteHint(null);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setInviteStatus("checking");
+      try {
+        const res = await fetch("/api/beta/invite/validate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            code,
+            email: email.trim() || undefined,
+          }),
+        });
+        const data = (await res.json()) as { valid?: boolean; error?: string };
+        if (data.valid) {
+          setInviteStatus("valid");
+          setInviteHint("Invite code accepted");
+        } else {
+          setInviteStatus("invalid");
+          setInviteHint(data.error ?? "Invalid invite");
+        }
+      } catch {
+        setInviteStatus("idle");
+        setInviteHint(null);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [inviteCode, email]);
+
   const canSubmit = useMemo(() => {
     const parsed = registerSchema.safeParse({
       name,
@@ -39,8 +83,20 @@ export function RegisterForm() {
       confirmPassword,
       inviteCode: inviteCode.trim() || undefined,
     });
-    return parsed.success && !isLoading;
-  }, [name, email, password, confirmPassword, inviteCode, isLoading]);
+    const inviteOk =
+      !inviteRequired ||
+      (inviteCode.trim().length > 0 && inviteStatus === "valid");
+    return parsed.success && inviteOk && !isLoading;
+  }, [
+    name,
+    email,
+    password,
+    confirmPassword,
+    inviteCode,
+    isLoading,
+    inviteRequired,
+    inviteStatus,
+  ]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -167,12 +223,23 @@ export function RegisterForm() {
             placeholder="ORACLE-XXXXXXXX"
             autoComplete="off"
           />
-          <p className="mt-1 text-xs text-zen-muted">
-            Required during closed beta.{" "}
-            <Link href="/beta" className="text-amber-gold hover:underline">
-              Join the waitlist
-            </Link>
-          </p>
+          {inviteHint ? (
+            <p
+              className={`mt-1 text-xs ${
+                inviteStatus === "valid" ? "text-amber-glow" : "text-red-300"
+              }`}
+              role="status"
+            >
+              {inviteStatus === "checking" ? "Checking code…" : inviteHint}
+            </p>
+          ) : (
+            <p className="mt-1 text-xs text-zen-muted">
+              {inviteRequired ? "Required for closed beta. " : ""}
+              <Link href="/beta" className="text-amber-gold hover:underline">
+                Join the waitlist
+              </Link>
+            </p>
+          )}
         </div>
 
         <PasswordField

@@ -93,3 +93,32 @@ export async function sendBetaWelcomeEmail(
     text: `Welcome, ${greeting}. Begin: ${getAppUrl()}/reading/guided`,
   });
 }
+
+export async function sendFeedbackThankYouEmail(
+  email: string,
+  name?: string,
+): Promise<void> {
+  const resend = getResendClient();
+  if (!resend) return;
+
+  const greeting = name?.trim() ? name.trim().split(/\s+/)[0] : "Explorer";
+  const bodyHtml = `
+    <p style="margin:0 0 16px;">${greeting},</p>
+    <p style="margin:0 0 16px;">Thank you for sharing feedback on the beta. Every note is read by the team and shapes what we build next.</p>
+    <p style="margin:0;">With gratitude for helping us refine the oracle.</p>
+  `;
+
+  const html = renderEmailLayout({
+    title: "We received your feedback",
+    bodyHtml,
+    cta: { label: "Return to the oracle", href: `${getAppUrl()}/dashboard` },
+  });
+
+  await resend.emails.send({
+    from: getEmailFrom(),
+    to: email,
+    subject: "Thank you — your beta feedback matters",
+    html,
+    text: `Thank you for your beta feedback, ${greeting}.`,
+  });
+}

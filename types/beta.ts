@@ -40,4 +40,29 @@ export type BetaInsightsDTO = {
   waitlistPending: number;
   waitlistInvited: number;
   betaMembers: number;
+  totalWaitlist: number;
+  waitlistJoined: number;
+  feedbackCount30d: number;
+  avgFeedbackRating: number | null;
+  inviteCodesActive: number;
+  inviteRedemptions: number;
+  waitlistConversionPct: number;
+};
+
+export type BetaAdminSignupRow = {
+  id: string;
+  email: string;
+  name: string | null;
+  isBetaMember: boolean;
+  createdAt: string;
+};
+
+export type BetaAdminFeedbackRow = {
+  id: string;
+  type: string;
+  message: string;
+  rating: number | null;
+  severity: string | null;
+  createdAt: string;
+  userEmail: string | null;
 };

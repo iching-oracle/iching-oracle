@@ -9,7 +9,7 @@ import {
 } from "@/lib/rate-limit/presets";
 
 const bodySchema = z.object({
-  code: z.string().min(4).max(32),
+  code: z.string().min(4).max(40),
   email: z.string().email().optional(),
 });
 

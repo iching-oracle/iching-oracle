@@ -61,7 +61,7 @@ export function RegisterForm({ inviteRequired = false }: RegisterFormProps) {
         const data = (await res.json()) as { valid?: boolean; error?: string };
         if (data.valid) {
           setInviteStatus("valid");
-          setInviteHint("Invite code accepted");
+          setInviteHint("Invitation accepted");
         } else {
           setInviteStatus("invalid");
           setInviteHint(data.error ?? "Invalid invite");
@@ -220,7 +220,7 @@ export function RegisterForm({ inviteRequired = false }: RegisterFormProps) {
             value={inviteCode}
             onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
             className="auth-input font-mono tracking-wider"
-            placeholder="ORACLE-XXXXXXXX"
+            placeholder="QUIETPATH or ORACLE-XXXXXXXX"
             autoComplete="off"
           />
           {inviteHint ? (

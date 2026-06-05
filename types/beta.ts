@@ -66,3 +66,18 @@ export type BetaAdminFeedbackRow = {
   createdAt: string;
   userEmail: string | null;
 };
+
+export type BetaAdminInviteRow = {
+  id: string;
+  code: string;
+  email: string | null;
+  note: string | null;
+  source: string | null;
+  maxUses: number;
+  usedCount: number;
+  remaining: number;
+  isActive: boolean;
+  expiresAt: string | null;
+  revokedAt: string | null;
+  createdAt: string;
+};

@@ -1,8 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { InviteCodesSection } from "@/components/admin/beta/invite-codes-section";
 import type {
   BetaAdminFeedbackRow,
+  BetaAdminInviteRow,
   BetaAdminSignupRow,
   BetaInsightsDTO,
 } from "@/types/beta";
@@ -17,20 +19,10 @@ type WaitlistRow = {
   createdAt: string;
 };
 
-type InviteRow = {
-  id: string;
-  code: string;
-  email: string | null;
-  useCount: number;
-  maxUses: number;
-  expiresAt: string | null;
-  revokedAt: string | null;
-};
-
 export function AdminBetaPanel() {
   const [insights, setInsights] = useState<BetaInsightsDTO | null>(null);
   const [waitlist, setWaitlist] = useState<WaitlistRow[]>([]);
-  const [invites, setInvites] = useState<InviteRow[]>([]);
+  const [invites, setInvites] = useState<BetaAdminInviteRow[]>([]);
   const [recentSignups, setRecentSignups] = useState<BetaAdminSignupRow[]>([]);
   const [recentFeedback, setRecentFeedback] = useState<BetaAdminFeedbackRow[]>(
     [],
@@ -66,30 +58,6 @@ export function AdminBetaPanel() {
       setMessage("Invite emailed");
       await refresh();
     }
-    setBusy(null);
-  }
-
-  async function createInvite() {
-    setBusy("invite");
-    const res = await fetch("/api/admin/beta", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "create_invite", expiresInDays: 14 }),
-    });
-    const data = await res.json();
-    if (res.ok) setMessage(`Created: ${data.code}`);
-    await refresh();
-    setBusy(null);
-  }
-
-  async function revokeInvite(inviteId: string) {
-    setBusy(inviteId);
-    await fetch("/api/admin/beta", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "revoke_invite", inviteId }),
-    });
-    await refresh();
     setBusy(null);
   }
 
@@ -184,14 +152,6 @@ export function AdminBetaPanel() {
           <h2 className="text-sm uppercase tracking-widest text-zen-muted">
             Waitlist
           </h2>
-          <button
-            type="button"
-            onClick={() => void createInvite()}
-            disabled={busy === "invite"}
-            className="auth-btn-secondary text-xs"
-          >
-            + Generate invite
-          </button>
         </div>
         <div className="overflow-x-auto rounded-xl border border-white/10">
           <table className="w-full min-w-[720px] text-left text-sm">
@@ -241,36 +201,13 @@ export function AdminBetaPanel() {
         </div>
       </section>
 
-      <section>
-        <h2 className="mb-4 text-sm uppercase tracking-widest text-zen-muted">
-          Invite codes
-        </h2>
-        <ul className="space-y-2 text-sm">
-          {invites.map((inv) => (
-            <li
-              key={inv.id}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 px-4 py-3"
-            >
-              <code className="text-amber-gold">{inv.code}</code>
-              <span className="text-zen-muted">
-                {inv.useCount}/{inv.maxUses}
-                {inv.revokedAt ? " · revoked" : ""}
-                {inv.email ? ` · ${inv.email}` : ""}
-              </span>
-              {!inv.revokedAt && inv.useCount < inv.maxUses ? (
-                <button
-                  type="button"
-                  disabled={busy === inv.id}
-                  onClick={() => void revokeInvite(inv.id)}
-                  className="text-xs text-red-300/90 hover:underline"
-                >
-                  Revoke
-                </button>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      </section>
+      <InviteCodesSection
+        invites={invites}
+        busy={busy}
+        setBusy={setBusy}
+        onRefresh={refresh}
+        onMessage={setMessage}
+      />
     </div>
   );
 }

@@ -3,6 +3,10 @@ import bcrypt from "bcryptjs";
 import { sendVerificationEmail } from "@/lib/email";
 import { isBetaInviteOnly } from "@/lib/beta/config";
 import { sendBetaWelcomeEmail } from "@/lib/beta/emails";
+import {
+  INVITE_ERROR_MESSAGES,
+  mapInviteRedeemError,
+} from "@/lib/beta/invite-code";
 import { redeemInviteCode, validateInviteCode } from "@/lib/beta/invites";
 import { generateVerificationToken, getVerificationTokenExpiry } from "@/lib/tokens";
 import { prisma } from "@/lib/prisma";
@@ -44,7 +48,7 @@ export async function POST(request: Request) {
     if (isBetaInviteOnly()) {
       if (!inviteCode?.trim()) {
         return NextResponse.json(
-          { error: "A beta invite code is required to register." },
+          { error: INVITE_ERROR_MESSAGES.REQUIRED },
           { status: 403 },
         );
       }
@@ -114,7 +118,7 @@ export async function POST(request: Request) {
         console.error("[register] Invite redeem failed", inviteError);
         await prisma.user.delete({ where: { id: user.id } });
         return NextResponse.json(
-          { error: "Invite code could not be redeemed. Please try again." },
+          { error: mapInviteRedeemError(inviteError) },
           { status: 400 },
         );
       }

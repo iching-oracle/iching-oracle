@@ -63,11 +63,12 @@ export async function getBetaInsights(): Promise<BetaInsightsDTO> {
     }),
     prisma.inviteCode.count({
       where: {
+        isActive: true,
         revokedAt: null,
         OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
       },
     }),
-    prisma.inviteCode.aggregate({ _sum: { useCount: true } }),
+    prisma.inviteCode.aggregate({ _sum: { usedCount: true } }),
   ]);
 
   const totalResonance = deeplyCount + somewhatCount + notReallyCount;
@@ -108,7 +109,7 @@ export async function getBetaInsights(): Promise<BetaInsightsDTO> {
     avgFeedbackRating:
       avgRating != null ? Math.round(avgRating * 10) / 10 : null,
     inviteCodesActive: invitesActive,
-    inviteRedemptions: inviteRedemptions._sum.useCount ?? 0,
+    inviteRedemptions: inviteRedemptions._sum.usedCount ?? 0,
     waitlistConversionPct,
   };
 }

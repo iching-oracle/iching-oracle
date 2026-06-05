@@ -3,7 +3,7 @@ import { getAuthSecret } from "@/lib/auth-env";
 import { isAdminSessionUser } from "@/lib/admin/edge-admin";
 
 /**
- * Edge-safe Auth.js config — used by middleware only.
+ * Edge-safe Auth.js config — used by proxy only.
  * Do not import Prisma, bcrypt, or other Node-only modules here.
  */
 export const authConfig = {

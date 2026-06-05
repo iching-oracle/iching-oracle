@@ -47,6 +47,7 @@ model User {
   isBetaMember         Boolean   @default(false)
   betaJoinedAt         DateTime?
   inviteCodeUsed       String?
+  inviteCodeId         String?
 
   accounts Account[]
   supportTickets SupportTicket[]
@@ -84,6 +85,7 @@ model User {
   readingFeedbacks ReadingFeedback[]
   productFeedbacks ProductFeedback[]
   waitlistEntry WaitlistEntry?
+  inviteCode    InviteCode? @relation(fields: [inviteCodeId], references: [id], onDelete: SetNull)
 }
 
 model CreditBillingRefill {
@@ -475,16 +477,21 @@ model InviteCode {
   code        String    @unique
   email       String?
   note        String?
+  source      String?
   maxUses     Int       @default(1)
-  useCount    Int       @default(0)
+  usedCount   Int       @default(0)
+  isActive    Boolean   @default(true)
   expiresAt   DateTime?
   revokedAt   DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
   waitlistEntries WaitlistEntry[]
+  users           User[]
 
   @@index([email])
+  @@index([source])
+  @@index([isActive])
   @@index([createdAt(sort: Desc)])
 }
 

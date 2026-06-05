@@ -3,6 +3,8 @@ import {
   adminApproveWaitlist,
   adminCreateAnnouncement,
   adminCreateInvite,
+  adminCreateSharedInvite,
+  adminReactivateInvite,
   adminRevokeInvite,
   getAdminInvites,
   getAdminRecentFeedback,
@@ -57,13 +59,46 @@ export async function POST(request: Request) {
       const invite = await adminCreateInvite({
         email: body.email,
         note: body.note,
+        source: body.source,
         expiresInDays: body.expiresInDays,
       });
       return NextResponse.json({ ok: true, ...invite });
     }
 
+    if (action === "create_shared_invite") {
+      try {
+        const invite = await adminCreateSharedInvite({
+          code: body.code,
+          maxUses: Number(body.maxUses),
+          source: body.source,
+          note: body.note,
+          expiresAt: body.expiresAt ?? null,
+        });
+        return NextResponse.json({ ok: true, ...invite });
+      } catch (err) {
+        const message =
+          err instanceof Error && err.message === "INVITE_CODE_EXISTS"
+            ? "That invite code already exists."
+            : err instanceof Error && err.message === "INVALID_INVITE_CODE_FORMAT"
+              ? "Code must be 4–32 characters (letters, numbers, hyphens)."
+              : "Could not create invite code.";
+        return NextResponse.json({ error: message }, { status: 400 });
+      }
+    }
+
     if (action === "revoke_invite") {
       const ok = await adminRevokeInvite(body.inviteId);
+      return NextResponse.json({ ok });
+    }
+
+    if (action === "reactivate_invite") {
+      const ok = await adminReactivateInvite(body.inviteId);
+      if (!ok) {
+        return NextResponse.json(
+          { error: "Could not reactivate — code may be expired or missing." },
+          { status: 400 },
+        );
+      }
       return NextResponse.json({ ok });
     }
 

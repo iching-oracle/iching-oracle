@@ -4,10 +4,12 @@ import { requireAdminSession } from "@/lib/admin/auth";
 import {
   approveWaitlistAndInvite,
   createInviteCode,
+  reactivateInviteCode,
   revokeInviteCode,
 } from "@/lib/beta/invites";
 import { sendBetaInviteEmail } from "@/lib/beta/emails";
 import { prisma } from "@/lib/prisma";
+import type { BetaAdminInviteRow } from "@/types/beta";
 
 export async function getAdminWaitlist(limit = 100) {
   return prisma.waitlistEntry.findMany({
@@ -28,11 +30,26 @@ export async function getAdminWaitlist(limit = 100) {
   });
 }
 
-export async function getAdminInvites(limit = 50) {
-  return prisma.inviteCode.findMany({
+export async function getAdminInvites(limit = 100): Promise<BetaAdminInviteRow[]> {
+  const rows = await prisma.inviteCode.findMany({
     orderBy: { createdAt: "desc" },
     take: limit,
   });
+
+  return rows.map((row) => ({
+    id: row.id,
+    code: row.code,
+    email: row.email,
+    note: row.note,
+    source: row.source,
+    maxUses: row.maxUses,
+    usedCount: row.usedCount,
+    remaining: Math.max(0, row.maxUses - row.usedCount),
+    isActive: row.isActive && row.revokedAt == null,
+    expiresAt: row.expiresAt?.toISOString() ?? null,
+    revokedAt: row.revokedAt?.toISOString() ?? null,
+    createdAt: row.createdAt.toISOString(),
+  }));
 }
 
 export async function getAdminRecentSignups(limit = 8) {
@@ -96,19 +113,46 @@ export async function adminApproveWaitlist(waitlistId: string) {
 export async function adminCreateInvite(params: {
   email?: string;
   note?: string;
+  source?: string;
   expiresInDays?: number;
 }) {
   await requireAdminSession();
-  const invite = await createInviteCode(params);
+  const invite = await createInviteCode({
+    ...params,
+    source: params.source ?? "Admin",
+    maxUses: 1,
+  });
   if (params.email) {
     void sendBetaInviteEmail(params.email, invite.code);
   }
   return invite;
 }
 
+export async function adminCreateSharedInvite(params: {
+  code: string;
+  maxUses: number;
+  source?: string;
+  note?: string;
+  expiresAt?: string | null;
+}) {
+  await requireAdminSession();
+  return createInviteCode({
+    code: params.code,
+    maxUses: params.maxUses,
+    source: params.source,
+    note: params.note,
+    expiresAt: params.expiresAt ? new Date(params.expiresAt) : null,
+  });
+}
+
 export async function adminRevokeInvite(inviteId: string) {
   await requireAdminSession();
   return revokeInviteCode(inviteId);
+}
+
+export async function adminReactivateInvite(inviteId: string) {
+  await requireAdminSession();
+  return reactivateInviteCode(inviteId);
 }
 
 export async function adminCreateAnnouncement(params: {

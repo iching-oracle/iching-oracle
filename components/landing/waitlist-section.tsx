@@ -45,7 +45,7 @@ export function WaitlistSection() {
             <p className="mt-5 text-center text-xs tracking-wide text-zen-muted/80 lg:text-left">
               Have an invite?{" "}
               <Link
-                href="/register"
+                href="/register?mode=invite"
                 className="text-amber-gold/90 transition-colors duration-500 hover:text-amber-gold"
               >
                 Register with your code

@@ -59,7 +59,10 @@ export function BetaLandingPage() {
           </div>
           <p className="mt-4 text-xs text-zen-muted">
             Already invited?{" "}
-            <Link href="/register" className="text-amber-gold hover:underline">
+            <Link
+              href="/register?mode=invite"
+              className="text-amber-gold hover:underline"
+            >
               Register with your code
             </Link>
           </p>

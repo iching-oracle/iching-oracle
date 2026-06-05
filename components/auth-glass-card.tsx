@@ -4,11 +4,17 @@ type AuthGlassCardProps = {
   title: string;
   subtitle?: string;
   children: ReactNode;
+  className?: string;
 };
 
-export function AuthGlassCard({ title, subtitle, children }: AuthGlassCardProps) {
+export function AuthGlassCard({
+  title,
+  subtitle,
+  children,
+  className,
+}: AuthGlassCardProps) {
   return (
-    <div className="relative w-full max-w-md">
+    <div className={`relative w-full max-w-md ${className ?? ""}`}>
       <div
         className="absolute -inset-px rounded-2xl bg-gradient-to-br from-cosmic-purple/40 via-amber-gold/20 to-cosmic-violet/30 opacity-70 blur-sm"
         aria-hidden

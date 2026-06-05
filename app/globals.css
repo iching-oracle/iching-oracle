@@ -215,6 +215,22 @@ body {
     @apply inline-flex items-center justify-center rounded-full border border-white/15 bg-zen-elevated/60 px-6 py-3 text-sm font-medium tracking-wide text-foreground transition-all duration-300 hover:border-cosmic-violet/50 hover:bg-cosmic-purple/10 hover:text-cosmic-violet disabled:cursor-not-allowed disabled:opacity-60;
   }
 
+  .onboarding-mode-toggle {
+    @apply grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-zen-elevated/40 p-1.5;
+  }
+
+  .onboarding-mode-btn {
+    @apply relative rounded-xl px-3 py-3 text-left text-sm transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cosmic-purple/40;
+  }
+
+  .onboarding-mode-btn--active {
+    @apply text-foreground;
+  }
+
+  .onboarding-mode-highlight {
+    @apply absolute inset-0 rounded-xl border border-amber-gold/25 bg-gradient-to-br from-amber-gold/10 via-zen-surface/80 to-cosmic-purple/10 shadow-[0_0_24px_-8px_rgba(197,160,89,0.35)];
+  }
+
   .tap-feedback {
     @apply transition-transform duration-200 active:scale-[0.97];
   }

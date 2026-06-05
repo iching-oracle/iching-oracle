@@ -16,10 +16,11 @@ export default function RegisterPage() {
     <div className="relative flex min-h-[calc(100vh-4.5rem)] flex-col items-center justify-center px-6 py-16">
       <AuthAmbient />
       <AuthGlassCard
-        title={inviteOnly ? "Early access" : "Begin your path"}
+        className="max-w-lg"
+        title={inviteOnly ? "Welcome" : "Begin your path"}
         subtitle={
           inviteOnly
-            ? "Private beta — invite or waitlist"
+            ? "Request access or continue with your invitation code."
             : "Create your account and consult the oracle."
         }
       >

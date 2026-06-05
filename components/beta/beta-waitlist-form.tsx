@@ -6,7 +6,7 @@ import { showSuccess } from "@/hooks/use-app-toast";
 
 type BetaWaitlistFormProps = {
   source?: string;
-  variant?: "hero" | "compact";
+  variant?: "hero" | "compact" | "onboarding";
 };
 
 export function BetaWaitlistForm({
@@ -68,7 +68,7 @@ export function BetaWaitlistForm({
     );
   }
 
-  const isCompact = variant === "compact";
+  const isCompact = variant === "compact" || variant === "onboarding";
 
   return (
     <form onSubmit={submit} className="space-y-3">
@@ -108,9 +108,13 @@ export function BetaWaitlistForm({
       <button
         type="submit"
         disabled={busy}
-        className="auth-btn-primary w-full disabled:opacity-50"
+        className="auth-btn-primary w-full min-h-12 disabled:opacity-50"
       >
-        {busy ? "Joining…" : "Request invite"}
+        {busy
+          ? "Joining…"
+          : variant === "onboarding"
+            ? "Request access"
+            : "Request invite"}
       </button>
     </form>
   );

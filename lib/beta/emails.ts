@@ -42,7 +42,7 @@ export async function sendBetaInviteEmail(
   if (!resend) return;
 
   const greeting = name?.trim() ? name.trim().split(/\s+/)[0] : "Seeker";
-  const registerUrl = `${getAppUrl()}/register?invite=${encodeURIComponent(code)}`;
+  const registerUrl = `${getAppUrl()}/register?code=${encodeURIComponent(code)}`;
   const bodyHtml = `
     <p style="margin:0 0 16px;">${greeting},</p>
     <p style="margin:0 0 16px;">A spot has opened in the private beta. The oracle is ready when you are.</p>

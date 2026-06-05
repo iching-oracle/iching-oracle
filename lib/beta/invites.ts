@@ -64,6 +64,85 @@ export async function validateInviteCode(
   };
 }
 
+export async function createBetaUserWithInvite(params: {
+  inviteId: string;
+  name?: string | null;
+  email: string;
+  passwordHash: string;
+  verificationToken: string;
+  verificationTokenExpires: Date;
+}): Promise<{ userId: string }> {
+  const bonus = getBetaCreditsBonus();
+  const now = new Date();
+  const normalizedEmail = params.email.toLowerCase();
+
+  return prisma.$transaction(async (tx) => {
+    const invite = await tx.inviteCode.findUnique({
+      where: { id: params.inviteId },
+    });
+    if (!invite || isInviteInactive(invite)) {
+      throw new Error("INVITE_INACTIVE");
+    }
+    if (isInviteExpired(invite)) {
+      throw new Error("INVITE_EXPIRED");
+    }
+    if (isInviteAtCapacity(invite)) {
+      throw new Error("INVITE_USED");
+    }
+
+    const updated = await tx.inviteCode.updateMany({
+      where: {
+        id: params.inviteId,
+        isActive: true,
+        revokedAt: null,
+        usedCount: { lt: invite.maxUses },
+        OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+      },
+      data: { usedCount: { increment: 1 } },
+    });
+    if (updated.count === 0) {
+      throw new Error("INVITE_USED");
+    }
+
+    const user = await tx.user.create({
+      data: {
+        name: params.name?.trim() || null,
+        email: normalizedEmail,
+        password: params.passwordHash,
+        emailVerified: null,
+        verificationToken: params.verificationToken,
+        verificationTokenExpires: params.verificationTokenExpires,
+        isBetaMember: true,
+        betaJoinedAt: now,
+        inviteCodeUsed: invite.code,
+        inviteCodeId: invite.id,
+        credits: 10 + bonus,
+      },
+    });
+
+    await tx.waitlistEntry.updateMany({
+      where: { email: normalizedEmail },
+      data: {
+        status: "joined",
+        joinedAt: now,
+        userId: user.id,
+        inviteCodeId: params.inviteId,
+      },
+    });
+
+    await tx.creditTransaction.create({
+      data: {
+        userId: user.id,
+        type: "ADD",
+        amount: bonus,
+        reason: "Beta explorer welcome credits",
+      },
+    });
+
+    return { userId: user.id };
+  });
+}
+
 export async function redeemInviteCode(params: {
   inviteId: string;
   userId: string;

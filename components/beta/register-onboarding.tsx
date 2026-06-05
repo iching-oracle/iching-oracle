@@ -99,13 +99,13 @@ export function RegisterOnboarding({ inviteOnly }: RegisterOnboardingProps) {
           >
             <div className="mb-5 rounded-2xl border border-amber-gold/15 bg-amber-gold/5 px-5 py-4 text-center">
               <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-amber-gold/80">
-                Private beta
+                Private early access
               </p>
               <p className="mt-2 font-serif text-lg text-foreground">
-                You already have access
+                A quiet beta for thoughtful exploration
               </p>
-              <p className="mt-1 text-sm text-zen-muted">
-                Enter your invitation code to create your account.
+              <p className="mt-1 text-sm leading-relaxed text-zen-muted">
+                Complete the form below — your invitation travels with you.
               </p>
             </div>
 

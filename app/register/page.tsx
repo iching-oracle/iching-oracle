@@ -17,10 +17,10 @@ export default function RegisterPage() {
       <AuthAmbient />
       <AuthGlassCard
         className="max-w-lg"
-        title={inviteOnly ? "Welcome" : "Begin your path"}
+        title={inviteOnly ? "Private early access" : "Begin your path"}
         subtitle={
           inviteOnly
-            ? "Request access or continue with your invitation code."
+            ? "A quiet beta for thoughtful exploration."
             : "Create your account and consult the oracle."
         }
       >

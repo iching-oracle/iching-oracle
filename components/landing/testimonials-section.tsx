@@ -1,45 +1,51 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { LANDING_TESTIMONIALS } from "@/lib/landing/content";
+import { LANDING_TESTIMONIALS, LANDING_SECTIONS } from "@/lib/landing/content";
 import { SectionHeader } from "@/components/landing/section-header";
+import {
+  LANDING_VIEWPORT,
+  landingInitial,
+  landingTransition,
+} from "@/lib/landing/motion";
 
 export function TestimonialsSection() {
   const reduceMotion = useReducedMotion();
+  const copy = LANDING_SECTIONS.testimonials;
 
   return (
-    <section
-      className="py-16 sm:py-24"
-      aria-labelledby="testimonials-heading"
-    >
+    <section className="landing-section" aria-labelledby="testimonials-heading">
       <SectionHeader
         id="testimonials-heading"
-        eyebrow="Voices"
-        title="Seekers who return for clarity"
-        description="Placeholder testimonials reflecting the tone we hear from thoughtful users—replace with real stories as you grow."
+        eyebrow={copy.eyebrow}
+        title={copy.title}
+        description={copy.description}
       />
 
-      <ul className="mt-14 grid gap-6 lg:grid-cols-3">
+      <ul className="mt-16 grid gap-7 lg:grid-cols-3 lg:gap-8">
         {LANDING_TESTIMONIALS.map((item, index) => (
           <motion.li
             key={item.name}
-            initial={reduceMotion ? false : { opacity: 0, y: 20 }}
+            initial={landingInitial(reduceMotion, 16)}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-40px" }}
-            transition={{ delay: index * 0.08, duration: 0.5 }}
+            viewport={LANDING_VIEWPORT}
+            transition={landingTransition(reduceMotion, index * 0.1)}
           >
-            <figure className="flex h-full flex-col rounded-2xl border border-white/[0.06] bg-zen-surface/45 p-7 backdrop-blur-sm">
-              <blockquote className="flex-1 text-sm leading-relaxed text-foreground/90">
-                <span className="font-serif text-2xl leading-none text-amber-gold/50" aria-hidden>
+            <figure className="landing-card flex h-full flex-col p-8">
+              <blockquote className="flex-1 text-sm leading-[1.75] text-foreground/88">
+                <span
+                  className="font-display text-3xl leading-none text-amber-gold/40"
+                  aria-hidden
+                >
                   &ldquo;
                 </span>
                 {item.quote}
               </blockquote>
-              <figcaption className="mt-6 border-t border-white/[0.06] pt-5">
-                <p className="text-sm font-medium text-foreground">
+              <figcaption className="mt-7 border-t border-white/[0.05] pt-6">
+                <p className="text-sm font-medium text-foreground/95">
                   {item.name}
                 </p>
-                <p className="text-xs text-zen-muted">{item.role}</p>
+                <p className="mt-1 text-xs text-zen-muted/85">{item.role}</p>
               </figcaption>
             </figure>
           </motion.li>

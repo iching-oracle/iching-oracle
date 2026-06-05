@@ -1,6 +1,11 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
+import {
+  LANDING_VIEWPORT,
+  landingInitial,
+  landingTransition,
+} from "@/lib/landing/motion";
 
 type SectionHeaderProps = {
   id?: string;
@@ -24,19 +29,17 @@ export function SectionHeader({
     <motion.header
       id={id}
       className={`max-w-2xl ${alignClass}`}
-      initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+      initial={landingInitial(reduceMotion, 14)}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+      viewport={LANDING_VIEWPORT}
+      transition={landingTransition(reduceMotion)}
     >
-      <p className="text-[10px] font-medium uppercase tracking-[0.35em] text-zen-muted">
-        {eyebrow}
-      </p>
-      <h2 className="mt-3 font-serif text-2xl font-semibold tracking-tight text-foreground sm:text-3xl md:text-4xl">
+      <p className="landing-eyebrow">{eyebrow}</p>
+      <h2 className="font-display mt-4 text-2xl font-medium tracking-tight text-foreground sm:text-3xl md:text-[2.35rem] md:leading-tight">
         {title}
       </h2>
       {description ? (
-        <p className="mt-4 text-sm leading-relaxed text-zen-muted sm:text-base">
+        <p className="mt-5 text-sm leading-[1.75] text-zen-muted/95 sm:text-base">
           {description}
         </p>
       ) : null}

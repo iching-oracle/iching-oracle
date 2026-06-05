@@ -1,40 +1,59 @@
 "use client";
 
 import Link from "next/link";
+import { motion, useReducedMotion } from "framer-motion";
 import { SectionHeader } from "@/components/landing/section-header";
 import { BetaWaitlistForm } from "@/components/beta/beta-waitlist-form";
+import { LANDING_SECTIONS } from "@/lib/landing/content";
+import {
+  LANDING_VIEWPORT,
+  landingInitial,
+  landingTransition,
+} from "@/lib/landing/motion";
 
 export function WaitlistSection() {
+  const reduceMotion = useReducedMotion();
+  const copy = LANDING_SECTIONS.waitlist;
+
   return (
     <section
       id="beta-waitlist"
-      className="py-16 sm:py-24"
+      className="landing-section"
       aria-labelledby="waitlist-heading"
     >
-      <div className="relative overflow-hidden rounded-3xl border border-amber-gold/15 bg-gradient-to-br from-zen-surface/80 via-cosmic-deep/15 to-zen-bg px-6 py-12 sm:px-10 sm:py-14">
+      <motion.div
+        initial={landingInitial(reduceMotion, 14)}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={LANDING_VIEWPORT}
+        transition={landingTransition(reduceMotion)}
+        className="relative overflow-hidden rounded-3xl border border-amber-gold/12 bg-gradient-to-br from-zen-surface/75 via-cosmic-deep/10 to-zen-bg px-6 py-14 sm:px-12 sm:py-16"
+      >
         <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(139,92,246,0.1),transparent_50%)]"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(139,92,246,0.06),transparent_55%)]"
           aria-hidden
         />
-        <div className="relative grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-12">
+        <div className="relative grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-14">
           <SectionHeader
             id="waitlist-heading"
-            eyebrow="Early access"
-            title="Join the private beta"
-            description="We release invites in small waves to keep the experience intimate. No spam—just a personal note when your spot is ready."
+            eyebrow={copy.eyebrow}
+            title={copy.title}
+            description={copy.description}
             align="left"
           />
-          <div className="lg:pl-4">
+          <div className="lg:pl-2">
             <BetaWaitlistForm source="homepage" />
-            <p className="mt-4 text-center text-xs text-zen-muted lg:text-left">
+            <p className="mt-5 text-center text-xs tracking-wide text-zen-muted/80 lg:text-left">
               Have an invite?{" "}
-              <Link href="/register" className="text-amber-gold hover:underline">
+              <Link
+                href="/register"
+                className="text-amber-gold/90 transition-colors duration-500 hover:text-amber-gold"
+              >
                 Register with your code
               </Link>
             </p>
           </div>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

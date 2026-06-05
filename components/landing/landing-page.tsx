@@ -8,6 +8,7 @@ import { TestimonialsSection } from "@/components/landing/testimonials-section";
 import { FinalCtaSection } from "@/components/landing/final-cta-section";
 import { WaitlistSection } from "@/components/landing/waitlist-section";
 import { LandingAmbientBackground } from "@/components/landing/ambient-background";
+import { LandingSectionDivider } from "@/components/landing/landing-section-divider";
 
 type LandingPageProps = {
   isLoggedIn: boolean;
@@ -16,18 +17,25 @@ type LandingPageProps = {
 
 export function LandingPage({ isLoggedIn, dailyOracleSlot }: LandingPageProps) {
   return (
-    <div className="relative flex min-h-full flex-col overflow-hidden bg-zen-bg">
+    <div className="landing-page relative flex min-h-full flex-col overflow-hidden bg-zen-bg">
       <LandingAmbientBackground />
 
-      <main className="relative z-10 mx-auto w-full max-w-6xl flex-1 px-5 pb-20 sm:px-8 lg:px-12">
+      <main className="relative z-10 mx-auto w-full max-w-6xl flex-1 px-5 pb-24 sm:px-8 sm:pb-28 lg:px-12">
         <HeroSection isLoggedIn={isLoggedIn} />
+        <LandingSectionDivider />
         <TrustSection />
+        <LandingSectionDivider />
         <HowItWorksSection />
-        {dailyOracleSlot}
+        <div className="landing-section py-12 sm:py-16 md:py-20">{dailyOracleSlot}</div>
+        <LandingSectionDivider />
         <MethodsSection />
+        <LandingSectionDivider />
         <PremiumSection isLoggedIn={isLoggedIn} />
+        <LandingSectionDivider />
         <WaitlistSection />
+        <LandingSectionDivider />
         <TestimonialsSection />
+        <LandingSectionDivider />
         <FinalCtaSection isLoggedIn={isLoggedIn} />
       </main>
     </div>

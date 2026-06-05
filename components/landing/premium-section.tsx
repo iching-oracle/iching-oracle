@@ -4,11 +4,17 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { UpgradeCheckoutButton } from "@/components/subscription/UpgradeCheckoutButton";
 import { SectionHeader } from "@/components/landing/section-header";
+import { LANDING_SECTIONS } from "@/lib/landing/content";
 import {
   FREE_PLAN_FEATURES,
   PREMIUM_PLAN_FEATURES,
   formatPremiumPrice,
 } from "@/lib/landing/plans";
+import {
+  LANDING_VIEWPORT,
+  landingInitial,
+  landingTransition,
+} from "@/lib/landing/motion";
 
 type PremiumSectionProps = {
   isLoggedIn: boolean;
@@ -17,40 +23,39 @@ type PremiumSectionProps = {
 export function PremiumSection({ isLoggedIn }: PremiumSectionProps) {
   const reduceMotion = useReducedMotion();
   const price = formatPremiumPrice();
+  const copy = LANDING_SECTIONS.premium;
 
   return (
     <section
       id="premium"
-      className="py-16 sm:py-24"
+      className="landing-section"
       aria-labelledby="premium-heading"
     >
       <SectionHeader
         id="premium-heading"
-        eyebrow="Premium"
-        title="Go deeper when you're ready"
-        description="Start free. Upgrade when you want unlimited readings, full AI depth, and the complete oracle experience."
+        eyebrow={copy.eyebrow}
+        title={copy.title}
+        description={copy.description}
       />
 
-      <div className="mx-auto mt-14 grid max-w-4xl gap-6 lg:grid-cols-2 lg:gap-8">
+      <div className="mx-auto mt-16 grid max-w-4xl gap-7 lg:grid-cols-2 lg:gap-9">
         <motion.article
-          initial={reduceMotion ? false : { opacity: 0, y: 20 }}
+          initial={landingInitial(reduceMotion, 16)}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="flex flex-col rounded-2xl border border-white/10 bg-zen-surface/55 p-8 backdrop-blur-xl sm:p-9"
+          viewport={LANDING_VIEWPORT}
+          transition={landingTransition(reduceMotion)}
+          className="landing-card flex flex-col p-8 sm:p-10"
         >
-          <p className="text-xs font-medium uppercase tracking-[0.25em] text-zen-muted">
-            Free
-          </p>
-          <p className="mt-3 font-serif text-4xl text-foreground">€0</p>
-          <p className="text-sm text-zen-muted">Begin with intention</p>
-          <ul className="mt-8 flex-1 space-y-3.5">
+          <p className="landing-eyebrow">Free</p>
+          <p className="font-display mt-4 text-4xl font-medium text-foreground">€0</p>
+          <p className="mt-2 text-sm text-zen-muted/90">Begin in stillness</p>
+          <ul className="mt-9 flex-1 space-y-4">
             {FREE_PLAN_FEATURES.map((feature) => (
               <li
                 key={feature}
-                className="flex gap-3 text-sm text-foreground/85"
+                className="flex gap-3 text-sm leading-relaxed text-foreground/85"
               >
-                <span className="mt-0.5 text-zen-muted" aria-hidden>
+                <span className="mt-0.5 text-zen-muted/60" aria-hidden>
                   —
                 </span>
                 {feature}
@@ -59,68 +64,66 @@ export function PremiumSection({ isLoggedIn }: PremiumSectionProps) {
           </ul>
           <Link
             href={isLoggedIn ? "/reading/guided" : "/register"}
-            className="auth-btn-secondary mt-8 inline-flex w-full justify-center"
+            className="landing-btn-secondary mt-10 inline-flex w-full justify-center"
           >
-            {isLoggedIn ? "Continue free" : "Create free account"}
+            {isLoggedIn ? "Continue your practice" : "Create free account"}
           </Link>
         </motion.article>
 
         <motion.article
-          initial={reduceMotion ? false : { opacity: 0, y: 20 }}
+          initial={landingInitial(reduceMotion, 16)}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.1, duration: 0.5 }}
-          className="relative flex flex-col overflow-hidden rounded-2xl border border-amber-gold/30 bg-gradient-to-br from-zen-surface/95 via-cosmic-deep/20 to-zen-bg p-8 shadow-[0_0_80px_-28px_rgba(197,160,89,0.45)] backdrop-blur-xl sm:p-9"
+          viewport={LANDING_VIEWPORT}
+          transition={landingTransition(reduceMotion, 0.12)}
+          className="relative flex flex-col overflow-hidden rounded-2xl border border-amber-gold/25 bg-gradient-to-br from-zen-surface/90 via-cosmic-deep/15 to-zen-bg p-8 shadow-[0_0_64px_-28px_rgba(197,160,89,0.35)] sm:p-10"
         >
           <motion.div
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(197,160,89,0.14),transparent_55%)]"
-            animate={reduceMotion ? undefined : { opacity: [0.35, 0.6, 0.35] }}
-            transition={{ duration: 6, repeat: Infinity }}
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(197,160,89,0.12),transparent_55%)]"
+            animate={reduceMotion ? undefined : { opacity: [0.3, 0.5, 0.3] }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
             aria-hidden
           />
-          <p className="relative text-xs font-medium uppercase tracking-[0.25em] text-amber-glow">
-            Premium
-          </p>
-          <p className="relative mt-3 font-serif text-4xl text-amber-gold">
+          <p className="relative landing-eyebrow text-amber-glow/90">Premium</p>
+          <p className="relative font-display mt-4 text-4xl font-medium text-amber-gold">
             {price}
-            <span className="ml-1 font-sans text-base font-normal text-zen-muted">
+            <span className="ml-1 font-sans text-base font-normal text-zen-muted/90">
               / month
             </span>
           </p>
-          <p className="relative text-sm text-zen-muted">
+          <p className="relative mt-2 text-sm text-zen-muted/90">
             Cancel anytime · Stripe secure checkout
           </p>
-          <ul className="relative mt-8 flex-1 space-y-3.5">
+          <ul className="relative mt-9 flex-1 space-y-4">
             {PREMIUM_PLAN_FEATURES.map((feature) => (
               <li
                 key={feature}
-                className="flex gap-3 text-sm text-foreground/90"
+                className="flex gap-3 text-sm leading-relaxed text-foreground/90"
               >
-                <span className="text-amber-gold" aria-hidden>
+                <span className="text-amber-gold/80" aria-hidden>
                   ✦
                 </span>
                 {feature}
               </li>
             ))}
           </ul>
-          <div className="relative mt-8 space-y-3">
+          <div className="relative mt-10 space-y-4">
             {isLoggedIn ? (
               <UpgradeCheckoutButton
-                label="Upgrade to Premium"
-                className="auth-btn-primary w-full"
+                label="Deepen your practice"
+                className="landing-btn-primary w-full"
                 highlighted
               />
             ) : (
               <Link
                 href="/register?plan=premium"
-                className="auth-btn-primary inline-flex w-full justify-center"
+                className="landing-btn-primary inline-flex w-full justify-center"
               >
-                Start free, upgrade later
+                Begin free, deepen later
               </Link>
             )}
             <Link
               href="/pricing"
-              className="block text-center text-xs text-zen-muted transition-colors hover:text-amber-gold"
+              className="block text-center text-xs tracking-wide text-zen-muted/80 transition-colors duration-500 hover:text-amber-gold"
             >
               Compare all benefits →
             </Link>

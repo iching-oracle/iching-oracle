@@ -4,9 +4,9 @@ import { LandingPage } from "@/components/landing/landing-page";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildPageMetadata({
-  title: "AI I Ching Oracle — Ancient Wisdom, Modern Insight",
+  title: "I Ching Oracle — A Quiet Space for Reflection",
   description:
-    "Premium AI-powered I Ching readings for self-reflection and guidance. Ask your question, receive your hexagram, and explore personalized interpretation.",
+    "Ancient wisdom, interpreted thoughtfully. Personalized I Ching readings for calm self-reflection—private, unhurried, and emotionally intelligent.",
   path: "/",
   keywords: [
     "i ching",

@@ -40,13 +40,21 @@ export function MethodsSection() {
                 className="pointer-events-none absolute inset-0 bg-gradient-to-b from-amber-gold/[0.03] to-transparent opacity-0 transition-opacity duration-700 group-hover:opacity-100"
                 aria-hidden
               />
-              <p className="relative font-serif text-lg text-amber-gold/85">
-                {method.titleZh}
-              </p>
-              <h3 className="relative mt-2 text-xs font-medium uppercase tracking-[0.22em] text-zen-muted/90">
-                {method.titleEn}
-              </h3>
-              <p className="relative mt-5 flex-1 text-sm leading-[1.75] text-zen-muted/95">
+              <div className="relative flex items-start justify-between gap-3">
+                <h3 className="type-display text-xl font-medium sm:text-[1.35rem]">
+                  {method.titleEn}
+                </h3>
+                {method.accentZh ? (
+                  <span
+                    className="font-hexagram shrink-0 text-lg text-amber-gold/35"
+                    aria-hidden
+                    title="Classical symbol"
+                  >
+                    {method.accentZh}
+                  </span>
+                ) : null}
+              </div>
+              <p className="relative mt-5 flex-1 type-muted">
                 {method.description}
               </p>
             </article>

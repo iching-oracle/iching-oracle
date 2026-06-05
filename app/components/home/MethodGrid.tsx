@@ -3,24 +3,24 @@ import { CoinsIcon, ThoughtIcon, YarrowIcon } from "./MethodIcons";
 
 const METHODS = [
   {
-    titleZh: "數位籌策",
-    titleEn: "Digital Yarrow Stalks",
+    titleEn: "Digital yarrow",
+    accentZh: "籌",
     description:
-      "The classical yarrow ritual, digitized — six passes of division mirroring the ancient stalk method.",
+      "The classical yarrow ritual, digitized — six passes mirroring the ancient stalk method.",
     icon: <YarrowIcon />,
   },
   {
-    titleZh: "三錢問卜",
-    titleEn: "Three Coins Toss",
+    titleEn: "Three coins",
+    accentZh: "錢",
     description:
       "Cast three coins six times. Heads and tails weave your changing lines with familiar simplicity.",
     icon: <CoinsIcon />,
   },
   {
-    titleZh: "一念即卦",
-    titleEn: "Instant Thought",
+    titleEn: "Mindful instant",
+    accentZh: "念",
     description:
-      "When the question is clear and the moment is ripe — a single mindful intention reveals the hexagram.",
+      "When the question is clear and the moment is ripe — one intention reveals the hexagram.",
     icon: <ThoughtIcon />,
   },
 ] as const;
@@ -33,23 +33,21 @@ export function MethodGrid() {
       aria-labelledby="methods-heading"
     >
       <div className="mb-12 text-center">
-        <p className="mb-2 text-xs font-medium uppercase tracking-[0.3em] text-zen-muted">
-          Divination Methods
-        </p>
+        <p className="type-eyebrow mb-3">Divination methods</p>
         <h2
           id="methods-heading"
-          className="font-serif text-2xl font-semibold text-foreground sm:text-3xl"
+          className="type-display text-2xl sm:text-3xl"
         >
-          三種起卦之道
+          Three paths to the hexagram
         </h2>
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {METHODS.map((method) => (
           <FeatureCard
-            key={method.titleZh}
-            titleZh={method.titleZh}
+            key={method.titleEn}
             titleEn={method.titleEn}
+            accentZh={method.accentZh}
             description={method.description}
             icon={method.icon}
           />

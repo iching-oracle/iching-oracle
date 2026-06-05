@@ -1,13 +1,13 @@
 type FeatureCardProps = {
-  titleZh: string;
   titleEn: string;
+  accentZh?: string;
   description: string;
   icon: React.ReactNode;
 };
 
 export function FeatureCard({
-  titleZh,
   titleEn,
+  accentZh,
   description,
   icon,
 }: FeatureCardProps) {
@@ -18,14 +18,18 @@ export function FeatureCard({
         {icon}
       </div>
       <div className="relative z-10 space-y-2">
-        <h3 className="font-serif text-lg font-semibold tracking-wide text-foreground">
-          {titleZh}
-          <span className="font-sans text-sm font-normal text-zen-muted">
-            {" "}
-            ({titleEn})
-          </span>
-        </h3>
-        <p className="text-sm leading-relaxed text-zen-muted/90">{description}</p>
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="type-display text-lg font-medium">{titleEn}</h3>
+          {accentZh ? (
+            <span
+              className="font-hexagram text-base text-amber-gold/35"
+              aria-hidden
+            >
+              {accentZh}
+            </span>
+          ) : null}
+        </div>
+        <p className="type-muted">{description}</p>
       </div>
     </article>
   );

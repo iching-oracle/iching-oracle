@@ -34,8 +34,32 @@
 }
 
 .font-display {
-  font-family: var(--font-display), "Cormorant Garamond", var(--font-noto-serif-sc), ui-serif, Georgia,
-    serif;
+  font-family: var(--font-display), "Cormorant Garamond", ui-serif, Georgia, serif;
+}
+
+/* Chinese hexagram names & symbolic accents only */
+.font-hexagram {
+  font-family: var(--font-noto-serif-sc), "Noto Serif SC", serif;
+  font-feature-settings: "kern" 1;
+}
+
+.type-display {
+  font-family: var(--font-display), "Cormorant Garamond", ui-serif, Georgia, serif;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+}
+
+.type-eyebrow {
+  @apply text-[10px] font-medium uppercase tracking-[0.38em] text-zen-muted/90;
+}
+
+.type-body {
+  @apply text-sm leading-[1.75] text-foreground/88;
+}
+
+.type-muted {
+  @apply text-sm leading-[1.75] text-zen-muted/95;
 }
 
 body {
@@ -314,6 +338,64 @@ body {
 
   .landing-eyebrow {
     @apply text-[10px] font-medium uppercase tracking-[0.38em] text-zen-muted/90;
+  }
+
+  /* —— Pricing cards —— */
+  .pricing-card {
+    @apply flex flex-col rounded-2xl border border-white/[0.06] bg-zen-surface/45 p-8 backdrop-blur-sm sm:p-10;
+  }
+
+  .pricing-card--premium {
+    @apply border-amber-gold/25 bg-gradient-to-br from-zen-surface/90 via-cosmic-deep/15 to-zen-bg shadow-[0_0_64px_-28px_rgba(197,160,89,0.32)];
+  }
+
+  .pricing-card__eyebrow {
+    @apply text-[10px] font-medium uppercase tracking-[0.38em] text-zen-muted/90;
+  }
+
+  .pricing-card__price {
+    @apply mt-5;
+  }
+
+  .pricing-card__tagline {
+    @apply mt-3 text-sm leading-relaxed text-zen-muted/90;
+  }
+
+  .pricing-card__features {
+    @apply mt-10 flex-1 space-y-4;
+  }
+
+  .pricing-card__cta {
+    @apply mt-10;
+  }
+
+  /* Editorial pricing numerals (Cormorant Garamond) */
+  .price-amount {
+    font-size: 2.75rem;
+    line-height: 1;
+  }
+
+  @media (min-width: 640px) {
+    .price-amount {
+      font-size: 3.125rem;
+    }
+  }
+
+  .price-currency {
+    font-size: 0.55em;
+    font-weight: 300;
+    margin-right: 0.06em;
+    transform: translateY(-0.06em);
+    opacity: 0.88;
+    letter-spacing: 0;
+  }
+
+  .price-numeral {
+    letter-spacing: -0.035em;
+  }
+
+  .price-amount-suffix {
+    @apply font-sans text-[0.9375rem] font-normal tracking-normal text-zen-muted/85;
   }
 }
 

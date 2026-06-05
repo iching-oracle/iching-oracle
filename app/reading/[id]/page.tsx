@@ -90,9 +90,9 @@ export default async function ReadingPage({ params }: PageProps) {
               Your Reading
             </p>
             <p className="mt-2 text-sm leading-relaxed text-zen-muted">
-              本卦：{formatHexagramInline(primaryHexagram)}
+              Primary: {formatHexagramInline(primaryHexagram)}
               {transformedHexagram
-                ? ` · 變卦：${formatHexagramInline(transformedHexagram)}`
+                ? ` · Transformed: ${formatHexagramInline(transformedHexagram)}`
                 : null}
             </p>
           </header>

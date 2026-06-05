@@ -1,7 +1,7 @@
-/** Homepage copy — single source for landing sections. */
+/** Homepage copy — English-first; Chinese only as symbolic accents in methods. */
 
 export const LANDING_HERO = {
-  eyebrow: "易經 · A quiet space for reflection",
+  eyebrow: "I Ching Oracle",
   headline: "Moments of uncertainty deserve clarity.",
   subheadline:
     "Ancient wisdom, interpreted thoughtfully. Enter with your question—leave with perspective you can sit with, not slogans to obey.",
@@ -81,22 +81,23 @@ export const LANDING_TESTIMONIALS = [
   },
 ] as const;
 
+/** accentZh: optional ceremonial glyph — never primary UI copy */
 export const DIVINATION_METHODS = [
   {
-    titleZh: "數位籌策",
     titleEn: "Digital yarrow",
+    accentZh: "籌",
     description:
       "The classical six-pass ritual—held with the same patience the stalk method asks of you.",
   },
   {
-    titleZh: "三錢問卜",
     titleEn: "Three coins",
+    accentZh: "錢",
     description:
       "Six tosses, familiar logic. A rhythm you can feel in the body, translated into a serene flow.",
   },
   {
-    titleZh: "一念即卦",
     titleEn: "Mindful instant",
+    accentZh: "念",
     description:
       "When the question is clear and the moment is ripe—one intention, one hexagram, fully present.",
   },

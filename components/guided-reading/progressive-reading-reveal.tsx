@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { HexagramName } from "@/components/typography/hexagram-name";
 import { HexagramDisplay } from "@/components/HexagramDisplay";
 import { GuidedPremiumGate } from "@/components/guided-reading/guided-premium-gate";
 import { ReadingActionPanel } from "@/components/guided-reading/reading-action-panel";
@@ -271,8 +272,10 @@ function BlockContent({
         <p className="text-[10px] font-medium uppercase tracking-[0.4em] text-amber-gold">
           Hexagram {result.hexagram}
         </p>
-        <p className="mt-3 font-serif text-5xl text-foreground">{result.chineseName}</p>
-        <h2 className="mt-2 font-serif text-2xl text-foreground sm:text-3xl">
+        <p className="mt-3">
+          <HexagramName size="lg">{result.chineseName}</HexagramName>
+        </p>
+        <h2 className="type-display mt-3 text-2xl sm:text-3xl">
           {result.primaryTitle}
         </h2>
       </div>

@@ -37,7 +37,7 @@ export function HeroSection({ isLoggedIn }: HeroSectionProps) {
       </motion.div>
 
       <motion.p
-        className="landing-eyebrow"
+        className="type-eyebrow"
         initial={landingInitial(reduceMotion, 8)}
         animate={{ opacity: 1, y: 0 }}
         transition={landingTransition(reduceMotion, 0.15)}

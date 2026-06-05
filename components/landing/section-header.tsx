@@ -34,8 +34,8 @@ export function SectionHeader({
       viewport={LANDING_VIEWPORT}
       transition={landingTransition(reduceMotion)}
     >
-      <p className="landing-eyebrow">{eyebrow}</p>
-      <h2 className="font-display mt-4 text-2xl font-medium tracking-tight text-foreground sm:text-3xl md:text-[2.35rem] md:leading-tight">
+      <p className="type-eyebrow">{eyebrow}</p>
+      <h2 className="type-display mt-5 text-2xl sm:text-3xl md:text-[2.35rem] md:leading-tight">
         {title}
       </h2>
       {description ? (

@@ -9,6 +9,7 @@ const NAV = [
   { href: "/admin/errors", label: "Errors" },
   { href: "/admin/launch", label: "Launch" },
   { href: "/admin/beta", label: "Beta" },
+  { href: "/admin/feedback", label: "Feedback" },
 ];
 
 export function AdminShell({

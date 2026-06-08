@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { EMPTY } from "@/lib/atmosphere/copy";
 import { HexagramDisplay } from "@/components/HexagramDisplay";
 import {
   formatChangingLinesBadge,
@@ -14,13 +15,14 @@ type ReadingListProps = {
 export function ReadingList({ readings }: ReadingListProps) {
   if (readings.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-white/15 bg-zen-surface/40 px-6 py-12 text-center">
-        <p className="text-zen-muted">No readings yet.</p>
+      <div className="rounded-xl border border-dashed border-white/12 bg-zen-surface/30 px-6 py-12 text-center">
+        <p className="font-serif text-foreground/90">{EMPTY.dashboard.title}</p>
+        <p className="mt-2 text-sm text-zen-muted">{EMPTY.dashboard.body}</p>
         <Link
-          href="/reading/new"
-          className="mt-4 inline-block text-sm font-medium text-amber-gold transition-colors hover:text-amber-glow"
+          href="/reading/guided"
+          className="mt-5 inline-block text-sm font-medium text-amber-gold transition-colors hover:text-amber-glow"
         >
-          Start your first reading →
+          {EMPTY.dashboard.cta}
         </Link>
       </div>
     );

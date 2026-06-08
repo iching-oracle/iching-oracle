@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { EMPTY } from "@/lib/atmosphere/copy";
 
 type ReflectionStreakWidgetProps = {
   streak: number;
@@ -26,14 +27,14 @@ export function ReflectionStreakWidget({
                 {streak} day{streak === 1 ? "" : "s"} of presence
               </>
             ) : (
-              "Begin your rhythm"
+              EMPTY.streak.title
             )}
           </p>
           <p className="mt-2 max-w-md text-sm leading-relaxed text-zen-muted">
             {hasStreak
               ? milestone ??
-                "A gentle streak — not a score, but a sign you are making space to listen."
-              : "Visit the daily oracle when you can. Consistency grows quietly over time."}
+                "A gentle rhythm — not a score, but a sign you are making space to listen."
+              : EMPTY.streak.body}
           </p>
           {lastDailyVisit ? (
             <p className="mt-2 text-xs text-zen-muted/80">

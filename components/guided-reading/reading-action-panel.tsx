@@ -21,23 +21,23 @@ export function ReadingActionPanel({
 
   const actions = [
     {
-      label: "Save Reading",
+      label: "Save to journal",
       href: `/history/${readingId}`,
       primary: true,
       onClick: undefined as (() => void) | undefined,
     },
     {
-      label: "Share Reading",
+      label: "Share quietly",
       primary: false,
       onClick: onShare,
     },
     {
-      label: "Ask Follow-up Question",
+      label: "Continue reflecting",
       href: `/oracle/chat`,
       primary: false,
     },
     {
-      label: "Start New Reading",
+      label: "Another question",
       primary: false,
       onClick: onNewReading,
     },
@@ -45,14 +45,14 @@ export function ReadingActionPanel({
 
   return (
     <motion.section
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3, ...gentleEase }}
-      className="mt-14 rounded-2xl border border-white/10 bg-gradient-to-br from-zen-surface/80 via-zen-elevated/40 to-cosmic-purple/10 p-6 backdrop-blur-xl sm:p-8"
-      aria-label="Continue your journey"
+      transition={{ delay: 0.9, ...gentleEase, duration: 1 }}
+      className="mt-10 rounded-2xl border border-white/[0.08] bg-zen-surface/50 p-6 backdrop-blur-md sm:p-8"
+      aria-label="What comes next"
     >
-      <p className="text-center text-[10px] font-medium uppercase tracking-[0.35em] text-amber-gold">
-        Continue Your Journey
+      <p className="text-center text-[10px] font-medium uppercase tracking-[0.35em] text-zen-muted">
+        When you are ready
       </p>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -62,12 +62,12 @@ export function ReadingActionPanel({
               key={action.label}
               href={action.href}
               onClick={() => {
-                if (action.label === "Save Reading") {
+                if (action.label === "Save to journal") {
                   track(ANALYTICS_EVENTS.READING_SAVED, {
                     properties: { reading_id: readingId },
                   });
                 }
-                if (action.label === "Ask Follow-up Question") {
+                if (action.label === "Continue reflecting") {
                   track(ANALYTICS_EVENTS.FOLLOWUP_QUESTION_ASKED, {
                     properties: { reading_id: readingId },
                   });
@@ -76,8 +76,8 @@ export function ReadingActionPanel({
               }}
               className={
                 action.primary
-                  ? "auth-btn-primary min-h-[48px] text-center text-sm transition-transform hover:scale-[1.02]"
-                  : "flex min-h-[48px] items-center justify-center rounded-full border border-white/15 bg-zen-bg/40 text-sm text-foreground backdrop-blur-sm transition-all hover:border-amber-gold/35 hover:bg-amber-gold/5 hover:shadow-[0_0_24px_-8px_rgba(197,160,89,0.4)]"
+                  ? "auth-btn-primary min-h-[48px] text-center text-sm"
+                  : "flex min-h-[48px] items-center justify-center rounded-full border border-white/12 bg-zen-bg/30 text-sm text-foreground/90 transition-colors hover:border-amber-gold/25 hover:bg-amber-gold/5"
               }
             >
               {action.label}
@@ -90,7 +90,7 @@ export function ReadingActionPanel({
                 action.onClick?.();
                 trackButton(action.label.toLowerCase().replace(/\s+/g, "_"));
               }}
-              className="flex min-h-[48px] items-center justify-center rounded-full border border-white/15 bg-zen-bg/40 text-sm text-foreground backdrop-blur-sm transition-all hover:border-amber-gold/35 hover:bg-amber-gold/5 hover:shadow-[0_0_24px_-8px_rgba(197,160,89,0.4)]"
+              className="flex min-h-[48px] items-center justify-center rounded-full border border-white/12 bg-zen-bg/30 text-sm text-foreground/90 transition-colors hover:border-amber-gold/25 hover:bg-amber-gold/5"
             >
               {action.label}
             </button>

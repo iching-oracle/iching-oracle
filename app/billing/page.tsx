@@ -9,8 +9,8 @@ import {
 } from "@/lib/credits/history";
 
 export const metadata = {
-  title: "Billing & Credits | IChing Oracle",
-  description: "Manage your plan, credits, and subscription",
+  title: "Membership & usage | I Ching Oracle",
+  description: "Your membership and consultation allowance",
 };
 
 export default async function BillingPage() {

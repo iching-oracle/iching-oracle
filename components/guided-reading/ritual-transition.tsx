@@ -162,7 +162,7 @@ export function RitualTransition({
         >
           {phase === "reveal"
             ? result?.primaryTitle ?? "Your hexagram"
-            : "Consulting the Oracle…"}
+            : "Consulting the oracle quietly…"}
         </motion.h2>
 
         <p className="mt-3 line-clamp-2 max-w-sm text-sm italic text-zen-muted">

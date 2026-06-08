@@ -142,7 +142,7 @@ export function StreamingReading({ result, onShare }: StreamingReadingProps) {
               transition={{ duration: 2, repeat: Infinity }}
             />
             <p className="text-sm text-zen-muted">
-              The oracle is speaking…
+              Observing the changing lines…
             </p>
           </div>
         )}

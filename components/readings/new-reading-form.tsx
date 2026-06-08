@@ -79,7 +79,7 @@ export function NewReadingForm() {
         disabled={isLoading}
         className="auth-btn-primary w-full"
       >
-        {isLoading ? "Casting the hexagram…" : "Cast & Interpret"}
+        {isLoading ? "The lines are taking form…" : "Consult the oracle"}
       </button>
     </form>
   );

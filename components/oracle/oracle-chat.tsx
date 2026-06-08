@@ -336,7 +336,7 @@ export function OracleChat({ initialState }: OracleChatProps) {
                   disabled={isCasting}
                   className="auth-btn-primary text-sm disabled:opacity-50"
                 >
-                  {isCasting ? "Consulting the oracle…" : "Consult the oracle"}
+                  {isCasting ? "Letting the pattern emerge…" : "Consult the oracle"}
                 </button>
               </motion.div>
             ) : null}

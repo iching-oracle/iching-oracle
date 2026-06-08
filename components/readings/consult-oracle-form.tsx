@@ -69,7 +69,7 @@ export function ConsultOracleForm() {
           disabled={isPending}
           className="auth-btn-primary min-h-[44px] w-full"
         >
-          {isPending ? "Consulting the oracle…" : "Consult the Oracle"}
+          {isPending ? "Consulting the oracle quietly…" : "Consult the oracle"}
         </button>
 
         <AiDisclaimer className="text-center" />

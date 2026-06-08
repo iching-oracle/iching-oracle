@@ -12,10 +12,10 @@ type ReadingFeedbackProps = {
   category?: string;
 };
 
-const OPTIONS: { value: ReadingResonance; label: string; emoji: string }[] = [
-  { value: "deeply", label: "Deeply", emoji: "✦" },
-  { value: "somewhat", label: "Somewhat", emoji: "◦" },
-  { value: "not_really", label: "Not really", emoji: "○" },
+const OPTIONS: { value: ReadingResonance; label: string }[] = [
+  { value: "deeply", label: "Deeply" },
+  { value: "somewhat", label: "Somewhat" },
+  { value: "not_really", label: "Not quite" },
 ];
 
 export function ReadingFeedback({ readingId, category }: ReadingFeedbackProps) {
@@ -43,7 +43,7 @@ export function ReadingFeedback({ readingId, category }: ReadingFeedbackProps) {
       track(ANALYTICS_EVENTS.READING_FEEDBACK, {
         properties: { reading_id: readingId, resonance, category },
       });
-      showSuccess("Thank you — your reflection helps us improve.");
+      showSuccess("Thank you — noted with care.");
     } catch {
       /* non-blocking */
     } finally {
@@ -53,28 +53,31 @@ export function ReadingFeedback({ readingId, category }: ReadingFeedbackProps) {
 
   return (
     <motion.section
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mt-10 rounded-2xl border border-white/10 bg-zen-surface/40 p-6 text-center backdrop-blur-md"
-      aria-label="Reading feedback"
+      transition={{ delay: 0.75, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+      className="mt-10 rounded-2xl border border-white/[0.08] bg-zen-surface/30 p-6 text-center backdrop-blur-sm"
+      aria-label="Reading reflection"
     >
       {submitted ? (
-        <p className="text-sm text-zen-muted">
+        <p className="text-sm leading-relaxed text-zen-muted">
           {submitted === "deeply"
-            ? "We're glad this resonated deeply."
+            ? "We are glad it met you where you are."
             : submitted === "somewhat"
-              ? "Thank you — we'll keep refining."
+              ? "Thank you — your note helps us listen better."
               : "Thank you for your honesty."}
         </p>
       ) : showComment ? (
         <div className="space-y-4">
-          <p className="text-sm text-foreground">Anything you'd like to share?</p>
+          <p className="text-sm text-foreground/90">
+            Anything you would like to leave behind?
+          </p>
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             rows={3}
             className="auth-input w-full resize-none text-left text-sm"
-            placeholder="Optional — what felt true, confusing, or missing?"
+            placeholder="Optional — what felt true, unclear, or unexpected?"
           />
           <button
             type="button"
@@ -82,12 +85,12 @@ export function ReadingFeedback({ readingId, category }: ReadingFeedbackProps) {
             onClick={() => void submit("somewhat", comment)}
             className="auth-btn-primary w-full sm:w-auto"
           >
-            Send feedback
+            Leave a note
           </button>
         </div>
       ) : (
         <>
-          <p className="text-sm text-foreground">Did this resonate with you?</p>
+          <p className="text-sm text-foreground/90">Did this land with you?</p>
           <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
             {OPTIONS.map((opt) => (
               <button
@@ -101,9 +104,9 @@ export function ReadingFeedback({ readingId, category }: ReadingFeedbackProps) {
                     void submit(opt.value);
                   }
                 }}
-                className="flex min-h-[48px] items-center justify-center gap-2 rounded-full border border-white/15 bg-zen-bg/40 px-5 text-sm transition-all hover:border-amber-gold/40 hover:bg-amber-gold/10 disabled:opacity-50"
+                className="flex min-h-[48px] items-center justify-center rounded-full border border-white/12 bg-zen-bg/30 px-5 text-sm transition-colors hover:border-amber-gold/30 hover:bg-amber-gold/5 disabled:opacity-50"
               >
-                <span aria-hidden>{opt.emoji}</span> {opt.label}
+                {opt.label}
               </button>
             ))}
           </div>

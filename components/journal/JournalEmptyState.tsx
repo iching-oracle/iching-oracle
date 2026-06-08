@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { EMPTY } from "@/lib/atmosphere/copy";
 
 type JournalEmptyStateProps = {
   filtered?: boolean;
@@ -6,24 +7,20 @@ type JournalEmptyStateProps = {
 
 export function JournalEmptyState({ filtered = false }: JournalEmptyStateProps) {
   return (
-    <div className="relative rounded-2xl border border-dashed border-white/15 bg-zen-elevated/30 px-8 py-14 text-center overflow-hidden">
+    <div className="relative overflow-hidden rounded-2xl border border-dashed border-white/12 bg-zen-elevated/25 px-8 py-14 text-center">
       <div
-        className="pointer-events-none absolute left-1/2 top-6 -translate-x-1/2 text-4xl text-amber-gold/30"
+        className="pointer-events-none absolute left-1/2 top-8 -translate-x-1/2 h-px w-12 bg-gradient-to-r from-transparent via-amber-gold/30 to-transparent"
         aria-hidden
-      >
-        ✦
-      </div>
+      />
       <p className="relative font-serif text-xl text-foreground/90">
-        {filtered ? "No readings match your filters" : "Your oracle journal awaits"}
+        {filtered ? EMPTY.journal.filteredTitle : EMPTY.journal.title}
       </p>
       <p className="relative mx-auto mt-3 max-w-md text-sm leading-relaxed text-zen-muted">
-        {filtered
-          ? "Try adjusting search or filters to find past consultations."
-          : "Each divination you save becomes a chapter in your spiritual journal — questions, hexagrams, and insight preserved in time."}
+        {filtered ? EMPTY.journal.filteredBody : EMPTY.journal.body}
       </p>
       {!filtered ? (
-        <Link href="/reading/new" className="auth-btn-primary relative mt-8 inline-block">
-          Cast your first hexagram
+        <Link href="/reading/guided" className="auth-btn-primary relative mt-8 inline-block">
+          {EMPTY.journal.cta}
         </Link>
       ) : null}
     </div>

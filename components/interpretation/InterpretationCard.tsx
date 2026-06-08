@@ -150,7 +150,7 @@ export function InterpretationCard({
             <span className="relative inline-flex h-3 w-3 rounded-full bg-amber-gold" />
           </span>
           <p className="text-sm text-amber-glow">
-            The oracle is composing your reading…
+            Letting the pattern emerge…
           </p>
         </motion.div>
       ) : null}

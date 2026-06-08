@@ -50,16 +50,16 @@ export async function sendBetaInviteEmail(
   `;
 
   const html = renderEmailLayout({
-    title: "Your beta invite",
+    title: "Your invitation",
     bodyHtml,
-    cta: { label: "Accept invite", href: registerUrl },
-    footerNote: "This invite is personal — please do not share publicly.",
+    cta: { label: "Confirm access", href: registerUrl },
+    footerNote: "This invitation is personal — please keep it private.",
   });
 
   await resend.emails.send({
     from: getEmailFrom(),
     to: email,
-    subject: "Your private beta invite — I Ching Oracle",
+    subject: "Your invitation to I Ching Oracle",
     html,
     text: `Your beta invite code: ${code}\n\nRegister: ${registerUrl}`,
   });
@@ -80,15 +80,15 @@ export async function sendBetaWelcomeEmail(
   `;
 
   const html = renderEmailLayout({
-    title: "Welcome, early explorer",
+    title: "Welcome in",
     bodyHtml,
-    cta: { label: "Begin your first reading", href: `${getAppUrl()}/reading/guided` },
+    cta: { label: "Begin a reading", href: `${getAppUrl()}/reading/guided` },
   });
 
   await resend.emails.send({
     from: getEmailFrom(),
     to: email,
-    subject: "Welcome to the I Ching Oracle beta",
+    subject: "Welcome to I Ching Oracle",
     html,
     text: `Welcome, ${greeting}. Begin: ${getAppUrl()}/reading/guided`,
   });

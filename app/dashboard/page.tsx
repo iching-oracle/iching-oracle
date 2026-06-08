@@ -25,7 +25,7 @@ import {
 
 export const metadata = {
   title: "Dashboard | ICHING-ORACLE",
-  description: "Your I-Ching oracle dashboard",
+  description: "Your reflective journal and oracle path",
 };
 
 export default async function DashboardPage() {
@@ -105,6 +105,7 @@ export default async function DashboardPage() {
         <ContinueJourneyPrompt
           daysSinceLastReading={retention.daysSinceLastReading}
           hasReadings={retention.readingCount > 0}
+          readingCount={retention.readingCount}
         />
 
         <ReflectionTimeline userId={session.user.id} />

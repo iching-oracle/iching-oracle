@@ -10,7 +10,7 @@ export function BetaMemberBadge({ className = "" }: BetaMemberBadgeProps) {
       <span aria-hidden className="text-amber-gold">
         ✦
       </span>
-      Early explorer
+      Early access
     </span>
   );
 }

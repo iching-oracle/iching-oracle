@@ -17,27 +17,27 @@ export async function sendVerificationEmail(
   const verifyUrl = `${getAppUrl()}/verify-email?token=${encodeURIComponent(token)}`;
 
   const bodyHtml = `
-    <p style="margin:0 0 20px;">Welcome to the oracle. Please verify your email address to activate your account and begin your I Ching journey.</p>
+    <p style="margin:0 0 20px;">Your access to I Ching Oracle is almost ready. Confirm your email to complete your invitation and begin.</p>
   `;
 
   const html = renderEmailLayout({
-    title: "Confirm your account",
+    title: "Confirm your invitation",
     bodyHtml,
-    cta: { label: "Verify email", href: verifyUrl },
-    footerNote: "This link expires in 24 hours. If you did not create an account, you can safely ignore this email.",
+    cta: { label: "Confirm access", href: verifyUrl },
+    footerNote: "This link expires in 24 hours. If you did not request access, you may safely ignore this email.",
   });
 
   const { error } = await resend.emails.send({
     from: getEmailFrom(),
     to: email,
-    subject: "Confirm your I Ching Oracle account",
+    subject: "Your access to I Ching Oracle",
     html,
     text: [
-      "Confirm your I Ching Oracle account",
+      "Your access to I Ching Oracle",
       "",
-      "Welcome to the oracle. Please verify your email address to activate your account.",
+      "Confirm your email to complete your invitation.",
       "",
-      `Verify your email: ${verifyUrl}`,
+      `Confirm access: ${verifyUrl}`,
       "",
       "This link expires in 24 hours.",
     ].join("\n"),

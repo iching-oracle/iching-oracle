@@ -5,8 +5,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { HexagramName } from "@/components/typography/hexagram-name";
 import { HexagramDisplay } from "@/components/HexagramDisplay";
 import { GuidedPremiumGate } from "@/components/guided-reading/guided-premium-gate";
+import { LoadingWhisper } from "@/components/atmosphere/loading-whisper";
+import { ReadingAfterglow } from "@/components/atmosphere/reading-afterglow";
 import { ReadingActionPanel } from "@/components/guided-reading/reading-action-panel";
 import { ReadingFeedback } from "@/components/feedback/reading-feedback";
+import { LOADING } from "@/lib/atmosphere/copy";
 import { RitualAmbient } from "@/components/guided-reading/ritual-ambient";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { useSimulatedStream } from "@/hooks/use-simulated-stream";
@@ -191,9 +194,7 @@ export function ProgressiveReadingReveal({
         )}
 
         {isLiveStreaming && (
-          <p className="mt-8 text-center text-sm text-zen-muted" aria-busy>
-            The oracle is speaking…
-          </p>
+          <LoadingWhisper message={LOADING.unfolding} className="mt-8" />
         )}
 
         <div className="mt-8 space-y-8">
@@ -210,6 +211,7 @@ export function ProgressiveReadingReveal({
 
         {showActions && (
           <>
+            <ReadingAfterglow seed={result.readingId} />
             <ReadingFeedback
               readingId={result.readingId}
               category={result.category}
@@ -240,7 +242,7 @@ function RevealBlockView({
     <motion.div
       initial={{ opacity: 0, y: 20, filter: "blur(6px)" }}
       animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
     >
       <BlockContent block={block} result={result} simulateText={simulateText} />
     </motion.div>

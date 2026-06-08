@@ -194,7 +194,7 @@ export function GuidedReadingFlow() {
       <InsufficientCreditsModal
         open={creditsModal}
         onClose={() => setCreditsModal(false)}
-        message="You need more credits to cast this reading."
+        message="You have reached your consultation limit for this period."
       />
     </div>
   );

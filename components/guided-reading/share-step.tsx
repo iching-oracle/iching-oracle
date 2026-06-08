@@ -117,14 +117,14 @@ export function ShareStep({ result, onDone }: ShareStepProps) {
       <RitualAmbient />
 
       <div className="relative z-10 mx-auto max-w-lg">
-        <p className="text-[10px] font-medium uppercase tracking-[0.35em] text-amber-gold/80">
-          Share
+        <p className="text-[10px] font-medium uppercase tracking-[0.35em] text-zen-muted">
+          Share quietly
         </p>
-        <h2 className="mt-2 font-serif text-2xl text-foreground">
-          Carry the oracle with you
+        <h2 className="mt-2 font-serif text-2xl text-foreground/95">
+          A reading to carry
         </h2>
-        <p className="mt-2 text-sm text-zen-muted">
-          A card worthy of the moment — dark, luminous, and yours.
+        <p className="mt-2 text-sm leading-relaxed text-zen-muted">
+          Restrained, editorial — for someone who may need it.
         </p>
 
         <div className="mt-8 flex justify-center overflow-hidden rounded-2xl border border-white/10 bg-zen-bg/50 p-4">
@@ -168,7 +168,7 @@ export function ShareStep({ result, onDone }: ShareStepProps) {
             onClick={() => void downloadImage()}
             className="auth-btn-primary text-sm disabled:opacity-50"
           >
-            Download image
+            Save as image
           </button>
           <button
             type="button"
@@ -192,7 +192,7 @@ export function ShareStep({ result, onDone }: ShareStepProps) {
             onClick={onDone}
             className="text-sm text-zen-muted hover:text-foreground"
           >
-            Return to dashboard
+            Return home
           </button>
         </div>
       </div>

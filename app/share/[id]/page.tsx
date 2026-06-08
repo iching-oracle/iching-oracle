@@ -60,8 +60,8 @@ export default async function PublicSharePage({ params }: PageProps) {
           <p className="text-xs font-medium uppercase tracking-[0.35em] text-amber-gold">
             IChing Oracle
           </p>
-          <h1 className="mt-2 font-serif text-2xl text-foreground">
-            Shared reading
+          <h1 className="mt-2 font-serif text-2xl text-foreground/95">
+            A reading, shared quietly
           </h1>
         </div>
 
@@ -91,8 +91,8 @@ export default async function PublicSharePage({ params }: PageProps) {
         </div>
 
         <div className="space-y-3">
-          <Link href="/reading/new" className="auth-btn-primary inline-flex">
-            Create your first oracle reading
+          <Link href="/reading/guided" className="auth-btn-primary inline-flex">
+            Begin your own reading
           </Link>
           <p className="text-xs text-zen-muted">
             <Link href="/" className="hover:text-amber-gold">

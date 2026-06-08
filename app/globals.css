@@ -208,7 +208,11 @@ body {
   }
 
   .auth-btn-primary {
-    @apply inline-flex items-center justify-center rounded-full bg-gradient-to-r from-amber-gold/90 via-amber-glow to-amber-gold/90 px-6 py-3 text-sm font-medium tracking-wide text-zen-bg shadow-[0_0_28px_rgba(197,160,89,0.4)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(197,160,89,0.55)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex items-center justify-center rounded-full bg-gradient-to-r from-amber-gold/90 via-amber-glow to-amber-gold/90 px-6 py-3 text-sm font-medium tracking-wide text-zen-bg shadow-[0_0_20px_rgba(197,160,89,0.28)] transition-all duration-500 hover:shadow-[0_0_28px_rgba(197,160,89,0.38)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .reading-afterglow {
+    @apply scroll-mt-8;
   }
 
   .auth-btn-secondary {

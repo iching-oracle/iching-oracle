@@ -102,11 +102,11 @@ export function CastingCeremony({
       <RitualAmbient />
 
       <div className="relative z-10 flex w-full max-w-sm flex-col items-center text-center">
-        <p className="text-[10px] font-medium uppercase tracking-[0.35em] text-amber-gold/70">
-          Casting
+        <p className="text-[10px] font-medium uppercase tracking-[0.35em] text-zen-muted">
+          Taking form
         </p>
-        <h2 className="mt-3 font-serif text-xl text-foreground sm:text-2xl">
-          The coins are falling
+        <h2 className="mt-3 font-serif text-xl text-foreground/95 sm:text-2xl">
+          The lines are settling
         </h2>
         <p className="mt-2 line-clamp-2 text-sm text-zen-muted italic">
           &ldquo;{question}&rdquo;

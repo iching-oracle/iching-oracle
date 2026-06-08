@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { getHexagram } from "@/lib/hexagrams";
+import { EMPTY } from "@/lib/atmosphere/copy";
 import type { DailyOracleHistoryItem } from "@/types/daily-oracle";
 
 type OracleHistoryTimelineProps = {
@@ -29,8 +30,8 @@ export function OracleHistoryTimeline({
 
   if (history.length === 0) {
     return (
-      <p className="rounded-2xl border border-white/10 bg-zen-surface/50 px-6 py-10 text-center text-sm text-zen-muted">
-        Your daily oracle history will appear here after you visit each day.
+      <p className="rounded-2xl border border-white/[0.08] bg-zen-surface/40 px-6 py-10 text-center text-sm leading-relaxed text-zen-muted">
+        {EMPTY.dailyHistory.body}
       </p>
     );
   }

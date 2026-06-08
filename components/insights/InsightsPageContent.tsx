@@ -12,6 +12,7 @@ import { MilestonePanel } from "@/components/insights/MilestonePanel";
 import { PatternCard } from "@/components/insights/PatternCard";
 import { PeriodReportCard } from "@/components/insights/PeriodReportCard";
 import { formatDateTime } from "@/lib/format-date";
+import { EMPTY } from "@/lib/atmosphere/copy";
 import type { InsightsPagePayload } from "@/types/insights";
 
 type InsightsPageContentProps = {
@@ -35,16 +36,15 @@ export function InsightsPageContent({ data }: InsightsPageContentProps) {
 
   if (empty) {
     return (
-      <div className="rounded-2xl border border-dashed border-white/15 bg-zen-elevated/30 px-8 py-16 text-center">
+      <div className="rounded-2xl border border-dashed border-white/12 bg-zen-elevated/25 px-8 py-16 text-center">
         <p className="font-serif text-xl text-foreground/90">
-          Your patterns await
+          {EMPTY.insights.title}
         </p>
-        <p className="mx-auto mt-3 max-w-md text-sm text-zen-muted">
-          Save a few consultations in your journal. Once history builds, Pattern
-          Insight will reflect recurring themes back to you.
+        <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-zen-muted">
+          {EMPTY.insights.body}
         </p>
-        <Link href="/reading/new" className="auth-btn-primary mt-8 inline-block">
-          Cast your first hexagram
+        <Link href="/reading/guided" className="auth-btn-primary mt-8 inline-block">
+          {EMPTY.insights.cta}
         </Link>
       </div>
     );
@@ -58,14 +58,13 @@ export function InsightsPageContent({ data }: InsightsPageContentProps) {
         className="text-center sm:text-left"
       >
         <p className="text-xs font-medium uppercase tracking-[0.35em] text-cosmic-violet">
-          Pattern Insight
+          Reflections
         </p>
-        <h1 className="mt-3 bg-gradient-to-r from-amber-gold via-amber-glow to-cosmic-violet bg-clip-text font-serif text-3xl font-semibold text-transparent sm:text-4xl">
-          Your spiritual journey, reflected
+        <h1 className="mt-3 font-serif text-3xl text-foreground/95 sm:text-4xl">
+          Patterns in your path
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zen-muted">
-          Discover recurring themes hidden within your readings — grounded in
-          your journal, interpreted with calm intelligence.
+          Recurring themes from your journal — surfaced gently, without hurry.
         </p>
         {data.generatedAt && isPremium ? (
           <p className="mt-2 text-[10px] uppercase tracking-widest text-zen-muted/80">

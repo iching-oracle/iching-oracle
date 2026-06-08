@@ -25,7 +25,7 @@ export function FadeIn({ children, className, delay = 0, y = 12 }: FadeInProps) 
       className={className}
       initial={{ opacity: 0, y }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.55, delay, ease: gentleEase }}
+      transition={{ duration: 0.75, delay, ease: gentleEase }}
     >
       {children}
     </motion.div>
@@ -53,7 +53,7 @@ export function RitualCard({ children, className = "", delay = 0 }: RitualCardPr
       initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.6, delay, ease: gentleEase }}
+      transition={{ duration: 0.85, delay, ease: gentleEase }}
     >
       {children}
     </motion.div>

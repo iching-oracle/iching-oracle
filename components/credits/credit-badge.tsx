@@ -19,11 +19,11 @@ export async function CreditBadge({ userId }: CreditBadgeProps) {
           ? "border-amber-gold/50 bg-amber-gold/15 text-amber-gold"
           : "border-white/10 bg-zen-surface/60 text-zen-muted hover:border-amber-gold/30 hover:text-amber-gold"
       }`}
-      title="View billing & credits"
+      title="Usage & membership"
     >
       <span aria-hidden>✦</span>
       <span>{balance.credits}</span>
-      <span className="opacity-60">credits</span>
+      <span className="opacity-60">left</span>
     </Link>
   );
 }

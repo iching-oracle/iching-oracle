@@ -80,7 +80,7 @@ export function ReadingShareCard({
       key={`${theme}-${format}`}
       initial={{ opacity: 0.85, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
       className={`relative box-border overflow-hidden font-serif ${themeSpec.container} ${themeSpec.glow} ${padding} ${className}`}
       style={{
         width: formatSpec.width,
@@ -91,8 +91,8 @@ export function ReadingShareCard({
       {animatedGlow ? (
         <motion.div
           className="pointer-events-none absolute inset-0 opacity-40"
-          animate={{ opacity: [0.25, 0.45, 0.25] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          animate={{ opacity: [0.15, 0.28, 0.15] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
           style={{
             background:
               theme === "mystic-purple"

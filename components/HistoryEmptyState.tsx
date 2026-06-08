@@ -1,27 +1,21 @@
 import Link from "next/link";
+import { EMPTY } from "@/lib/atmosphere/copy";
 
 export function HistoryEmptyState() {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-dashed border-white/15 bg-zen-surface/40 px-8 py-16 text-center">
+    <div className="relative overflow-hidden rounded-2xl border border-dashed border-white/12 bg-zen-surface/30 px-8 py-16 text-center">
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.12),transparent_65%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.08),transparent_65%)]"
         aria-hidden
       />
-      <p className="relative text-3xl" aria-hidden>
-        ☯
-      </p>
-      <h2 className="relative mt-4 font-serif text-xl font-semibold text-foreground">
-        Your oracle journey begins with your first question.
+      <h2 className="relative font-serif text-xl text-foreground/95">
+        {EMPTY.history.title}
       </h2>
-      <p className="relative mt-2 text-sm text-zen-muted">
-        Each consultation is saved here — hexagrams, changing lines, and AI
-        guidance await your return.
+      <p className="relative mx-auto mt-3 max-w-md text-sm leading-relaxed text-zen-muted">
+        {EMPTY.history.body}
       </p>
-      <Link
-        href="/reading/new"
-        className="auth-btn-primary relative mt-8 inline-flex"
-      >
-        Start New Reading
+      <Link href="/reading/guided" className="auth-btn-primary relative mt-8 inline-flex">
+        {EMPTY.history.cta}
       </Link>
     </div>
   );

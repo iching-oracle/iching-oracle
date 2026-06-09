@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { guardAiRoute } from "@/lib/api/route-guard";
+import { RATE_LIMITS } from "@/lib/rate-limit/presets";
 import { buildOracleChatContextFromReading } from "@/lib/chat/context";
 import {
   addMessage,
@@ -52,6 +54,16 @@ export async function POST(request: Request) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const guarded = await guardAiRoute({
+    request,
+    scope: "followup-chat",
+    userId: session.user.id,
+    role: session.user.role,
+    ai: true,
+    ipPreset: RATE_LIMITS.followup,
+  });
+  if (guarded) return guarded;
 
   if (!process.env.DEEPSEEK_API_KEY?.trim()) {
     return NextResponse.json(

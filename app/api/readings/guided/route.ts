@@ -13,11 +13,8 @@ import { CREDIT_ERROR_CODES } from "@/types/credits";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { readingAnalyticsMeta } from "@/lib/analytics/privacy";
 import { trackServerEvent } from "@/lib/analytics/server";
-import {
-  RATE_LIMITS,
-  rateLimitByUser,
-  rateLimitResponse,
-} from "@/lib/rate-limit/presets";
+import { guardAiRoute } from "@/lib/api/route-guard";
+import { RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit/presets";
 import {
   apiUnauthorized,
   apiValidation,
@@ -30,14 +27,16 @@ export async function POST(request: Request) {
     return apiUnauthorized();
   }
 
-  const dailyLimit = await rateLimitByUser(
-    session.user.id,
-    "reading-daily",
-    RATE_LIMITS.readingDaily,
-  );
-  if (!dailyLimit.ok) {
-    return rateLimitResponse(dailyLimit, USER_MESSAGES.rateLimited);
-  }
+  const guarded = await guardAiRoute({
+    request,
+    scope: "guided-reading",
+    userId: session.user.id,
+    role: session.user.role,
+    ai: true,
+    reading: true,
+    ipPreset: RATE_LIMITS.publicApi,
+  });
+  if (guarded) return guarded;
 
   let body: unknown;
   try {

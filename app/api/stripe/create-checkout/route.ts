@@ -1,14 +1,23 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { guardStripeRoute } from "@/lib/api/route-guard";
+import { RATE_LIMITS } from "@/lib/rate-limit/presets";
 import { trackSubscriptionEvent } from "@/lib/analytics/subscription-events";
 import { createSubscriptionCheckoutSession } from "@/lib/subscription/stripe-checkout";
 
-export async function POST() {
+export async function POST(request: Request) {
   const session = await auth();
 
   if (!session?.user?.id || !session.user.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const guarded = await guardStripeRoute(
+    request,
+    "stripe-checkout",
+    RATE_LIMITS.stripeCheckout,
+  );
+  if (guarded) return guarded;
 
   try {
     await trackSubscriptionEvent("checkout_opened", {

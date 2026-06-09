@@ -2,11 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { getAppUrl } from "@/lib/stripe";
 import { setReadingShareEnabled } from "@/lib/share/service";
-import {
-  RATE_LIMITS,
-  rateLimitByUser,
-  rateLimitResponse,
-} from "@/lib/rate-limit/presets";
+import { guardShareRoute } from "@/lib/api/route-guard";
 import { apiUnauthorized } from "@/lib/errors/api";
 
 type RouteParams = { params: Promise<{ id: string }> };
@@ -17,14 +13,12 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     return apiUnauthorized();
   }
 
-  const limited = await rateLimitByUser(
+  const guarded = await guardShareRoute(
+    request,
     session.user.id,
-    "share",
-    RATE_LIMITS.share,
+    session.user.role,
   );
-  if (!limited.ok) {
-    return rateLimitResponse(limited);
-  }
+  if (guarded) return guarded;
 
   let enable = false;
   try {

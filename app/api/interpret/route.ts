@@ -1,4 +1,6 @@
 import { auth } from "@/auth";
+import { guardAiRoute } from "@/lib/api/route-guard";
+import { RATE_LIMITS } from "@/lib/rate-limit/presets";
 import { buildOracleContextFromReading } from "@/lib/interpretation/context";
 import { isInterpretationMode } from "@/lib/interpretation/modes";
 import { streamAdvancedInterpretation } from "@/lib/interpretation/stream";
@@ -24,6 +26,16 @@ export async function POST(request: Request) {
       headers: { "Content-Type": "application/json" },
     });
   }
+
+  const guarded = await guardAiRoute({
+    request,
+    scope: "interpret",
+    userId: session.user.id,
+    role: session.user.role,
+    ai: true,
+    ipPreset: RATE_LIMITS.interpret,
+  });
+  if (guarded) return guarded;
 
   let body: unknown;
   try {

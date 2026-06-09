@@ -1,9 +1,13 @@
 import NextAuth from "next-auth";
 import { authConfig } from "@/auth.config";
+import { edgeIpGuard } from "@/lib/proxy/ip-guard-edge";
 
 const { auth } = NextAuth(authConfig);
 
-export default auth;
+export default auth(async (req) => {
+  const blocked = await edgeIpGuard(req);
+  if (blocked) return blocked;
+});
 
 export const config = {
   matcher: [
@@ -20,5 +24,6 @@ export const config = {
     "/login",
     "/register",
     "/admin/:path*",
+    "/api/:path*",
   ],
 };

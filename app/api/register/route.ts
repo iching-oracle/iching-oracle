@@ -16,11 +16,8 @@ import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/lib/validations/auth";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { trackServerEvent } from "@/lib/analytics/server";
-import {
-  RATE_LIMITS,
-  rateLimitByIp,
-  rateLimitResponse,
-} from "@/lib/rate-limit/presets";
+import { guardAuthRoute } from "@/lib/api/route-guard";
+import { RATE_LIMITS } from "@/lib/rate-limit/presets";
 import { handleRouteError } from "@/lib/errors/api";
 
 function fieldError(
@@ -32,10 +29,8 @@ function fieldError(
 }
 
 export async function POST(request: Request) {
-  const limited = await rateLimitByIp(request, "register", RATE_LIMITS.register);
-  if (!limited.ok) {
-    return rateLimitResponse(limited);
-  }
+  const guarded = await guardAuthRoute(request, "register", RATE_LIMITS.register);
+  if (guarded) return guarded;
 
   try {
     const body = await request.json();

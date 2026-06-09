@@ -4,6 +4,7 @@ import { LOW_CREDIT_THRESHOLD } from "@/lib/credits/constants";
 import { computeNextRefillAt } from "@/lib/credits/refill";
 import { resolvePlanType, type UserCreditRecord } from "@/lib/credits/plan";
 import { isPremiumUser } from "@/lib/subscription";
+import { estimateCostUsd } from "@/lib/usage-tracking";
 import { prisma } from "@/lib/prisma";
 import type { CreditBalanceDTO, PlanType } from "@/types/credits";
 
@@ -113,6 +114,11 @@ export async function spendCredits(params: {
 }): Promise<{ ok: true } | { ok: false; message: string }> {
   const { userId, amount, reason, featureType, estimatedTokenUsage } = params;
 
+  const estimatedCostUsd =
+    estimatedTokenUsage && estimatedTokenUsage > 0
+      ? estimateCostUsd(estimatedTokenUsage)
+      : null;
+
   if (amount <= 0) {
     await prisma.aIUsage.create({
       data: {
@@ -120,6 +126,7 @@ export async function spendCredits(params: {
         featureType,
         creditsUsed: 0,
         estimatedTokenUsage,
+        estimatedCostUsd,
       },
     });
     return { ok: true };
@@ -154,6 +161,7 @@ export async function spendCredits(params: {
           featureType,
           creditsUsed: amount,
           estimatedTokenUsage,
+          estimatedCostUsd,
         },
       });
     });

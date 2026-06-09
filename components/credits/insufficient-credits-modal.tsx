@@ -2,13 +2,18 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
+import { RateLimitNotice } from "@/components/credits/rate-limit-notice";
 import { CREDITS } from "@/lib/atmosphere/copy";
+import { CREDIT_ERROR_CODES } from "@/types/credits";
 
 type InsufficientCreditsModalProps = {
   open: boolean;
   onClose: () => void;
   message?: string;
   code?: string;
+  retryAfterSec?: number;
+  remaining?: number;
+  limit?: number;
 };
 
 export function InsufficientCreditsModal({
@@ -16,6 +21,9 @@ export function InsufficientCreditsModal({
   onClose,
   message = CREDITS.insufficient,
   code,
+  retryAfterSec,
+  remaining,
+  limit,
 }: InsufficientCreditsModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -26,7 +34,9 @@ export function InsufficientCreditsModal({
     if (!open && dialog.open) dialog.close();
   }, [open]);
 
-  const isPremiumRequired = code === "PREMIUM_REQUIRED";
+  const isPremiumRequired = code === CREDIT_ERROR_CODES.PREMIUM_REQUIRED;
+  const isRateLimited =
+    code === CREDIT_ERROR_CODES.RATE_LIMIT || code === "RATE_LIMITED";
 
   return (
     <dialog
@@ -40,14 +50,34 @@ export function InsufficientCreditsModal({
           aria-hidden
         />
         <p className="text-xs font-medium uppercase tracking-[0.3em] text-zen-muted">
-          {isPremiumRequired ? "Membership" : "This period"}
+          {isPremiumRequired
+            ? "Membership"
+            : isRateLimited
+              ? "Pace"
+              : "This period"}
         </p>
         <h2 className="relative mt-2 font-serif text-2xl">
-          {isPremiumRequired ? CREDITS.premium : "A gentle pause"}
+          {isPremiumRequired
+            ? CREDITS.premium
+            : isRateLimited
+              ? "A gentle pause"
+              : "A gentle pause"}
         </h2>
-        <p className="relative mt-3 text-sm leading-relaxed text-zen-muted">
-          {message}
-        </p>
+        {isRateLimited ? (
+          <div className="relative mt-3">
+            <RateLimitNotice
+              message={message}
+              retryAfterSec={retryAfterSec}
+              remaining={remaining}
+              limit={limit}
+              compact
+            />
+          </div>
+        ) : (
+          <p className="relative mt-3 text-sm leading-relaxed text-zen-muted">
+            {message}
+          </p>
+        )}
         <div className="relative mt-6 flex flex-col gap-2">
           <Link href="/pricing" className="auth-btn-primary text-center" onClick={onClose}>
             {CREDITS.upgrade}

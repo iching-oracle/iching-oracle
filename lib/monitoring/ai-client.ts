@@ -3,6 +3,7 @@ import "server-only";
 import { withRetry, isNetworkError } from "@/lib/trust/retry";
 import { fetchWithTimeout, RequestTimeoutError } from "@/lib/monitoring/request-timeout";
 import { captureException } from "@/lib/monitoring/sentry";
+import { PROTECTION } from "@/lib/protection/config";
 
 export type AiFetchOptions = {
   timeoutMs?: number;
@@ -12,7 +13,7 @@ export type AiFetchOptions = {
   category?: string;
 };
 
-const DEFAULT_AI_TIMEOUT_MS = 90_000;
+const DEFAULT_AI_TIMEOUT_MS = PROTECTION.aiTimeoutMs;
 
 function isRetryableAiError(error: unknown): boolean {
   if (error instanceof RequestTimeoutError) return true;
@@ -35,8 +36,8 @@ export async function fetchAiCompletion(
 ): Promise<Response> {
   const {
     timeoutMs = DEFAULT_AI_TIMEOUT_MS,
-    attempts = 3,
-    delayMs = 800,
+    attempts = PROTECTION.aiMaxRetries + 1,
+    delayMs = 1000,
     category = "ai_api",
   } = options;
 

@@ -4,6 +4,7 @@ import { resolveValidUserId } from "@/lib/auth/session-user";
 import { sendContactFormEmail } from "@/lib/email/send-contact";
 import { prisma } from "@/lib/prisma";
 import { contactFormSchema } from "@/lib/validations/contact";
+import { guardPublicRoute } from "@/lib/api/route-guard";
 import {
   RATE_LIMITS,
   consumeRateLimitByIp,
@@ -16,6 +17,11 @@ import { USER_MESSAGES } from "@/lib/errors/messages";
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  const peek = await peekRateLimitByIp(request, "contact", RATE_LIMITS.contact);
+  if (!peek.ok) {
+    return rateLimitResponse(peek);
+  }
+
   let body: unknown;
   try {
     body = await request.json();
@@ -41,6 +47,14 @@ export async function POST(request: Request) {
 
   const session = await auth();
   const userId = await resolveValidUserId(session?.user?.id);
+
+  const guarded = await guardPublicRoute({
+    request,
+    scope: "contact",
+    userId,
+    role: session?.user?.role,
+  });
+  if (guarded) return guarded;
   const email = parsed.data.email.toLowerCase();
   const name = parsed.data.name;
   const subject = parsed.data.subject;

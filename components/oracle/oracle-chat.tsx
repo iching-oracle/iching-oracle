@@ -42,6 +42,7 @@ export function OracleChat({ initialState }: OracleChatProps) {
   const [creditsModalOpen, setCreditsModalOpen] = useState(false);
   const [creditsModalMessage, setCreditsModalMessage] = useState<string>();
   const [creditsModalCode, setCreditsModalCode] = useState<string>();
+  const [retryAfterSec, setRetryAfterSec] = useState<number>();
   const [started, setStarted] = useState(initialState.messages.length > 0);
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -108,14 +109,26 @@ export function OracleChat({ initialState }: OracleChatProps) {
         if (newConvId) setConversationId(newConvId);
 
         if (!res.ok) {
-          const data = (await res.json()) as { error?: string; code?: string };
+          const data = (await res.json()) as {
+            error?: string;
+            code?: string;
+            retryAfterSec?: number;
+          };
+          const isLimited =
+            res.status === 429 ||
+            data.code === CREDIT_ERROR_CODES.RATE_LIMIT ||
+            data.code === "RATE_LIMITED";
           if (
             data.code === CREDIT_ERROR_CODES.INSUFFICIENT ||
-            data.code === CREDIT_ERROR_CODES.PREMIUM_REQUIRED
+            data.code === CREDIT_ERROR_CODES.PREMIUM_REQUIRED ||
+            isLimited
           ) {
             setCanSend(false);
             setCreditsModalMessage(data.error);
-            setCreditsModalCode(data.code);
+            setCreditsModalCode(
+              isLimited ? CREDIT_ERROR_CODES.RATE_LIMIT : data.code,
+            );
+            setRetryAfterSec(data.retryAfterSec);
             setCreditsModalOpen(true);
           }
           setMessages((prev) => prev.filter((m) => m.id !== tempUserId));
@@ -372,6 +385,7 @@ export function OracleChat({ initialState }: OracleChatProps) {
         onClose={() => setCreditsModalOpen(false)}
         message={creditsModalMessage}
         code={creditsModalCode}
+        retryAfterSec={retryAfterSec}
       />
     </div>
   );

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { guardAiRoute } from "@/lib/api/route-guard";
+import { RATE_LIMITS } from "@/lib/rate-limit/presets";
 import { resolveValidUserId } from "@/lib/auth/session-user";
 import {
   addOracleMessage,
@@ -61,13 +63,23 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const { userId } = await getOracleChatUserId();
+  const { session, userId } = await getOracleChatUserId();
   if (!userId) {
     return NextResponse.json(
       { error: "Session expired. Please sign in again." },
       { status: 401 },
     );
   }
+
+  const guarded = await guardAiRoute({
+    request,
+    scope: "oracle-chat",
+    userId,
+    role: session?.user?.role,
+    ai: true,
+    ipPreset: RATE_LIMITS.oracleChat,
+  });
+  if (guarded) return guarded;
 
   if (!process.env.DEEPSEEK_API_KEY?.trim()) {
     return NextResponse.json(

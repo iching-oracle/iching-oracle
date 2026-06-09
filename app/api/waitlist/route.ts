@@ -3,11 +3,8 @@ import { z } from "zod";
 import { joinWaitlist } from "@/lib/beta/waitlist";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { trackServerEvent } from "@/lib/analytics/server";
-import {
-  RATE_LIMITS,
-  rateLimitByIp,
-  rateLimitResponse,
-} from "@/lib/rate-limit/presets";
+import { guardPublicRoute } from "@/lib/api/route-guard";
+import { RATE_LIMITS } from "@/lib/rate-limit/presets";
 import { handleRouteError } from "@/lib/errors/api";
 
 const bodySchema = z.object({
@@ -19,10 +16,12 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const limited = await rateLimitByIp(request, "waitlist", RATE_LIMITS.waitlist);
-  if (!limited.ok) {
-    return rateLimitResponse(limited);
-  }
+  const guarded = await guardPublicRoute({
+    request,
+    scope: "waitlist",
+    ipPreset: RATE_LIMITS.waitlist,
+  });
+  if (guarded) return guarded;
 
   let body: unknown;
   try {

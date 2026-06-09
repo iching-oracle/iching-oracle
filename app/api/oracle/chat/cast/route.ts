@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { guardAiRoute } from "@/lib/api/route-guard";
+import { RATE_LIMITS } from "@/lib/rate-limit/presets";
 import { resolveValidUserId } from "@/lib/auth/session-user";
 import { castOracleReadingForConversation } from "@/lib/oracle-chat/cast";
 import { getOracleChatState } from "@/lib/oracle-chat/conversation";
@@ -15,6 +17,17 @@ export async function POST(request: Request) {
       { status: 401 },
     );
   }
+
+  const guarded = await guardAiRoute({
+    request,
+    scope: "oracle-cast",
+    userId,
+    role: session?.user?.role,
+    ai: true,
+    reading: true,
+    ipPreset: RATE_LIMITS.oracleChat,
+  });
+  if (guarded) return guarded;
 
   let body: unknown;
   try {

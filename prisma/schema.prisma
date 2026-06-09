@@ -364,6 +364,7 @@ model AIUsage {
   featureType         String
   creditsUsed         Int
   estimatedTokenUsage Int?
+  estimatedCostUsd    Float?
   createdAt           DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

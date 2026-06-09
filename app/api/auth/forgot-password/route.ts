@@ -4,22 +4,17 @@ import {
   requestPasswordReset,
 } from "@/lib/auth/password-reset";
 import { forgotPasswordSchema } from "@/lib/validations/auth";
-import {
-  RATE_LIMITS,
-  rateLimitByIp,
-  rateLimitResponse,
-} from "@/lib/rate-limit/presets";
+import { guardAuthRoute } from "@/lib/api/route-guard";
+import { RATE_LIMITS } from "@/lib/rate-limit/presets";
 import { handleRouteError } from "@/lib/errors/api";
 
 export async function POST(request: Request) {
-  const limited = await rateLimitByIp(
+  const guarded = await guardAuthRoute(
     request,
     "forgot-password",
     RATE_LIMITS.forgotPassword,
   );
-  if (!limited.ok) {
-    return rateLimitResponse(limited);
-  }
+  if (guarded) return guarded;
 
   try {
     const body = await request.json();

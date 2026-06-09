@@ -7,6 +7,7 @@ import {
   isPrismaTimeoutError,
   prismaErrorCategory,
 } from "@/lib/errors/prisma";
+import { recordFailedRequest } from "@/lib/rate-limit/abuse";
 import { logSystemEvent } from "@/lib/monitoring/logger";
 
 export type ApiErrorCode =
@@ -25,6 +26,9 @@ type ApiErrorBody = {
   error: string;
   code?: ApiErrorCode | string;
   retryAfterSec?: number;
+  remaining?: number;
+  limit?: number;
+  resetAt?: string;
 };
 
 export function apiError(
@@ -53,10 +57,12 @@ export function apiUnauthorized(): NextResponse<ApiErrorBody> {
 export function apiRateLimited(
   message: string = USER_MESSAGES.rateLimitedShort,
   retryAfterSec?: number,
+  extra?: { remaining?: number; limit?: number; resetAt?: string },
 ): NextResponse<ApiErrorBody> {
   return apiError(429, message, {
     code: "RATE_LIMITED",
     retryAfterSec,
+    ...extra,
   });
 }
 
@@ -71,8 +77,13 @@ export async function handleRouteError(
     userMessage?: string;
     userId?: string;
     path?: string;
+    request?: Request;
+    trackAbuse?: boolean;
   },
 ): Promise<NextResponse<ApiErrorBody>> {
+  if (context.request && context.trackAbuse) {
+    void recordFailedRequest(context.request, context.category);
+  }
   const internal =
     error instanceof Error ? error.message : String(error);
 

@@ -14,6 +14,9 @@ export function useGuidedReadingFlow() {
   const [result, setResult] = useState<GuidedReadingResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [creditsModal, setCreditsModal] = useState(false);
+  const [creditsModalMessage, setCreditsModalMessage] = useState<string>();
+  const [creditsModalCode, setCreditsModalCode] = useState<string>();
+  const [retryAfterSec, setRetryAfterSec] = useState<number>();
 
   const fetchReading = useCallback(async (): Promise<GuidedReadingResult> => {
     const res = await fetch("/api/readings/guided", {
@@ -25,10 +28,25 @@ export function useGuidedReadingFlow() {
     const data = (await res.json()) as GuidedReadingResult & {
       error?: string;
       code?: string;
+      retryAfterSec?: number;
+      remaining?: number;
+      limit?: number;
     };
 
     if (!res.ok) {
-      if (data.code === CREDIT_ERROR_CODES.INSUFFICIENT) {
+      const isLimited =
+        res.status === 429 ||
+        data.code === CREDIT_ERROR_CODES.RATE_LIMIT ||
+        data.code === "RATE_LIMITED";
+      if (
+        data.code === CREDIT_ERROR_CODES.INSUFFICIENT ||
+        isLimited
+      ) {
+        setCreditsModalMessage(data.error);
+        setCreditsModalCode(
+          isLimited ? CREDIT_ERROR_CODES.RATE_LIMIT : data.code,
+        );
+        setRetryAfterSec(data.retryAfterSec);
         setCreditsModal(true);
       }
       throw new Error(data.error ?? "Could not complete reading");
@@ -79,6 +97,9 @@ export function useGuidedReadingFlow() {
     error,
     creditsModal,
     setCreditsModal,
+    creditsModalMessage,
+    creditsModalCode,
+    retryAfterSec,
     fetchReading,
     selectCategory,
     continueFromCategory,

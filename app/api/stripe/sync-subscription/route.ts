@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { guardStripeRoute } from "@/lib/api/route-guard";
+import { RATE_LIMITS } from "@/lib/rate-limit/presets";
 import { isPremiumUser } from "@/lib/subscription";
 import { syncSubscriptionForUser } from "@/lib/subscription/stripe-sync";
 import { prisma } from "@/lib/prisma";
@@ -16,6 +18,13 @@ export async function POST(request: Request) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const guarded = await guardStripeRoute(
+    request,
+    "stripe-sync",
+    RATE_LIMITS.stripeCheckout,
+  );
+  if (guarded) return guarded;
 
   let sessionId: string | undefined;
   try {

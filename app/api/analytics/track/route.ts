@@ -3,6 +3,8 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import type { AnalyticsFunnelId } from "@/lib/analytics/events";
 import { trackServerEvent } from "@/lib/analytics/server";
+import { guardPublicRoute } from "@/lib/api/route-guard";
+import { RATE_LIMITS } from "@/lib/rate-limit/presets";
 import { sanitizeAnalyticsProperties } from "@/lib/analytics/privacy";
 
 const trackSchema = z.object({
@@ -16,6 +18,13 @@ const trackSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const guarded = await guardPublicRoute({
+    request,
+    scope: "analytics",
+    ipPreset: RATE_LIMITS.publicApi,
+  });
+  if (guarded) return guarded;
+
   const consent = request.headers.get("X-Analytics-Consent") === "true";
   if (!consent) {
     return NextResponse.json({ error: "Analytics consent required" }, { status: 403 });

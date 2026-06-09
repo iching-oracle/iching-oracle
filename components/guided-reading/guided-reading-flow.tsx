@@ -30,6 +30,9 @@ export function GuidedReadingFlow() {
     error,
     creditsModal,
     setCreditsModal,
+    creditsModalMessage,
+    creditsModalCode,
+    retryAfterSec,
     fetchReading,
     selectCategory,
     continueFromCategory,
@@ -194,7 +197,9 @@ export function GuidedReadingFlow() {
       <InsufficientCreditsModal
         open={creditsModal}
         onClose={() => setCreditsModal(false)}
-        message="You have reached your consultation limit for this period."
+        message={creditsModalMessage}
+        code={creditsModalCode}
+        retryAfterSec={retryAfterSec}
       />
     </div>
   );

@@ -16,6 +16,8 @@ import {
 } from "@/lib/subscription/stripe-sync";
 import { logStripeWebhook } from "@/lib/subscription/webhook-log";
 import { captureException } from "@/lib/monitoring/sentry";
+import { guardStripeRoute } from "@/lib/api/route-guard";
+import { recordFailedRequest } from "@/lib/rate-limit/abuse";
 import { getStripe } from "@/lib/stripe";
 
 export const runtime = "nodejs";
@@ -66,8 +68,12 @@ function verifyStripeEvent(body: string, signature: string): Stripe.Event {
 }
 
 export async function POST(request: Request) {
+  const guarded = await guardStripeRoute(request);
+  if (guarded) return guarded;
+
   const signature = request.headers.get("stripe-signature");
   if (!signature) {
+    void recordFailedRequest(request, "stripe_missing_signature");
     return NextResponse.json({ error: "Missing signature" }, { status: 400 });
   }
 
@@ -79,6 +85,7 @@ export async function POST(request: Request) {
     event = verifyStripeEvent(rawBody, signature);
   } catch (error) {
     console.error("[stripe/webhook] Signature verification failed", error);
+    void recordFailedRequest(request, "stripe_invalid_signature");
     captureException(error, {
       category: "stripe_webhook",
       tags: { phase: "signature" },

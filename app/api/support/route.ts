@@ -3,11 +3,8 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { resolveValidUserId } from "@/lib/auth/session-user";
 import { prisma } from "@/lib/prisma";
-import {
-  RATE_LIMITS,
-  rateLimitByIp,
-  rateLimitResponse,
-} from "@/lib/rate-limit/presets";
+import { guardPublicRoute } from "@/lib/api/route-guard";
+import { RATE_LIMITS } from "@/lib/rate-limit/presets";
 import { handleRouteError } from "@/lib/errors/api";
 import { USER_MESSAGES } from "@/lib/errors/messages";
 
@@ -27,13 +24,17 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const limited = await rateLimitByIp(request, "support", RATE_LIMITS.support);
-  if (!limited.ok) {
-    return rateLimitResponse(limited, USER_MESSAGES.rateLimitedShort);
-  }
-
   const session = await auth();
   const userId = await resolveValidUserId(session?.user?.id);
+
+  const guarded = await guardPublicRoute({
+    request,
+    scope: "support",
+    userId,
+    role: session?.user?.role,
+    ipPreset: RATE_LIMITS.support,
+  });
+  if (guarded) return guarded;
 
   let body: unknown;
   try {

@@ -28,7 +28,7 @@ export function FinalCtaSection({ isLoggedIn }: FinalCtaSectionProps) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={LANDING_VIEWPORT}
         transition={landingTransition(reduceMotion)}
-        className="relative overflow-hidden rounded-3xl border border-amber-gold/15 bg-gradient-to-br from-zen-surface/85 via-cosmic-deep/15 to-zen-bg px-8 py-16 text-center sm:px-14 sm:py-20"
+        className="relative overflow-hidden rounded-3xl border border-amber-gold/15 bg-gradient-to-br from-zen-surface/85 via-cosmic-deep/15 to-zen-bg px-6 py-14 text-center sm:px-14 sm:py-20"
       >
         <motion.div
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(197,160,89,0.08),transparent_68%)]"
@@ -42,14 +42,14 @@ export function FinalCtaSection({ isLoggedIn }: FinalCtaSectionProps) {
         >
           {copy.headline}
         </h2>
-        <p className="relative mx-auto mt-5 max-w-md text-sm leading-[1.75] text-zen-muted/95 sm:text-base">
+        <p className="relative mx-auto mt-5 max-w-lg text-sm leading-[1.75] text-zen-muted/95 sm:text-base">
           {copy.subheadline}
         </p>
-        <div className="relative mt-10 flex flex-col justify-center gap-4 sm:flex-row sm:gap-5">
+        <div className="relative mt-10 flex flex-col justify-center gap-3 sm:flex-row sm:gap-4">
           <Link href={href} className="landing-btn-primary px-10">
             {isLoggedIn ? copy.primaryLoggedIn : copy.primaryLoggedOut}
           </Link>
-          <Link href="/daily" className="landing-btn-secondary px-10">
+          <Link href="/pricing" className="landing-btn-secondary px-10">
             {copy.secondary}
           </Link>
         </div>

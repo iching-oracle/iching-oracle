@@ -84,6 +84,25 @@ export function faqPageSchema(faqs: SeoFaqItem[]) {
   };
 }
 
+export function webApplicationSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: SITE_NAME,
+    url: getSiteUrl(),
+    applicationCategory: "LifestyleApplication",
+    operatingSystem: "Web",
+    description:
+      "AI-powered I Ching oracle readings. Ask any question and receive personalized hexagram guidance in seconds.",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+      description: "Free readings available",
+    },
+  };
+}
+
 export function creativeWorkSchema(input: {
   name: string;
   description: string;

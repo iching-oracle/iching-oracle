@@ -297,7 +297,7 @@ body {
   }
 
   .landing-section {
-    @apply py-20 sm:py-28 md:py-32;
+    @apply py-16 sm:py-24 md:py-28;
   }
 
   .landing-paper-grain {
@@ -358,6 +358,34 @@ body {
 
   .landing-eyebrow {
     @apply text-[10px] font-medium uppercase tracking-[0.38em] text-zen-muted/90;
+  }
+
+  .landing-example-card {
+    @apply rounded-3xl border border-amber-gold/15 bg-gradient-to-br from-zen-surface/80 via-zen-surface/50 to-zen-bg/60 shadow-[0_0_60px_-24px_rgba(197,160,89,0.2)] backdrop-blur-sm;
+  }
+
+  .landing-faq-item {
+    @apply border-b border-white/[0.06] first:border-t;
+  }
+
+  .landing-faq-summary {
+    @apply flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-left text-base font-medium text-foreground transition-colors hover:text-amber-gold sm:text-lg;
+  }
+
+  .landing-faq-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .landing-faq-chevron {
+    @apply shrink-0 text-xl text-amber-gold/70 transition-transform duration-300;
+  }
+
+  .landing-faq-item[open] .landing-faq-chevron {
+    transform: rotate(45deg);
+  }
+
+  .landing-faq-answer {
+    @apply pb-5 text-sm leading-[1.8] text-zen-muted/95 sm:text-base;
   }
 
   /* —— Pricing cards —— */

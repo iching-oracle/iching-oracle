@@ -360,6 +360,25 @@ body {
     @apply text-[10px] font-medium uppercase tracking-[0.38em] text-zen-muted/90;
   }
 
+  .landing-community-quote {
+    @apply relative px-6 py-8 sm:px-10 sm:py-10;
+  }
+
+  .landing-community-quote::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(197, 160, 89, 0.1);
+    background: linear-gradient(
+      135deg,
+      rgba(197, 160, 89, 0.04) 0%,
+      transparent 50%,
+      rgba(124, 58, 237, 0.03) 100%
+    );
+    pointer-events: none;
+  }
+
   .landing-example-card {
     @apply rounded-3xl border border-amber-gold/15 bg-gradient-to-br from-zen-surface/80 via-zen-surface/50 to-zen-bg/60 shadow-[0_0_60px_-24px_rgba(197,160,89,0.2)] backdrop-blur-sm;
   }

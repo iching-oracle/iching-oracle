@@ -1,13 +1,22 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { PricingPageContent } from "@/components/pricing/PricingPageContent";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 import { isPremiumUser } from "@/lib/subscription";
 import { prisma } from "@/lib/prisma";
 
-export const metadata = {
-  title: "Premium | ICHING-ORACLE",
-  description: "Upgrade to Premium for unlimited readings and advanced AI interpretation",
-};
+export const metadata = buildPageMetadata({
+  title: "Pricing — Free & Premium I Ching Readings",
+  description:
+    "Start with free I Ching readings. Upgrade to Premium for unlimited consultations, deeper AI interpretation, and pattern insights.",
+  path: "/pricing",
+  keywords: [
+    "i ching premium",
+    "oracle subscription",
+    "i ching pricing",
+    "ai divination plans",
+  ],
+});
 
 export default async function PricingPage() {
   const session = await auth();

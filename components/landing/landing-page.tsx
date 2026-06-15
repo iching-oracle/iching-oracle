@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { HeroSection } from "@/components/landing/hero-section";
+import { CommunityQuoteSection } from "@/components/landing/community-quote-section";
 import { ExampleReadingSection } from "@/components/landing/example-reading-section";
 import { HowItWorksSection } from "@/components/landing/how-it-works-section";
 import { TrustSection } from "@/components/landing/trust-section";
@@ -44,6 +45,7 @@ export function LandingPage({
 
       <main className="relative z-10 mx-auto w-full max-w-6xl flex-1 px-4 pb-20 sm:px-8 sm:pb-28 lg:px-12">
         <HeroSection isLoggedIn={isLoggedIn} />
+        <CommunityQuoteSection />
         <LandingSectionDivider />
         <ExampleReadingSection
           isLoggedIn={isLoggedIn}

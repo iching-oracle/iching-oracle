@@ -14,10 +14,13 @@ import type {
   ReadingJournalQuery,
 } from "@/types/reading-journal";
 
-export const metadata = {
-  title: "Reading History | ICHING-ORACLE",
-  description: "Your saved I Ching divinations and interpretations",
-};
+import { buildNoIndexMetadata } from "@/lib/seo/noindex-metadata";
+
+export const metadata = buildNoIndexMetadata({
+  title: "Reading history",
+  description: "Your saved I Ching readings and interpretations.",
+  path: "/history",
+});
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

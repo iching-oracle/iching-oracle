@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { listLearnPaths } from "@/lib/content/articles";
+import { SITEMAP_STATIC_PATHS } from "@/lib/seo/config";
 import { listAllHexagramPaths } from "@/lib/seo/hexagram-content";
 import { listProgrammaticPaths } from "@/lib/seo/programmatic-registry";
 import { listIndexableReadingSlugs } from "@/lib/seo/public-reading";
@@ -7,23 +8,19 @@ import { absoluteUrl } from "@/lib/seo/site";
 
 export const revalidate = 3600;
 
+function priorityForPath(path: string): number {
+  if (path === "/") return 1;
+  if (path === "/pricing" || path === "/hexagrams") return 0.9;
+  if (path.startsWith("/hexagrams/")) return 0.8;
+  if (path.startsWith("/guides/") || path.startsWith("/learn/")) return 0.7;
+  return 0.6;
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
+
   const staticPaths = [
-    "/",
-    "/pricing",
-    "/guides",
-    "/reading/guided",
-    "/reading/new",
-    "/privacy",
-    "/terms",
-    "/impressum",
-    "/cookies",
-    "/disclaimer",
-    "/refund-policy",
-    "/support",
-    "/trust/ai",
-    "/contact",
+    ...SITEMAP_STATIC_PATHS,
     ...listAllHexagramPaths(),
     ...listProgrammaticPaths(),
     ...listLearnPaths(),
@@ -33,7 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: absoluteUrl(path),
     lastModified: now,
     changeFrequency: path === "/" ? "weekly" : "monthly",
-    priority: path === "/" ? 1 : path.startsWith("/hexagrams/") ? 0.8 : 0.6,
+    priority: priorityForPath(path),
   }));
 
   let readingEntries: MetadataRoute.Sitemap = [];

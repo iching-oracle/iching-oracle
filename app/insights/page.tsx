@@ -8,10 +8,13 @@ import { localeForLanguage } from "@/lib/i18n/languages";
 import { invalidatePatternInsightCache } from "@/lib/insights/invalidate";
 import { getPreferredLanguageForUser } from "@/lib/user/preferred-language";
 
-export const metadata = {
-  title: "Pattern Insight | ICHING-ORACLE",
-  description: "AI-driven patterns across your I Ching reading history",
-};
+import { buildNoIndexMetadata } from "@/lib/seo/noindex-metadata";
+
+export const metadata = buildNoIndexMetadata({
+  title: "Pattern insights",
+  description: "AI-driven patterns across your I Ching reading history.",
+  path: "/insights",
+});
 
 type PageProps = {
   searchParams: Promise<{ refresh?: string }>;

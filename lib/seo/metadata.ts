@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getMetadataBase } from "@/lib/seo/config";
 import { absoluteUrl, DEFAULT_OG_LOCALE, SITE_NAME } from "@/lib/seo/site";
 
 export type PageMetadataInput = {
@@ -26,6 +27,7 @@ export function buildPageMetadata(input: PageMetadataInput): Metadata {
   const gsc = process.env.NEXT_PUBLIC_GSC_VERIFICATION?.trim();
 
   return {
+    metadataBase: getMetadataBase(),
     title: fullTitle,
     description: input.description.slice(0, 160),
     keywords: input.keywords,

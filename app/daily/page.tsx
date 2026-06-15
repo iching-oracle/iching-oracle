@@ -7,11 +7,15 @@ import { resolveDailyOracleForPage } from "@/lib/daily-oracle/resolve";
 import { VISITOR_COOKIE_NAME } from "@/lib/daily-oracle/visitor";
 import { formatWeekdayDate } from "@/lib/format-date";
 
-export const metadata = {
-  title: "Daily Oracle | ICHING-ORACLE",
+import { buildPageMetadata } from "@/lib/seo/metadata";
+
+export const metadata = buildPageMetadata({
+  title: "Daily Oracle — Today's Hexagram",
   description:
-    "Your personal daily hexagram, emotional insight, and reflection for today.",
-};
+    "Receive your personal daily hexagram, emotional insight, and reflection from the I Ching.",
+  path: "/daily",
+  keywords: ["daily i ching", "daily hexagram", "daily oracle"],
+});
 
 export default async function DailyOraclePage() {
   const session = await auth();

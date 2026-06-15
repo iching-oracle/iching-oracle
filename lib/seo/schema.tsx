@@ -84,6 +84,19 @@ export function faqPageSchema(faqs: SeoFaqItem[]) {
   };
 }
 
+export function organizationSchema() {
+  const url = getSiteUrl();
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: SITE_NAME,
+    url,
+    description:
+      "AI-powered I Ching oracle readings, hexagram wisdom, and spiritual guidance.",
+    sameAs: [] as string[],
+  };
+}
+
 export function webApplicationSchema() {
   return {
     "@context": "https://schema.org",

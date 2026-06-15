@@ -1,40 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ReadingShareCard } from "@/components/share/reading-share-card";
+import { buildSharePageMetadata } from "@/lib/seo/share-metadata";
 import { getPublicSharePayload } from "@/lib/share/public-query";
-import type { Metadata } from "next";
 
 type PageProps = { params: Promise<{ id: string }> };
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps) {
   const { id } = await params;
-  const payload = await getPublicSharePayload(id);
-
-  if (!payload) {
-    return {
-      title: "Reading not found | IChing Oracle",
-      robots: { index: false, follow: false },
-    };
-  }
-
-  const { data } = payload;
-  const description = data.quote.slice(0, 160);
-
-  return {
-    title: `Oracle Reading | IChing Oracle`,
-    description,
-    openGraph: {
-      title: "I Ching Oracle Reading",
-      description,
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: "I Ching Oracle Reading",
-      description,
-    },
-    robots: { index: true, follow: true },
-  };
+  return buildSharePageMetadata(id);
 }
 
 export default async function PublicSharePage({ params }: PageProps) {
@@ -58,7 +32,7 @@ export default async function PublicSharePage({ params }: PageProps) {
       <div className="relative space-y-8 text-center">
         <div>
           <p className="text-xs font-medium uppercase tracking-[0.35em] text-amber-gold">
-            IChing Oracle
+            I Ching Oracle
           </p>
           <h1 className="mt-2 font-serif text-2xl text-foreground/95">
             A reading, shared quietly

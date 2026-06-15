@@ -3,11 +3,13 @@ import { AuthAmbient } from "@/components/auth-ambient";
 import { AuthGlassCard } from "@/components/auth-glass-card";
 import { RegisterPageContent } from "@/components/beta/register-page-content";
 import { isBetaInviteOnly } from "@/lib/beta/config";
+import { buildNoIndexMetadata } from "@/lib/seo/noindex-metadata";
 
-export const metadata = {
-  title: "Register | ICHING-ORACLE",
-  description: "Create your I Ching oracle account",
-};
+export const metadata = buildNoIndexMetadata({
+  title: "Create account",
+  description: "Create your free I Ching Oracle account and start your first reading.",
+  path: "/register",
+});
 
 export default function RegisterPage() {
   const inviteOnly = isBetaInviteOnly();

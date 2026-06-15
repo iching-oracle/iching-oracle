@@ -3,10 +3,13 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { GuidedReadingFlow } from "@/components/guided-reading/guided-reading-flow";
 
-export const metadata = {
-  title: "Guided Reading | ICHING-ORACLE",
-  description: "A ritual journey through your first oracle reading",
-};
+import { buildNoIndexMetadata } from "@/lib/seo/noindex-metadata";
+
+export const metadata = buildNoIndexMetadata({
+  title: "Guided reading",
+  description: "A ritual journey through your first oracle reading.",
+  path: "/reading/guided",
+});
 
 export default async function GuidedReadingPage() {
   const session = await auth();

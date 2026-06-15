@@ -4,10 +4,13 @@ import { auth } from "@/auth";
 import { AuthAmbient } from "@/components/auth-ambient";
 import { ConsultOracleForm } from "@/components/readings/consult-oracle-form";
 
-export const metadata = {
-  title: "Consult the Oracle | ICHING-ORACLE",
-  description: "Pose your question to the I Ching oracle",
-};
+import { buildNoIndexMetadata } from "@/lib/seo/noindex-metadata";
+
+export const metadata = buildNoIndexMetadata({
+  title: "Consult the oracle",
+  description: "Pose your question to the I Ching oracle.",
+  path: "/reading/new",
+});
 
 export default async function NewReadingPage() {
   const session = await auth();

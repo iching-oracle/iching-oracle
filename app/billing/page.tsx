@@ -8,10 +8,13 @@ import {
   getUsageHistory,
 } from "@/lib/credits/history";
 
-export const metadata = {
-  title: "Membership & usage | I Ching Oracle",
-  description: "Your membership and consultation allowance",
-};
+import { buildNoIndexMetadata } from "@/lib/seo/noindex-metadata";
+
+export const metadata = buildNoIndexMetadata({
+  title: "Membership & usage",
+  description: "Your membership and consultation allowance.",
+  path: "/billing",
+});
 
 export default async function BillingPage() {
   const session = await auth();

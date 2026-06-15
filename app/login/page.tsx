@@ -3,10 +3,13 @@ import { AuthAmbient } from "@/components/auth-ambient";
 import { AuthGlassCard } from "@/components/auth-glass-card";
 import { LoginForm } from "@/components/login-form";
 
-export const metadata = {
-  title: "Login | ICHING-ORACLE",
-  description: "Sign in to your I-Ching oracle account",
-};
+import { buildNoIndexMetadata } from "@/lib/seo/noindex-metadata";
+
+export const metadata = buildNoIndexMetadata({
+  title: "Sign in",
+  description: "Sign in to your I Ching Oracle account.",
+  path: "/login",
+});
 
 export default function LoginPage() {
   return (

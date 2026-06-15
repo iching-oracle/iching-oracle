@@ -11,6 +11,12 @@ export const LANDING_HERO = {
   footnote: "Free to begin · Private · No credit card required",
 } as const;
 
+export const LANDING_COMMUNITY_QUOTE = {
+  quote:
+    "It's not the coins or the app that matter most. It's the intention behind the question.",
+  attribution: "Discussion from the I Ching community",
+} as const;
+
 export const EXAMPLE_READING = {
   eyebrow: "Example reading",
   question: "Should I take the new opportunity that has opened in my career?",

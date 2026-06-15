@@ -23,10 +23,13 @@ import {
   getUsageLimitsForUser,
 } from "@/lib/subscription";
 
-export const metadata = {
-  title: "Dashboard | ICHING-ORACLE",
-  description: "Your reflective journal and oracle path",
-};
+import { buildNoIndexMetadata } from "@/lib/seo/noindex-metadata";
+
+export const metadata = buildNoIndexMetadata({
+  title: "Dashboard",
+  description: "Your reflective journal and oracle path.",
+  path: "/dashboard",
+});
 
 export default async function DashboardPage() {
   const session = await auth();

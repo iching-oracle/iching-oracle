@@ -8,11 +8,14 @@ import {
   getOracleChatState,
 } from "@/lib/oracle-chat/conversation";
 
-export const metadata = {
-  title: "Conversation Oracle | IChing Oracle",
+import { buildNoIndexMetadata } from "@/lib/seo/noindex-metadata";
+
+export const metadata = buildNoIndexMetadata({
+  title: "Conversation oracle",
   description:
     "Reflect, converse, and consult the I Ching with a calm spiritual companion.",
-};
+  path: "/oracle/chat",
+});
 
 export default async function OracleChatPage() {
   const session = await auth();

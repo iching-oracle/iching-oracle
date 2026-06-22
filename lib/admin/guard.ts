@@ -9,6 +9,7 @@ import "server-only";
 
 export {
   getAdminEmails,
+  getAdminApiSession,
   isAdminUser,
   requireAdminSession,
 } from "@/lib/admin/auth";

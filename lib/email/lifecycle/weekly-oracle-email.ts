@@ -33,16 +33,35 @@ export async function canSendWeeklyOracleEmail(userId: string): Promise<boolean>
   return user.weeklyOracleEnabled;
 }
 
-export async function sendWeeklyOracleEmail(userId: string) {
-  if (!(await canSendWeeklyOracleEmail(userId))) {
-    return { ok: false as const, reason: "opt_out" };
+export type SendWeeklyOracleEmailOptions = {
+  /** Admin test only — override the recipient inbox. */
+  toEmail?: string;
+  /** Admin test only — skip opt-in, dedup, and last-sent tracking. */
+  test?: boolean;
+};
+
+export type SendWeeklyOracleEmailResult =
+  | { ok: true; logId: string; resendId?: string; oracle: ReturnType<typeof generateWeeklyOracle> }
+  | { ok: false; reason: string; oracle?: ReturnType<typeof generateWeeklyOracle> };
+
+export async function sendWeeklyOracleEmail(
+  userId: string,
+  options?: SendWeeklyOracleEmailOptions,
+): Promise<SendWeeklyOracleEmailResult> {
+  const isTest = options?.test === true;
+
+  if (!isTest && !(await canSendWeeklyOracleEmail(userId))) {
+    return { ok: false, reason: "opt_out" };
   }
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { email: true, name: true },
   });
-  if (!user?.email) return { ok: false as const, reason: "no_email" };
+  if (!user?.email) return { ok: false, reason: "no_email" };
+
+  const to = options?.toEmail?.trim().toLowerCase() ?? user.email;
+  if (!to) return { ok: false, reason: "no_email" };
 
   const oracle = generateWeeklyOracle();
   const token = await ensureUnsubscribeToken(userId);
@@ -58,7 +77,9 @@ export async function sendWeeklyOracleEmail(userId: string) {
     title: "Your Weekly Oracle",
     bodyHtml,
     cta: { label: "Read Full Interpretation", href: trackUrl },
-    footerNote: "One oracle each Monday — the same message for every subscriber.",
+    footerNote: isTest
+      ? "Test send from admin — one oracle each Monday for subscribers."
+      : "One oracle each Monday — the same message for every subscriber.",
     unsubscribeUrl: preferencesUrl,
   });
 
@@ -66,20 +87,27 @@ export async function sendWeeklyOracleEmail(userId: string) {
 
   const result = await sendLifecycleEmail({
     userId,
-    to: user.email,
-    subject: `Weekly Oracle — ${oracle.title}`,
+    to,
+    subject: isTest
+      ? `[Test] Weekly Oracle — ${oracle.title}`
+      : `Weekly Oracle — ${oracle.title}`,
     html,
     text,
-    type: "weekly_oracle",
-    duplicateSince: startOfUtcWeek(),
+    type: isTest ? "weekly_oracle_test" : "weekly_oracle",
+    skipDuplicateCheck: isTest,
+    duplicateSince: isTest ? undefined : startOfUtcWeek(),
   });
 
-  if (result.ok) {
+  if (result.ok && !isTest) {
     await prisma.user.update({
       where: { id: userId },
       data: { lastWeeklyOracleEmailAt: new Date() },
     });
   }
 
-  return result;
+  if (result.ok) {
+    return { ok: true, logId: result.logId, resendId: result.resendId, oracle };
+  }
+
+  return { ok: false, reason: result.reason, oracle };
 }

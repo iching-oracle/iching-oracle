@@ -37,3 +37,14 @@ export async function requireAdminSession() {
 
   return session;
 }
+
+/** For API routes that must return JSON instead of redirecting. */
+export async function getAdminApiSession() {
+  const session = await auth();
+  if (!session?.user?.id) return null;
+
+  const ok = await isAdminUser(session.user.id, session.user.email);
+  if (!ok) return null;
+
+  return session;
+}

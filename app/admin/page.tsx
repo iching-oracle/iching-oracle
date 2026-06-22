@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AdminShell } from "@/components/admin/admin-shell";
+import { AdminTestWeeklyEmailButton } from "@/components/admin/admin-test-weekly-email-button";
 import { StatCard } from "@/components/admin/stat-card";
 import { ReadingsChart } from "@/components/admin/readings-chart";
 import { getAdminOverviewStats, getAdminSupportTickets } from "@/lib/admin/stats";
@@ -26,6 +27,10 @@ export default async function AdminOverviewPage() {
         <StatCard label="Errors (30d)" value={stats.recentErrors} />
         <StatCard label="AI calls (30d)" value={stats.aiCalls30d} />
         <StatCard label="Credits used (30d)" value={stats.creditsUsed30d} />
+      </div>
+
+      <div className="mt-10">
+        <AdminTestWeeklyEmailButton />
       </div>
 
       <section className="mt-10 rounded-2xl border border-white/10 bg-zen-surface/40 p-6">

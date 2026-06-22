@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import {
   getEmailPreferences,
   updateEmailPreferences,
+  updateWeeklyOracleEnabled,
   type EmailPreferenceKey,
 } from "@/lib/email/preferences";
 import { prisma } from "@/lib/prisma";
@@ -15,6 +16,7 @@ const patchSchema = z
     emailReengagement: z.boolean().optional(),
     emailProductUpdates: z.boolean().optional(),
     emailMarketing: z.boolean().optional(),
+    weeklyOracleEnabled: z.boolean().optional(),
     globalUnsubscribe: z.boolean().optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
@@ -34,6 +36,7 @@ export async function GET() {
     emailReengagement: prefs.emailReengagement,
     emailProductUpdates: prefs.emailProductUpdates,
     emailMarketing: prefs.emailMarketing,
+    weeklyOracleEnabled: prefs.weeklyOracleEnabled,
     globallyUnsubscribed: prefs.globallyUnsubscribed,
   });
 }
@@ -62,9 +65,17 @@ export async function PATCH(request: Request) {
         emailReengagement: false,
         emailProductUpdates: false,
         emailMarketing: false,
+        weeklyOracleEnabled: false,
       },
     });
   } else {
+    if (typeof prefs.weeklyOracleEnabled === "boolean") {
+      await updateWeeklyOracleEnabled(
+        session.user.id,
+        prefs.weeklyOracleEnabled,
+      );
+    }
+
     const updates: Partial<Record<EmailPreferenceKey, boolean>> = {};
     for (const key of [
       "emailDailyGuidance",
@@ -89,6 +100,7 @@ export async function PATCH(request: Request) {
     emailReengagement: next.emailReengagement,
     emailProductUpdates: next.emailProductUpdates,
     emailMarketing: next.emailMarketing,
+    weeklyOracleEnabled: next.weeklyOracleEnabled,
     globallyUnsubscribed: next.globallyUnsubscribed,
   });
 }

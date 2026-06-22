@@ -73,10 +73,12 @@ model User {
   emailReengagement       Boolean  @default(true)
   emailProductUpdates     Boolean  @default(false)
   emailMarketing          Boolean  @default(false)
+  weeklyOracleEnabled     Boolean  @default(false)
   emailUnsubscribeToken   String?  @unique
   emailGlobalUnsubscribedAt DateTime?
   lastDailyEmailAt        DateTime?
   lastWeeklyEmailAt       DateTime?
+  lastWeeklyOracleEmailAt DateTime?
   lastReengagementEmailAt DateTime?
   lastReengagementTier    Int?
 

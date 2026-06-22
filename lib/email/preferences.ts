@@ -71,6 +71,7 @@ export async function getEmailPreferences(userId: string) {
       emailReengagement: true,
       emailProductUpdates: true,
       emailMarketing: true,
+      weeklyOracleEnabled: true,
       emailGlobalUnsubscribedAt: true,
       emailUnsubscribeToken: true,
     },
@@ -99,6 +100,18 @@ export async function updateEmailPreferences(
   });
 }
 
+export async function updateWeeklyOracleEnabled(
+  userId: string,
+  enabled: boolean,
+) {
+  await prisma.user.update({
+    where: { id: userId },
+    data: enabled
+      ? { weeklyOracleEnabled: true, emailGlobalUnsubscribedAt: null }
+      : { weeklyOracleEnabled: false },
+  });
+}
+
 export async function globalUnsubscribe(token: string): Promise<boolean> {
   const user = await prisma.user.findFirst({
     where: { emailUnsubscribeToken: token },
@@ -115,6 +128,7 @@ export async function globalUnsubscribe(token: string): Promise<boolean> {
       emailReengagement: false,
       emailProductUpdates: false,
       emailMarketing: false,
+      weeklyOracleEnabled: false,
     },
   });
   return true;

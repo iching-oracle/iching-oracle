@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { EmailPreferencesPanel } from "@/components/email/email-preferences-panel";
+import { WeeklyOracleSettings } from "@/components/email/weekly-oracle-settings";
 import { getEmailPreferences } from "@/lib/email/preferences";
 
 export const metadata = {
@@ -40,6 +41,8 @@ export default async function NotificationsSettingsPage() {
             noise.
           </p>
         </div>
+
+        <WeeklyOracleSettings initialEnabled={prefs.weeklyOracleEnabled} />
 
         <EmailPreferencesPanel
           initialPreferences={{

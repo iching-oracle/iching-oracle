@@ -66,6 +66,7 @@ export function EmailPreferencesPanel({
         emailReengagement: false,
         emailProductUpdates: false,
         emailMarketing: false,
+        weeklyOracleEnabled: false,
         globalUnsubscribe: true,
       }),
     });

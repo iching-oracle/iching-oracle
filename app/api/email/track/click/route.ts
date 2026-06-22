@@ -9,6 +9,15 @@ export async function GET(request: Request) {
 
   let destination = `${getAppUrl()}/dashboard`;
 
+  const dest = searchParams.get("dest")?.trim();
+  if (dest?.startsWith("/hexagrams/")) {
+    destination = `${getAppUrl()}${dest}`;
+    if (userId && type) {
+      await recordEmailClick(userId, type);
+    }
+    return NextResponse.redirect(destination, 302);
+  }
+
   if (userId && type) {
     const resolved = await recordEmailClick(userId, type);
     if (resolved) destination = `${getAppUrl()}${resolved}`;

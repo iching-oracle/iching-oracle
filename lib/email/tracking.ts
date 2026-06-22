@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 const CLICK_DESTINATIONS: Record<string, string> = {
   daily_oracle: "/daily?utm_source=email&utm_medium=daily_oracle",
   weekly_reflection: "/reading/guided?utm_source=email&utm_medium=weekly_reflection",
+  weekly_oracle: "/hexagrams?utm_source=email&utm_medium=weekly_oracle",
   reengagement_3d: "/reading/guided?utm_source=email&utm_medium=reengagement_3d",
   reengagement_7d: "/reading/guided?utm_source=email&utm_medium=reengagement_7d",
   reengagement_14d: "/reading/guided?utm_source=email&utm_medium=reengagement_14d",

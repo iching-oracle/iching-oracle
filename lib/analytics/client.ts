@@ -10,6 +10,59 @@ const DISTINCT_ID_KEY = "iching-analytics-id";
 const SESSION_ID_KEY = "iching-analytics-session";
 
 let posthogInitialized = false;
+let replayRequested = false;
+
+function isDev(): boolean {
+  return process.env.NODE_ENV === "development";
+}
+
+function logPostHogDiag(message: string, data?: Record<string, unknown>): void {
+  if (!isDev()) return;
+  if (data) {
+    console.info(`[posthog] ${message}`, data);
+  } else {
+    console.info(`[posthog] ${message}`);
+  }
+}
+
+function getPostHogDiagnostics() {
+  const dnt =
+    typeof navigator !== "undefined"
+      ? navigator.doNotTrack === "1" ||
+        (navigator as Navigator & { msDoNotTrack?: string }).msDoNotTrack === "1" ||
+        (window as Window & { doNotTrack?: string }).doNotTrack === "1"
+      : false;
+
+  return {
+    initialized: posthogInitialized,
+    hasOptedIn: posthog.has_opted_in_capturing?.() ?? null,
+    hasOptedOut: posthog.has_opted_out_capturing?.() ?? null,
+    sessionRecordingStarted: posthog.sessionRecordingStarted?.() ?? null,
+    respectDnt: true,
+    browserDnt: dnt,
+    distinctId: posthog.get_distinct_id?.() ?? null,
+  };
+}
+
+function applyConsentCaptureAndReplay(): void {
+  posthog.opt_in_capturing();
+  startSessionReplayAfterConsent();
+  logPostHogDiag("opted in", getPostHogDiagnostics());
+}
+
+function isPostHogSdkLoaded(): boolean {
+  return Boolean((posthog as { __loaded?: boolean }).__loaded);
+}
+
+function startSessionReplayAfterConsent(): void {
+  try {
+    posthog.startSessionRecording();
+  } catch (error) {
+    logPostHogDiag("startSessionRecording failed", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
 
 export function getOrCreateDistinctId(): string {
   if (typeof window === "undefined") return "anonymous";
@@ -61,36 +114,66 @@ export function initPostHogClient(): void {
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY?.trim();
   if (!key) return;
 
+  if (isDev()) {
+    posthog.debug();
+  }
+
   posthog.init(key, {
     api_host: getPostHogHost(),
     person_profiles: "identified_only",
-    capture_pageview: false,
+    capture_pageview: true,
     capture_pageleave: true,
     persistence: "localStorage+cookie",
-    autocapture: false,
+    autocapture: true,
     respect_dnt: true,
     advanced_disable_feature_flags: false,
+    // Consent-gated replay: init disabled, start explicitly after opt-in.
+    disable_session_recording: true,
     session_recording: {
       maskAllInputs: true,
       maskTextSelector: "[data-ph-mask]",
     },
+    loaded: () => {
+      logPostHogDiag("SDK loaded", getPostHogDiagnostics());
+      if (replayRequested) {
+        replayRequested = false;
+        applyConsentCaptureAndReplay();
+      }
+    },
   });
 
   posthogInitialized = true;
+  logPostHogDiag("init complete", getPostHogDiagnostics());
 }
 
 export function optOutPostHog(): void {
+  replayRequested = false;
   if (posthogInitialized) {
+    try {
+      posthog.stopSessionRecording();
+    } catch {
+      /* non-blocking */
+    }
     posthog.opt_out_capturing();
     posthog.reset();
+    logPostHogDiag("opted out", getPostHogDiagnostics());
   }
   posthogInitialized = false;
 }
 
 export function optInPostHog(): void {
+  replayRequested = true;
   initPostHogClient();
-  if (posthogInitialized) {
-    posthog.opt_in_capturing();
+  if (!posthogInitialized) {
+    replayRequested = false;
+    return;
+  }
+
+  if (isPostHogSdkLoaded()) {
+    replayRequested = false;
+    applyConsentCaptureAndReplay();
+  } else {
+    logPostHogDiag("replay deferred until SDK loaded");
   }
 }
 
@@ -104,9 +187,13 @@ export function identifyUser(
 }
 
 export function resetAnalyticsIdentity(): void {
-  if (posthogInitialized) {
-    posthog.reset();
+  if (!posthogInitialized) return;
+
+  posthog.reset();
+  if (posthog.has_opted_in_capturing?.()) {
+    startSessionReplayAfterConsent();
   }
+  logPostHogDiag("identity reset", getPostHogDiagnostics());
 }
 
 export type ClientTrackOptions = {

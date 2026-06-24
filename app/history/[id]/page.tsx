@@ -5,6 +5,7 @@ import { CastingSummary } from "@/components/readings/casting-summary";
 import { PremiumInterpretation } from "@/components/readings/premium-interpretation";
 import { DeleteReadingDialog } from "@/components/journal/DeleteReadingDialog";
 import { ReadingDetailActions } from "@/components/journal/ReadingDetailActions";
+import { ShareReadingQuickButton } from "@/components/share/share-reading-quick-button";
 import { ShareReadingButton } from "@/components/share/share-reading-button";
 import { ReadingDetailHero } from "@/components/journal/ReadingDetailHero";
 import { ReadingDetailSections } from "@/components/journal/ReadingDetailSections";
@@ -118,6 +119,7 @@ export default async function HistoryReadingDetailPage({ params }: PageProps) {
                 readingId={id}
                 interpretation={record.interpretation}
               />
+              <ShareReadingQuickButton readingId={id} />
               <ShareReadingButton
                 readingId={id}
                 cardData={shareCardData}

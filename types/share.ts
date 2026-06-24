@@ -24,6 +24,18 @@ export type ShareCardReadingData = {
   dateLabel: string;
 };
 
+/** Full payload for public /share/[shareId] pages. */
+export type PublicSharedReadingPayload = {
+  shareId: string;
+  question: string;
+  interpretation: string;
+  hexagramNumber: number;
+  hexagramName: string;
+  hexagramChineseName: string;
+  dateLabel: string;
+  card: ShareCardReadingData;
+};
+
 export type ShareCardOptions = {
   theme: ShareCardTheme;
   format: ShareCardFormat;

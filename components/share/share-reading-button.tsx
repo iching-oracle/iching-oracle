@@ -26,9 +26,9 @@ export function ShareReadingButton({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-full border border-amber-gold/30 bg-amber-gold/10 px-3 py-1.5 text-xs font-medium text-amber-gold hover:border-amber-gold/50"
+        className="rounded-full border border-white/15 px-3 py-1.5 text-xs font-medium text-zen-muted hover:border-amber-gold/40 hover:text-amber-gold"
       >
-        Share Reading
+        Share card
       </button>
       <ShareReadingModal
         open={open}

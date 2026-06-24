@@ -2,6 +2,7 @@ import "server-only";
 
 import { buildReadingSeoFields } from "@/lib/seo/public-reading";
 import { generateShareId } from "@/lib/share/id";
+import { getAppUrl } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 
 export async function getReadingForOwnerShare(
@@ -84,4 +85,18 @@ export async function setReadingShareEnabled(
   });
 
   return { shareId, isPublic: true };
+}
+
+/** Enable sharing and return the public URL (creates shareId when missing). */
+export async function enableReadingShare(
+  userId: string,
+  readingId: string,
+): Promise<{ url: string; shareId: string } | null> {
+  const result = await setReadingShareEnabled(userId, readingId, true);
+  if (!result?.shareId) return null;
+
+  return {
+    shareId: result.shareId,
+    url: `${getAppUrl()}/share/${result.shareId}`,
+  };
 }

@@ -22,6 +22,8 @@ export const ANALYTICS_EVENTS = {
   READING_COMPLETED: "reading_completed",
   READING_SAVED: "reading_saved",
   READING_SHARED: "reading_shared",
+  SHARED_READING_VIEWED: "shared_reading_viewed",
+  SHARED_READING_CTA_CLICKED: "shared_reading_cta_clicked",
   FOLLOWUP_QUESTION_ASKED: "followup_question_asked",
   NEW_READING_STARTED: "new_reading_started",
 

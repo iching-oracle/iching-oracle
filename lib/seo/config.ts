@@ -28,7 +28,6 @@ export const ROBOTS_DISALLOW = [
   "/forgot-password",
   "/reset-password",
   "/unsubscribe/",
-  "/share/",
   "/sentry-example-page",
   "/readings/",
   "/reading/guided",

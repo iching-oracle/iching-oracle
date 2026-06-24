@@ -12,6 +12,7 @@ import { formatHexagramInline, getHexagram } from "@/lib/hexagrams";
 import { MobilePage } from "@/components/mobile/mobile-page";
 import { FadeIn } from "@/components/mobile/motion";
 import { PremiumInterpretation } from "@/components/readings/premium-interpretation";
+import { ShareReadingQuickButton } from "@/components/share/share-reading-quick-button";
 import { formatDateTimeForLanguage } from "@/lib/format-date";
 import { isLegacyPlaceholderInterpretation } from "@/lib/openai";
 import { isPrivateReadingId } from "@/lib/seo/slugs";
@@ -127,10 +128,13 @@ export default async function ReadingPage({ params }: PageProps) {
 
         <FadeIn delay={0.15}>
           <section className="ritual-card">
-            <h2 className="text-[10px] font-medium uppercase tracking-widest text-zen-muted">
-              Interpretation
-            </h2>
-            <div className="reading-prose mt-4">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-[10px] font-medium uppercase tracking-widest text-zen-muted">
+                Interpretation
+              </h2>
+              <ShareReadingQuickButton readingId={reading.id} />
+            </div>
+            <div className="reading-prose">
               <PremiumInterpretation
                 user={{ premiumUntil: dbUser?.premiumUntil ?? null }}
                 interpretation={reading.interpretation}

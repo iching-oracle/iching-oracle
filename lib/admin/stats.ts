@@ -136,3 +136,37 @@ export async function getAdminSupportTickets(limit = 50) {
     include: { user: { select: { email: true, name: true } } },
   });
 }
+
+export async function getWeeklyEmailStats() {
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+  const emailLogs = await prisma.emailSendLog.findMany({
+    where: {
+      type: "weekly_reflection",
+      createdAt: { gte: thirtyDaysAgo },
+    },
+    select: {
+      id: true,
+      userId: true,
+      openedAt: true,
+      clickedAt: true,
+      createdAt: true,
+    },
+  });
+
+  const totalSent = emailLogs.length;
+  const totalOpened = emailLogs.filter((log) => log.openedAt).length;
+  const totalClicked = emailLogs.filter((log) => log.clickedAt).length;
+
+  const openRate = totalSent > 0 ? (totalOpened / totalSent) * 100 : 0;
+  const clickRate = totalSent > 0 ? (totalClicked / totalSent) * 100 : 0;
+
+  return {
+    totalSent,
+    totalOpened,
+    totalClicked,
+    openRate: openRate.toFixed(1),
+    clickRate: clickRate.toFixed(1),
+  };
+}

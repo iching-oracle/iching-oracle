@@ -20,7 +20,15 @@ export async function GET(request: Request) {
 
   if (userId && type) {
     const resolved = await recordEmailClick(userId, type);
-    if (resolved) destination = `${getAppUrl()}${resolved}`;
+    if (resolved) {
+      if (resolved.startsWith("http")) {
+        destination = resolved;
+      } else if (resolved.startsWith("?")) {
+        destination = `${getAppUrl()}${resolved}`;
+      } else {
+        destination = `${getAppUrl()}${resolved}`;
+      }
+    }
   }
 
   return NextResponse.redirect(destination, 302);

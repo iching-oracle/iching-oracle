@@ -10,7 +10,7 @@
     },
     {
       "path": "/api/cron/email/weekly-reflection",
-      "schedule": "0 8 * * 1"
+      "schedule": "0 8 * * 0"
     },
     {
       "path": "/api/cron/email/weekly-oracle",
